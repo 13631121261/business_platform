@@ -27,7 +27,7 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
     public void addInterceptors(InterceptorRegistry registry) {
         //所有已api开头的访问都要进入RedisSessionInterceptor拦截器进行登录验证，并排除login接口(全路径)。必须写成链式，分别设置的话会创建多个拦截器。
         //必须写成getSessionInterceptor()，否则SessionInterceptor中的@Autowired会无效
-        registry.addInterceptor(getSessionInterceptor()).addPathPatterns("/userApi/**").addPathPatterns("/Api/**").addPathPatterns("/GatewayControl/**").excludePathPatterns("/userApi/login").excludePathPatterns("/Api/Login").excludePathPatterns("/userApi/addUser").excludePathPatterns("/upload/map");
+        registry.addInterceptor(getSessionInterceptor()).addPathPatterns("/userApi/**").addPathPatterns("/Api/**").addPathPatterns("/StationControl/**").excludePathPatterns("/userApi/login").excludePathPatterns("/Api/Login").excludePathPatterns("/userApi/addUser").excludePathPatterns("/userApi/map/upload").excludePathPatterns("/userApi/downResult");
 
         super.addInterceptors(registry);
     }

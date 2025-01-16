@@ -17,7 +17,7 @@ Device_offline {
     String photo;
     int type_id;
     String area_name;
-    String gateway_mac;
+    String Station_mac;
     long lasttime;
     String userkey;
     @TableField(exist = false)
@@ -40,7 +40,7 @@ Device_offline {
             String photo,
             int type_id,
             String area_name,
-            String gateway_mac,
+            String Station_mac,
             long lasttime,String userkey ,String customer_key  ){
         SimpleDateFormat sp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -54,7 +54,7 @@ Device_offline {
         this.bind_mac=bind_mac;
         this.type_id=type_id;
         this.photo=photo;
-        this.gateway_mac=gateway_mac;
+        this.Station_mac=Station_mac;
         this.userkey=userkey;
         this.lasttime=lasttime;
         this.sn=sn;
@@ -173,12 +173,12 @@ Device_offline {
         this.area_name = area_name;
     }
 
-    public String getGateway_mac() {
-        return gateway_mac;
+    public String getStation_mac() {
+        return Station_mac;
     }
 
-    public void setGateway_mac(String gateway_mac) {
-        this.gateway_mac = gateway_mac;
+    public void setStation_mac(String Station_mac) {
+        this.Station_mac = Station_mac;
     }
 
     public long getLasttime() {

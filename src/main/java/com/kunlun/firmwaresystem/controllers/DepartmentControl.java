@@ -33,6 +33,7 @@ public class DepartmentControl {
     @RequestMapping(value = "userApi/Department/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject selectAllDepartment(HttpServletRequest request){
         Customer customer=getCustomer(request);
+        String lang=customer.getLang();
         Department_Sql departmentSql=new Department_Sql();
         String quickSearch=request.getParameter("quickSearch");
         List<Department> departments= departmentSql.getAllDepartment(departmentMapper,customer.getUserkey(),customer.getProject_key(),quickSearch);
@@ -50,7 +51,7 @@ public class DepartmentControl {
                 }
         }
 
-        return JsonConfig.getJsonObj(CODE_OK, departments1);
+        return JsonConfig.getJsonObj(CODE_OK, departments1,lang);
 
     }
     @RequestMapping(value = "userApi/getAllDepartment", method = RequestMethod.GET,produces = "application/json")
@@ -113,6 +114,7 @@ public class DepartmentControl {
     @RequestMapping(value = "userApi/Department/add", method = RequestMethod.POST, produces = "application/json")
     public JSONObject addDepartment(HttpServletRequest request, @RequestBody JSONObject json) {
         Customer customer=getCustomer(request);
+        String lang=customer.getLang();
         Department_Sql departmentSql=new Department_Sql();
         Department department=new Gson().fromJson(json.toString(),new TypeToken<Department>(){}.getType());
         department.setUserkey(customer.getUserkey());
@@ -122,15 +124,16 @@ public class DepartmentControl {
         boolean status=departmentSql.addDepartment(departmentMapper,department);
         if(status){
 
-            return JsonConfig.getJsonObj(CODE_OK,null);
+            return JsonConfig.getJsonObj(CODE_OK,null,lang);
         }
         else{
-            return JsonConfig.getJsonObj(CODE_REPEAT,null);
+            return JsonConfig.getJsonObj(CODE_REPEAT,null,lang);
         }
     }
     @RequestMapping(value = "userApi/Department/edit", method = RequestMethod.POST, produces = "application/json")
     public JSONObject editDepartment(HttpServletRequest request, @RequestBody JSONObject json) {
         Customer customer=getCustomer(request);
+        String lang=customer.getLang();
         Department department=new Gson().fromJson(json.toString(),new TypeToken<Department>(){}.getType());
         department.setUserkey(customer.getUserkey());
         department.setCustomer_key(customer.getCustomerkey());
@@ -138,29 +141,32 @@ public class DepartmentControl {
        // department.setCreatetime(System.currentTimeMillis()/1000);
         int status= departmentMapper.updateById(department);
         if(status!=-1){
-            return JsonConfig.getJsonObj(CODE_OK,null);
+            return JsonConfig.getJsonObj(CODE_OK,null,lang);
         }
         else{
-            return JsonConfig.getJsonObj(CODE_REPEAT,null);
+            return JsonConfig.getJsonObj(CODE_REPEAT,null,lang);
         }
     }
     @RequestMapping(value = "userApi/Department/edit", method = RequestMethod.GET, produces = "application/json")
     public JSONObject editDepartment(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "id") String id) {
         Department department=departmentMapper.selectById(id);
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
         if(department!=null){
-            return JsonConfig.getJsonObj(CODE_OK,department);
+            return JsonConfig.getJsonObj(CODE_OK,department,lang);
         }else{
-            return JsonConfig.getJsonObj(CODE_RESPONSE_NULL,null);
+            return JsonConfig.getJsonObj(CODE_RESPONSE_NULL,null,lang);
         }
     }
     @RequestMapping(value = "userApi/Department/del", method = RequestMethod.GET, produces = "application/json")
     public JSONObject deleteDepartment(HttpServletRequest request, @RequestParam("id") @ParamsNotNull String id) {
         Customer customer = getCustomer(request);
+        String lang=customer.getLang();
         Department_Sql departmentSql=new Department_Sql();
         for(String key: NewSystemApplication.personMap.keySet()){
             Person person=NewSystemApplication.personMap.get(key);
             if(person!=null&&person.getDepartment_id()==Integer.parseInt(id)){
-                return JsonConfig.getJsonObj(CODE_10,null);
+                return JsonConfig.getJsonObj(CODE_10,null,lang);
             }
         }
         List<Department> departments= departmentSql.getAllDepartment(departmentMapper,customer.getUserkey(),customer.getProject_key(),"");
@@ -179,10 +185,10 @@ public class DepartmentControl {
         }
 
         if(department2.getRoot()==0){
-            return JsonConfig.getJsonObj(CODE_12,null);
+            return JsonConfig.getJsonObj(CODE_12,null,lang);
         }else{
            departmentSql.delete(departmentMapper, Integer.parseInt(id));
-            return JsonConfig.getJsonObj(CODE_OK,null);
+            return JsonConfig.getJsonObj(CODE_OK,null,lang);
         }
 
 

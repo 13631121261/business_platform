@@ -44,7 +44,7 @@ public class PageRules {
 
     @Override
     public String toString() {
-        return "PageGatewayConfig{" +
+        return "PageStationConfig{" +
                 "rulesList=" + rulesList +
                 ", page=" + page +
                 ", total=" + total +

@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.kunlun.firmwaresystem.MyWebSocket;
 import com.kunlun.firmwaresystem.MyWebSocketTag;
 import com.kunlun.firmwaresystem.NewSystemApplication;
-import com.kunlun.firmwaresystem.entity.Gateway_config;
 import com.kunlun.firmwaresystem.entity.Rules;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -21,14 +20,15 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Map;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.rulesMap;
-import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.Push;
+import static com.kunlun.firmwaresystem.NewSystemApplication.myMqttClientMap;
+
+//import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.Push;
 
 @Component
 public class DirectExchangeConsumer {
-    MyMqttClient myMqttClient;
+    MyMqttClient myMqttClient1;
     MyWebSocket webSocket = MyWebSocket.getWebSocket();
     MyWebSocketTag webSockettag = MyWebSocketTag.getWebSocket();
     DatagramSocket ds;
@@ -43,40 +43,38 @@ public class DirectExchangeConsumer {
         }
     }
 
-    @RabbitListener(queues = "sendToGateway")
+    @RabbitListener(queues = "sendToStation",concurrency = "10")
     @RabbitHandler
     public void getQueue1Message(String msg) {
-        // System.out.println("下发消息log");
-        if(myMqttClient==null){
-            if(NewSystemApplication.check_sheetMap==null){
-                    return;
+            if (NewSystemApplication.check_sheetMap == null) {
+                return;
             }
-            //System.out.println("1111myMqttClient=null");
-            //System.out.println(NewSystemApplication.check_sheetMap);
-           // System.out.println(NewSystemApplication.check_sheetMap.get("admin"));
-            myMqttClient = MyMqttClient.getMyMqttClient(NewSystemApplication.check_sheetMap.get("admin").getHost(),NewSystemApplication.check_sheetMap.get("admin").getPort());
-        }
-        if(myMqttClient==null){
-            System.out.println("2222myMqttClient=null");
-            return;
-        }
-        //全部的下发给网关的消息都在这里集中下发。
-        JSONObject jsonObject = JSONObject.parseObject(msg);
-        String topic = jsonObject.getString("pubTopic");
-        String data = jsonObject.getString("msg");
-        if (topic != null && data != null) {
-            myMqttClient.sendToTopic(topic, data, 11);
-        }   JSONObject jsonObject1=JSONObject.parseObject(data);
-   //     System.out.println(sdf.format(new Date())+"发给网关关关了"+"id="+jsonObject1.getInteger("id"));
+            for (Map.Entry<String, MyMqttClient> entry : myMqttClientMap.entrySet()) {
+                myMqttClient1= entry.getValue();
+               // System.out.println("key="+entry.getKey());
+                if (myMqttClient1 == null||!myMqttClient1.getStatus()) {
+                    System.out.println("2222myMqttClient=null");
+                    return;
+                }
+                //全部的下发给网关的消息都在这里集中下发。
+                JSONObject jsonObject = JSONObject.parseObject(msg);
+                String topic = jsonObject.getString("pubTopic");
+                String data = jsonObject.getString("msg");
+                if (topic != null && data != null) {
+                    myMqttClient1.sendToTopic(topic, data, 11);
+                }
+              //  JSONObject jsonObject1 = JSONObject.parseObject(data);
+                //     System.out.println(sdf.format(new Date())+"发给网关关关了"+"id="+jsonObject1.getInteger("id"));
+            }
 
     }
 
     //发给网页websocket
-    @RabbitListener(queues = "sendtoHtml")
+    @RabbitListener(queues = "sendtoHtml",concurrency = "10")
     @RabbitHandler
     public void getQueue3Message(String msg) {
         JSONObject jsonObject = JSONObject.parseObject(msg);
-        String key = jsonObject.getString("pubTopic");
+        String key = jsonObject.getString("project_key");
         String data = jsonObject.getString("msg");
 
         if (key != null && data != null) {
@@ -84,12 +82,12 @@ public class DirectExchangeConsumer {
         }
     }
     //发给网页websocket
-    @RabbitListener(queues = "sendtoMap")
+    @RabbitListener(queues = "sendtoMap",concurrency = "10")
     @RabbitHandler
     public void getQueue6Message(String msg) {
        // System.out.println("这里"+msg);
         JSONObject jsonObject = JSONObject.parseObject(msg);
-        String key = jsonObject.getString("pubTopic");
+        String key = jsonObject.getString("project_key");
         String data = jsonObject.getString("msg");
 
         if (key != null && data != null) {
@@ -98,54 +96,32 @@ public class DirectExchangeConsumer {
         }
     }
 
-        @RabbitListener(queues = "mqtt_topic")
+        /*@RabbitListener(queues = "mqtt_topic",concurrency = "10")
         @RabbitHandler
         public void getQueue5Message(String msg) {
-          //  System.out.println("收到订阅主题"+msg);
-            if(myMqttClient!=null){
-               // System.out.println("收到订阅主题"+msg);
+
                 JSONObject jsonObject = JSONObject.parseObject(msg);
-                String topic = jsonObject.getString("msg");
-                myMqttClient.addSubTopic(topic);
-            }else{
-                myMqttClient = MyMqttClient.getMyMqttClient(NewSystemApplication.check_sheetMap.get("admin").getHost(),NewSystemApplication.check_sheetMap.get("admin").getPort());
-            }
+                String topic = jsonObject.getString("pubTopic");
+                String project_key=jsonObject.getString("project_key");
+                myMqttClient1=myMqttClientMap.get(project_key);
+                if(myMqttClient1!=null){
+                 //   System.out.println("实际主题="+topic);
+                    myMqttClient1.addSubTopic(topic);
+                }
 
-        }
+        }*/
 
-    @RabbitListener(queues = "transpond")
+ /*   @RabbitListener(queues = "transpond",concurrency = "10")
     @RabbitHandler
     public void getQueue2Message(String msg) {
         JSONObject jsonObject = JSONObject.parseObject(msg);
         String project_key = jsonObject.getString("pubTopic");
         String data = jsonObject.getString("msg");
-        if(NewSystemApplication.gatewayConfigMap!=null){
-            Gateway_config gatewayConfig = NewSystemApplication.gatewayConfigMap.get(project_key);
-            // System.out.println("准备转发");
-            if (gatewayConfig != null) {
-                if (rulesMap == null) {
-                    //   System.out.println("规则都是空的");
-                    return;
-                }
-                Rules rules = rulesMap.get(gatewayConfig.getRules_key());
-                if (rules == null) {
-                    //  System.out.println("没有绑定转发规则");
-                    return;
-                }
-                if (rules.getType() == 1) {
-                    sendUdp(data, rules.getServer(), rules.getPort());
-                } else if (rules.getType() == 2) {
-                    httpPost(rules.getServer(), data);
-                }
-            }
 
-        }else{
-            System.out.println("项目参数一直为空");
-        }
 
     }
-
-    @RabbitListener(queues = Push)
+*/
+   /* @RabbitListener(queues = Push,concurrency = "10")
     @RabbitHandler
     public void getQueue4Message(String msg) {
         JSONObject jsonObject = JSONObject.parseObject(msg);
@@ -153,9 +129,13 @@ public class DirectExchangeConsumer {
         String data = jsonObject.getString("msg");
         JSONObject jsonObject1 = JSONObject.parseObject(data);
         //udp  192.168.1.1:5656
+       // System.out.println("UDP="+udp);
+        if(udp==null){
+            return;
+        }
         System.out.println(sdf.format(new Date())+"发给UDP"+"id="+jsonObject1.getInteger("id"));
         sendUdp(data,udp.split(":")[0],Integer.parseInt(udp.split(":")[1]));
-    }
+    }*/
 
     private void sendUdp(String raw, String address, int port) {
         try {
@@ -191,6 +171,5 @@ public class DirectExchangeConsumer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 }

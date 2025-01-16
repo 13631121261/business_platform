@@ -13,6 +13,8 @@ public class Person {
     String photo;
     int department_id;
     int fence_id;
+    @TableField(exist = false)
+    String fence_name;
     String department_name;
     long create_time;
     long lasttime;
@@ -30,9 +32,9 @@ public class Person {
     int online;
 
     @TableField(exist = false)
-    String  gateway_mac;
+    String  Station_mac;
     @TableField(exist = false)
-    String gateway_name;
+    String Station_name;
 
     String customer_key;
     //用于判断定位信标的类型
@@ -43,6 +45,8 @@ public class Person {
     String b_area_name;
     @TableField(exist = false)
     String map_name;
+    @TableField(exist = false)
+    String map_key;
     public Person()
     {
 
@@ -83,20 +87,36 @@ public class Person {
     }
 */
 
-    public String getGateway_name() {
-        return gateway_name;
+    public String getFence_name() {
+        return fence_name;
     }
 
-    public void setGateway_name(String gateway_name) {
-        this.gateway_name = gateway_name;
+    public void setFence_name(String fence_name) {
+        this.fence_name = fence_name;
     }
 
-    public void setGateway_mac(String gateway_mac) {
-        this.gateway_mac = gateway_mac;
+    public void setMap_key(String map_key) {
+        this.map_key = map_key;
     }
 
-    public String getGateway_mac() {
-        return gateway_mac;
+    public String getMap_key() {
+        return map_key;
+    }
+
+    public String getStation_name() {
+        return Station_name;
+    }
+
+    public void setStation_name(String Station_name) {
+        this.Station_name = Station_name;
+    }
+
+    public void setStation_mac(String Station_mac) {
+        this.Station_mac = Station_mac;
+    }
+
+    public String getStation_mac() {
+        return Station_mac;
     }
 
     public void setMap_name(String map_name) {
@@ -334,8 +354,8 @@ public class Person {
                 ", project_key='" + project_key + '\'' +
                 ", idcard='" + idcard + '\'' +
                 ", online=" + online +
-                ", gateway_mac='" + gateway_mac + '\'' +
-                ", gateway_name='" + gateway_name + '\'' +
+                ", Station_mac='" + Station_mac + '\'' +
+                ", Station_name='" + Station_name + '\'' +
                 ", customer_key='" + customer_key + '\'' +
                 ", type=" + type +
                 ", b_area_id=" + b_area_id +

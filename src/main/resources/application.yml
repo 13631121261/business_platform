@@ -2,8 +2,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     username: root
-    password: 123456
-    url: jdbc:mysql://localhost:3306/kunlun_system?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
+    password: qaz741
+    url: jdbc:mysql://localhost:9906/business?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
   mvc:
    hiddenmethod:
     filter:
@@ -53,12 +53,19 @@ mybatis-plus:
       table-underline: false
   configuration:
     map-underscore-to-camel-case: false
-    log-impl:  org.apache.ibatis.logging.nologging.NoLoggingImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 server:
   port: 8001
 
-
-
+netty:
+  tcp:
+    client:
+      port: 802
+mqtt:
+  server:
+    port: 1883
+    host: 192.168.1.14
+    subTopic: location_engine
 log-impl: org.apache.ibatis.logging.stdout.StdOutImpl /org.apache.ibatis.logging.nologging.NoLoggingImpl
 
 

@@ -27,7 +27,7 @@ public class Alarm {
             String area_name,
             String name,
             String sn,
-            String project_key){
+            String project_key,long time){
     this.alarm_object=alarm_object;
     this.alarm_type=alarm_type;
     this.area_id=area_id;
@@ -37,7 +37,10 @@ public class Alarm {
     this.fence_name=fence_name;
     this.bt=bt;
     this.map_key=map_key;
-    this.create_time=System.currentTimeMillis()/1000;
+    if(time<=0){
+        time=System.currentTimeMillis()/1000;
+    }
+    this.create_time=time;
     this.name=name;
     this.project_key=project_key;
     }

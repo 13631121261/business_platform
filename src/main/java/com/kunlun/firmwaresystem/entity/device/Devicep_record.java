@@ -1,10 +1,9 @@
 package com.kunlun.firmwaresystem.entity.device;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.kunlun.firmwaresystem.entity.Beacon;
+import com.kunlun.firmwaresystem.entity.Tag;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Devicep_record {
     int id;
@@ -25,7 +24,7 @@ public class Devicep_record {
     @TableField(exist = false)
     int online;
     @TableField(exist = false)
-    String gateway_mac;
+    String Station_mac;
     @TableField(exist = false)
     String point_name;
     @TableField(exist = false)
@@ -190,8 +189,8 @@ public class Devicep_record {
         this.point_name = point_name;
     }
 
-    public void setGateway_mac(String gateway_mac) {
-        this.gateway_mac = gateway_mac;
+    public void setStation_mac(String Station_mac) {
+        this.Station_mac = Station_mac;
     }
 
     public void setRssi(int rssi) {
@@ -206,8 +205,8 @@ public class Devicep_record {
         return point_name;
     }
 
-    public String getGateway_mac() {
-        return gateway_mac;
+    public String getStation_mac() {
+        return Station_mac;
     }
 
     public int getRssi() {
@@ -248,13 +247,13 @@ public class Devicep_record {
         this.bind_mac="";
         this.isopen=0;
         this.isbind=0;
-        this.gateway_mac="";
+        this.Station_mac="";
         this.point_name="";
     }
-    public void bind(Beacon beacon){
-        this.bt=beacon.getBt();
-        this.rssi=beacon.getRssi();
-        this.bind_mac=beacon.getMac();
+    public void bind(Tag tag){
+        this.bt= tag.getBt();
+        this.rssi= tag.getRssi();
+        this.bind_mac= tag.getMac();
         this.isopen=1;
         this.isbind=1;
     }
@@ -276,7 +275,7 @@ public class Devicep_record {
                 ", type_name='" + type_name + '\'' +
                 ", sos=" + sos +
                 ", online=" + online +
-                ", gateway_mac='" + gateway_mac + '\'' +
+                ", Station_mac='" + Station_mac + '\'' +
                 ", point_name='" + point_name + '\'' +
                 ", rssi=" + rssi +
                 ", customer_key='" + customer_key + '\'' +

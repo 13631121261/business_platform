@@ -59,44 +59,44 @@ public class MessageCallback implements MqttCallback {
         if(data.isEmpty()||!data.contains("pkt_type")){
             return;
         }
-        Gateway gateway=null;
+        Station Station=null;
         JSONObject jsonObject=null;
         String pkt_type=null;
-        String gatewayAddress=null;
+        String StationAddress=null;
         try {
              jsonObject = JSONObject.parseObject(data);
              pkt_type = jsonObject.getString("pkt_type");
-             gatewayAddress = jsonObject.getString("gw_addr");
-             gateway = (Gateway) redisUtil.get(redis_key_gateway + gatewayAddress);
-            if (gateway == null) {
-                System.out.println("网关地址有误=" + gatewayAddress);
+             StationAddress = jsonObject.getString("gw_addr");
+             Station = (Station) redisUtil.get(redis_key_Station + StationAddress);
+            if (Station == null) {
+                System.out.println("网关地址有误=" + StationAddress);
                 return;
             }
             //上一次离线时间
-            if(gateway.getOnline()==0){
-                redisUtil.set(redis_key_gateway_onLine_time+gatewayAddress,time);
-                redisUtil.set(redis_key_gateway_onLine_time_count+gatewayAddress,0);
+            if(Station.getOnline()==0){
+                redisUtil.set(redis_key_Station_onLine_time+StationAddress,time);
+                redisUtil.set(redis_key_Station_onLine_time_count+StationAddress,0);
             }
-            else if(  redisUtil.get(redis_key_gateway_onLine_time+gatewayAddress)==null){
-                redisUtil.set(redis_key_gateway_onLine_time+gatewayAddress,time);
-                redisUtil.set(redis_key_gateway_onLine_time_count+gatewayAddress,0);
+            else if(  redisUtil.get(redis_key_Station_onLine_time+StationAddress)==null){
+                redisUtil.set(redis_key_Station_onLine_time+StationAddress,time);
+                redisUtil.set(redis_key_Station_onLine_time_count+StationAddress,0);
             }
-             gateway.setOnline(1);
-            gateway.setOnline_txt("在线");
-            gateway.setLasttime(time);
-            redisUtil.set(redis_key_gateway + gatewayAddress,gateway);
-            Gateway_sql gateway_sql=new Gateway_sql();
-            gateway_sql.updateGateway(gatewayMapper,gateway);
+             Station.setOnline(1);
+            Station.setOnline_txt("在线");
+            Station.setLasttime(time);
+            redisUtil.set(redis_key_Station + StationAddress,Station);
+            Station_sql Station_sql=new Station_sql();
+            Station_sql.updateStation(StationMapper,Station);
 
         }catch (Exception e){
             System.out.println("json格式不对=" + data);
             return;
         }
-        gateway.setPub_topic(topic);
+        Station.setPub_topic(topic);
         if(topic.contains("_")){
-            gateway.setSub_topic(topic.split("_")[0]+"_sub");
+            Station.setSub_topic(topic.split("_")[0]+"_sub");
         }else{
-            gateway.setSub_topic("GwData");
+            Station.setSub_topic("GwData");
         }
         Object object=null;
       // try {
@@ -128,51 +128,51 @@ public class MessageCallback implements MqttCallback {
        }
         String className=  object.getClass().getSimpleName();
 
-        Gateway_sql gateway_sql;
+        Station_sql Station_sql;
        // System.out.println("ClassnMame="+className);
         switch (className){
             case Constant.Scan_report:
                 String Gaddress = ((Scan_report<Scan_report_data>) object).getGw_addr();
                 try {
-                    gateway = (Gateway) redisUtil.get(redis_key_gateway + Gaddress);
+                    Station = (Station) redisUtil.get(redis_key_Station + Gaddress);
                  //   System.out.println("尝试执行转发");
-                    RabbitMessage rabbitMessage=new RabbitMessage(gateway.getProject_key(),data);
+                    RabbitMessage rabbitMessage=new RabbitMessage(Station.getProject_key(),data);
                     directExchangeProducer.send(rabbitMessage.toString(),transpond);
                     //System.out.println("第一个="+((Scan_report<Scan_report_data>) object).getData().getDev_infos()[0].getAddr());
                     for (Scan_report_data_info scanReportDataInfo : ((Scan_report<Scan_report_data>) object).getData().getDev_infos()) {
-                        Gateway_devices gateways=null;
+                        Station_devices Stations=null;
                         String json=null;
                         try {
-                            json = (String) redisUtil.get(redis_key_device_gateways + scanReportDataInfo.getAddr());
+                            json = (String) redisUtil.get(redis_key_device_Stations + scanReportDataInfo.getAddr());
                         }catch (Exception e){
                             System.out.println("法国红酒封口的"+e.getMessage());
                         }
                         if (json == null) {
-                            gateways=new Gateway_devices();
-                            ArrayList<Gateway_device> gatewayDevices=new ArrayList<>();
-                            gateways.setGatewayDevices(gatewayDevices);
+                            Stations=new Station_devices();
+                            ArrayList<Station_device> StationDevices=new ArrayList<>();
+                            Stations.setStationDevices(StationDevices);
                         } else {
                          try {
-                             gateways=new Gson().fromJson(json,Gateway_devices.class);
-                             if (gateways.getGatewayDevices().size()>= 10) {
-                                 gateways.getGatewayDevices().remove(0);
+                             Stations=new Gson().fromJson(json,Station_devices.class);
+                             if (Stations.getStationDevices().size()>= 10) {
+                                 Stations.getStationDevices().remove(0);
                              }
                          }catch (Exception e){
                          }
                         }
                         try {
-                            if(gateway!=null){
+                            if(Station!=null){
 
-                                gateways.getGatewayDevices().add(new Gateway_device(gateway.getAddress(), scanReportDataInfo.getAddr(), scanReportDataInfo.getRssi(), gateway.getSub_topic(), gateway.getPub_topic(),gateway.getX(),gateway.getY(),gateway.getName()));
-                             //    System.out.println("  X="+gateway.getX()+"缓存的设备网关="+gateways.toString());
-                                redisUtil.set(redis_key_device_gateways + scanReportDataInfo.getAddr(), gateways.toString());
+                                Stations.getStationDevices().add(new Station_device(Station.getAddress(), scanReportDataInfo.getAddr(), scanReportDataInfo.getRssi(), Station.getSub_topic(), Station.getPub_topic(),Station.getX(),Station.getY(),Station.getName()));
+                             //    System.out.println("  X="+Station.getX()+"缓存的设备网关="+Stations.toString());
+                                redisUtil.set(redis_key_device_Stations + scanReportDataInfo.getAddr(), Stations.toString());
                             }
                         }catch (Exception e){
                             System.out.println("wewe"+e.getMessage());
                         }
                     }
 
-                    com.kunlun.firmwaresystem.gatewayJson.type_scan_report.Scan_report scan_report=((Scan_report<Scan_report_data>) object);
+                    com.kunlun.firmwaresystem.StationJson.type_scan_report.Scan_report scan_report=((Scan_report<Scan_report_data>) object);
                     Scan_report_data scan_report_data=(Scan_report_data)scan_report.getData();
                     String type=scan_report_data.getReport_type();
                     if(type.equals("stuff_card")){
@@ -216,7 +216,7 @@ public class MessageCallback implements MqttCallback {
                                         beacon.setMajor(device.getIbcn_major());
                                         beacon.setUuid(device.getIbcn_uuid());
                                         beacon.setMinor(device.getIbcn_minor());
-                                        map.add(new Record(device.getAddr(), beaconsMap.get(device.getAddr()).getName(), gatewayAddress, gateway.getName(), device.getRssi(), beacon));
+                                        map.add(new Record(device.getAddr(), beaconsMap.get(device.getAddr()).getName(), StationAddress, Station.getName(), device.getRssi(), beacon));
                                     }
                                 }
                                 else if(device.getAdv_raw()!=null&device.getAdv_raw().contains("4C4BFFF2")){
@@ -236,7 +236,7 @@ public class MessageCallback implements MqttCallback {
                                         wordCard_a.setSos(sos);
                                         wordCard_a.setRun(run);
                                       //  System.out.println(wordCard_a.getMac()+"SOS="+sos+" 运动="+run);
-                                        map.add(new Record(device.getAddr(), wordcard_aMap.get(device.getAddr()).getName(), gatewayAddress, gateway.getName(), device.getRssi(), wordCard_a));
+                                        map.add(new Record(device.getAddr(), wordcard_aMap.get(device.getAddr()).getName(), StationAddress, Station.getName(), device.getRssi(), wordCard_a));
                                     }else{
                                         System.out.println("工卡内容为空");
                                     }
@@ -266,7 +266,7 @@ public class MessageCallback implements MqttCallback {
                                         }
                                        }
                                    }
-                                   map.add(new Record(device.getAddr(),beaconsMap.get(device.getAddr()).getName(),gatewayAddress,gateway.getName(),device.getRssi(),new Beacon(device.getAddr(),device.getIbcn_uuid(),device.getIbcn_major(),device.getIbcn_minor(),device.getIbcn_rssi_at_1m()),device.getSrp_raw()));
+                                   map.add(new Record(device.getAddr(),beaconsMap.get(device.getAddr()).getName(),StationAddress,Station.getName(),device.getRssi(),new Beacon(device.getAddr(),device.getIbcn_uuid(),device.getIbcn_major(),device.getIbcn_minor(),device.getIbcn_rssi_at_1m()),device.getSrp_raw()));
                                    redisUtil.set(redis_key_tag_map+device.getAddr(),map);
                                 }
                             }
@@ -296,7 +296,7 @@ public class MessageCallback implements MqttCallback {
 
             break;
             case Constant.ConnectExecute:
-                redisUtil.set("sendToGateway_id="+ ((ConnectExecute<ConnectExecuteDetail>)object).getData().getMsgId(),((ConnectExecute<ConnectExecuteDetail>)object).getData().isResult());
+                redisUtil.set("sendToStation_id="+ ((ConnectExecute<ConnectExecuteDetail>)object).getData().getMsgId(),((ConnectExecute<ConnectExecuteDetail>)object).getData().isResult());
                 //  Util.add_user_device_one();
                 break;
             case Constant.ConnectState:
@@ -312,66 +312,66 @@ public class MessageCallback implements MqttCallback {
             case Constant.Scan_filter:
                // System.out.println("进入两次");
                 //取出网关
-                gateway = (Gateway) redisUtil.get(redis_key_gateway + ((Scan_filter )object).getGw_addr());
+                Station = (Station) redisUtil.get(redis_key_Station + ((Scan_filter )object).getGw_addr());
                // System.out.println("缓存");
-                gateway.Filter_name1(((Scan_filter )object).getData().getFilter_name());
-                gateway.Filter_ibeacon1(((Scan_filter )object).getData().isFilter_beacon_b());
-                gateway.Filter_companyId1(((Scan_filter )object).getData().getFilter_comp_ids());
-                gateway.setFilter_rssi(((Scan_filter )object).getData().getFilter_rssi()+"");
-                gateway.setFilter_uuid(((Scan_filter )object).getData().getFilter_uuid());
+                Station.Filter_name1(((Scan_filter )object).getData().getFilter_name());
+                Station.Filter_ibeacon1(((Scan_filter )object).getData().isFilter_beacon_b());
+                Station.Filter_companyId1(((Scan_filter )object).getData().getFilter_comp_ids());
+                Station.setFilter_rssi(((Scan_filter )object).getData().getFilter_rssi()+"");
+                Station.setFilter_uuid(((Scan_filter )object).getData().getFilter_uuid());
                // System.out.println("过滤的UUID==="+((Scan_filter )object).getData().getFilter_uuid());
                 //更新后再次缓存
-                redisUtil.set(redis_key_gateway + ((Scan_filter )object).getGw_addr(),gateway);
+                redisUtil.set(redis_key_Station + ((Scan_filter )object).getGw_addr(),Station);
                 //存到数据库 同步
-                 gateway_sql=new Gateway_sql();
-                gateway_sql.updateGateway(gatewayMapper,gateway);
+                 Station_sql=new Station_sql();
+                Station_sql.updateStation(StationMapper,Station);
                break ;
             case Constant.Scan_params:
-                 gateway = (Gateway) redisUtil.get(redis_key_gateway + ((Scan_params )object).getGw_addr());
-                gateway.Scan_out1(((Scan_params)object).getData().isReport_onoff());
-                gateway.Report_type1(((Scan_params)object).getData().isRequest_onoff());
-                gateway.Scan_interval(((Scan_params)object).getData().getReport_interval());
+                 Station = (Station) redisUtil.get(redis_key_Station + ((Scan_params )object).getGw_addr());
+                Station.Scan_out1(((Scan_params)object).getData().isReport_onoff());
+                Station.Report_type1(((Scan_params)object).getData().isRequest_onoff());
+                Station.Scan_interval(((Scan_params)object).getData().getReport_interval());
                 //更新后再次缓存
-                redisUtil.set(redis_key_gateway + ((Scan_params )object).getGw_addr(),gateway);
+                redisUtil.set(redis_key_Station + ((Scan_params )object).getGw_addr(),Station);
                 //存到数据库 同步
-                 gateway_sql=new Gateway_sql();
-                gateway_sql.updateGateway(gatewayMapper,gateway);
+                 Station_sql=new Station_sql();
+                Station_sql.updateStation(StationMapper,Station);
                 break;
             case Constant.Adv_params:
-                 gateway=(Gateway)redisUtil.get(redis_key_gateway+((Adv_params)object).getGw_addr());
-                gateway.Broadcast1(((Adv_params)object).getData().isAdv_onoff());
-                redisUtil.set(redis_key_gateway + ((Adv_params )object).getGw_addr(),gateway);
-                 gateway_sql=new Gateway_sql();
-                gateway_sql.updateGateway(gatewayMapper,gateway);
+                 Station=(Station)redisUtil.get(redis_key_Station+((Adv_params)object).getGw_addr());
+                Station.Broadcast1(((Adv_params)object).getData().isAdv_onoff());
+                redisUtil.set(redis_key_Station + ((Adv_params )object).getGw_addr(),Station);
+                 Station_sql=new Station_sql();
+                Station_sql.updateStation(StationMapper,Station);
                 break;
             case Constant.WifiVersion:
-                gateway=(Gateway)redisUtil.get(redis_key_gateway+((WifiVersion)object).getGw_addr());
-                gateway.setWifi_version(((WifiVersion<WifiVersionDetail>)object).getData().getVersion());
-                redisUtil.set(redis_key_gateway + ((WifiVersion )object).getGw_addr(),gateway);
-                 gateway_sql=new Gateway_sql();
-                gateway_sql.updateGateway(gatewayMapper,gateway);
+                Station=(Station)redisUtil.get(redis_key_Station+((WifiVersion)object).getGw_addr());
+                Station.setWifi_version(((WifiVersion<WifiVersionDetail>)object).getData().getVersion());
+                redisUtil.set(redis_key_Station + ((WifiVersion )object).getGw_addr(),Station);
+                 Station_sql=new Station_sql();
+                Station_sql.updateStation(StationMapper,Station);
                 break;
             case Constant.BleVersion:
-                gateway=(Gateway)redisUtil.get(redis_key_gateway+((BleVersion)object).getGw_addr());
-                gateway.setBle_version(((BleVersion<BleVersionDetail>)object).getData().getVersion());
-                redisUtil.set(redis_key_gateway + ((BleVersion )object).getGw_addr(),gateway);
-                gateway_sql=new Gateway_sql();
-                gateway_sql.updateGateway(gatewayMapper,gateway);
+                Station=(Station)redisUtil.get(redis_key_Station+((BleVersion)object).getGw_addr());
+                Station.setBle_version(((BleVersion<BleVersionDetail>)object).getData().getVersion());
+                redisUtil.set(redis_key_Station + ((BleVersion )object).getGw_addr(),Station);
+                Station_sql=new Station_sql();
+                Station_sql.updateStation(StationMapper,Station);
                 break;
             case Constant.App_Server:
-                gateway=(Gateway)redisUtil.get(redis_key_gateway+((App_Server)object).getGw_addr());
-                if(gateway==null){
+                Station=(Station)redisUtil.get(redis_key_Station+((App_Server)object).getGw_addr());
+                if(Station==null){
                     return;
                 }
-                gateway.setSub_topic(((App_Server) object).getData().getSub());
-                gateway.setIp((((App_Server) object).getData().getHost()));
-                gateway.setPub_topic(((App_Server) object).getData().getPub());
-                redisUtil.set(redis_key_gateway + ((App_Server )object).getGw_addr(),gateway);
-                gateway_sql=new Gateway_sql();
-                gateway_sql.updateGateway(gatewayMapper,gateway);
+                Station.setSub_topic(((App_Server) object).getData().getSub());
+                Station.setIp((((App_Server) object).getData().getHost()));
+                Station.setPub_topic(((App_Server) object).getData().getPub());
+                redisUtil.set(redis_key_Station + ((App_Server )object).getGw_addr(),Station);
+                Station_sql=new Station_sql();
+                Station_sql.updateStation(StationMapper,Station);
                 break;
         }
-      //  System.out.println(gatewayHand.getPkt_type());
+      //  System.out.println(StationHand.getPkt_type());
     }
 //解析全部的获取状态
     private Object analysisResponse(JSONObject jsonRaw){
@@ -473,10 +473,10 @@ public class MessageCallback implements MqttCallback {
                     HeartState<HeartDetail> heartState=gson.fromJson(jsonRaw.toString(),type);
                     System.out.println(heartState.getGw_addr()+"心跳状态=" + heartState.getData().getTicks_cnt());
 
-                   Gateway gateway=(Gateway) redisUtil.get(redis_key_gateway+heartState.getGw_addr());
-                   String synStr=(String)redisUtil.get(redis_key_project_sys+gateway.getAddress());
+                   Station Station=(Station) redisUtil.get(redis_key_Station+heartState.getGw_addr());
+                   String synStr=(String)redisUtil.get(redis_key_project_sys+Station.getAddress());
                    System.out.println("当前心跳="+heartState.getData().getTicks_cnt());
-                    Integer heart=(Integer) redisUtil.get(redis_key_project_heart+gateway.getAddress());
+                    Integer heart=(Integer) redisUtil.get(redis_key_project_heart+Station.getAddress());
                     if(heart!=null){
                         System.out.println("记录心跳心跳="+heart.intValue());
                     }
@@ -486,10 +486,10 @@ public class MessageCallback implements MqttCallback {
                             return heartState;
                         }
                     }
-                    Gateway_config project=projectMap.get(gateway.getProject_key());
-                   if(gateway!=null){
-                       redisUtil.set(redis_key_gateway+heartState.getGw_addr(),gateway);
-                      // System.out.println("网关配置="+gateway.toString());
+                    Station_config project=projectMap.get(Station.getProject_key());
+                   if(Station!=null){
+                       redisUtil.set(redis_key_Station+heartState.getGw_addr(),Station);
+                      // System.out.println("网关配置="+Station.toString());
                       // System.out.println("项目配置="+project.toString());
                        if(project!=null){
                            List<String> cmds=new ArrayList<>();
@@ -498,131 +498,131 @@ public class MessageCallback implements MqttCallback {
                      //      System.out.println("scan_filter_comp_ids");
 
 
-                            if(  isChange(project.getFilter_companyId(),gateway.getFilter_companyId())){
-                                cmd= getParamsJson("scan_filter_comp_ids",project,gateway.getAddress(),null,null);
+                            if(  isChange(project.getFilter_companyId(),Station.getFilter_companyId())){
+                                cmd= getParamsJson("scan_filter_comp_ids",project,Station.getAddress(),null,null);
                                 cmds.add(cmd);
                             }
-                           if(  isChange(project.getFilter_rssi(),gateway.getFilter_rssi())){
-                               cmd= getParamsJson("scan_filter_comp_ids",project,gateway.getAddress(),null,null);
+                           if(  isChange(project.getFilter_rssi(),Station.getFilter_rssi())){
+                               cmd= getParamsJson("scan_filter_comp_ids",project,Station.getAddress(),null,null);
                                cmds.add(cmd);
                            }
-                           if(  isChange(project.getFilter_rssi(),gateway.getFilter_rssi())){
-                               cmd= getParamsJson("scan_filter_rssi",project,gateway.getAddress(),null,null);
+                           if(  isChange(project.getFilter_rssi(),Station.getFilter_rssi())){
+                               cmd= getParamsJson("scan_filter_rssi",project,Station.getAddress(),null,null);
                                cmds.add(cmd);
                            }
-                          *//*  if(!project.getFilter_companyId().equals(gateway.getFilter_companyId())){
+                          *//*  if(!project.getFilter_companyId().equals(Station.getFilter_companyId())){
                                 isChange();
-                                cmd= getParamsJson("scan_filter_comp_ids",project,gateway.getAddress(),null,null);
+                                cmd= getParamsJson("scan_filter_comp_ids",project,Station.getAddress(),null,null);
                             }*//*
          *//*   System.out.println("scan_filter_rssi");
-                            if (!project.getFilter_rssi().equals(gateway.getFilter_rssi())){
+                            if (!project.getFilter_rssi().equals(Station.getFilter_rssi())){
 
-                                cmd= getParamsJson("scan_filter_rssi",project,gateway.getAddress(),null,null);
+                                cmd= getParamsJson("scan_filter_rssi",project,Station.getAddress(),null,null);
                             }*//*
 
-                           if(  isChange(project.getFilter_uuid(),gateway.getFilter_uuid())){
-                               cmd= getParamsJson("scan_filter_ibcn_uuid",project,gateway.getAddress(),null,null);
+                           if(  isChange(project.getFilter_uuid(),Station.getFilter_uuid())){
+                               cmd= getParamsJson("scan_filter_ibcn_uuid",project,Station.getAddress(),null,null);
                                cmds.add(cmd);
                            }
                         *//*   System.out.println("scan_filter_ibcn_uuid");
-                            if(!project.getFilter_uuid().equals(gateway.getFilter_uuid())){
-                                cmd= getParamsJson("scan_filter_ibcn_uuid",project,gateway.getAddress(),null,null);
+                            if(!project.getFilter_uuid().equals(Station.getFilter_uuid())){
+                                cmd= getParamsJson("scan_filter_ibcn_uuid",project,Station.getAddress(),null,null);
                             }*//*
 
                          //  System.out.println("adv_onoff");
-                            if(project.getBroadcast()!=gateway.getBroadcast()){
-                                cmd= getParamsJson("adv_onoff",project,gateway.getAddress(),null,null);
+                            if(project.getBroadcast()!=Station.getBroadcast()){
+                                cmd= getParamsJson("adv_onoff",project,Station.getAddress(),null,null);
                                 cmds.add(cmd);
                             }
                          //  System.out.println("scan_filter_ibcn_dev");
-                            if(project.getFilter_ibeacon()!=gateway.getFilter_ibeacon()){
-                                cmd= getParamsJson("scan_filter_ibcn_dev",project,gateway.getAddress(),null,null);
+                            if(project.getFilter_ibeacon()!=Station.getFilter_ibeacon()){
+                                cmd= getParamsJson("scan_filter_ibcn_dev",project,Station.getAddress(),null,null);
                                 cmds.add(cmd);
                             }
                          //  System.out.println("scan_request_onoff");
-                            if(project.getReport_type()!=gateway.getReport_type()){
-                                cmd= getParamsJson("scan_request_onoff",project,gateway.getAddress(),null,null);
+                            if(project.getReport_type()!=Station.getReport_type()){
+                                cmd= getParamsJson("scan_request_onoff",project,Station.getAddress(),null,null);
                                 cmds.add(cmd);
                             }
                          //  System.out.println("scan_report_onoff");
 
-                           if(  isChange(project.getFilter_name(),gateway.getFilter_name())){
-                               cmd= getParamsJson("scan_filter_name",project,gateway.getAddress(),null,null);
+                           if(  isChange(project.getFilter_name(),Station.getFilter_name())){
+                               cmd= getParamsJson("scan_filter_name",project,Station.getAddress(),null,null);
                                cmds.add(cmd);
                            }
                         *//*   System.out.println("scan_filter_name");
-                            if(!project.getFilter_name().equals(gateway.getFilter_name())){
-                                cmd= getParamsJson("scan_filter_name",project,gateway.getAddress(),null,null);
+                            if(!project.getFilter_name().equals(Station.getFilter_name())){
+                                cmd= getParamsJson("scan_filter_name",project,Station.getAddress(),null,null);
                             }*//*
                          //  System.out.println("scan_report_interval"+project.getScan_interval());
-                          // System.out.println("scan_report_interval"+gateway.getScan_interval());
-                            if(project.getScan_interval()!=gateway.getScan_interval()){
-                                cmd= getParamsJson("scan_report_interval",project,gateway.getAddress(),null,null);
+                          // System.out.println("scan_report_interval"+Station.getScan_interval());
+                            if(project.getScan_interval()!=Station.getScan_interval()){
+                                cmd= getParamsJson("scan_report_interval",project,Station.getAddress(),null,null);
                                 cmds.add(cmd);
                             }
                           //  System.out.println("setTopic");
-                          *//* if(!project.getSub_topic().equals(gateway.getSub_topic())){
-                               cmd= getParamsJson("setTopic",project,gateway.getAddress(),null,null);
+                          *//* if(!project.getSub_topic().equals(Station.getSub_topic())){
+                               cmd= getParamsJson("setTopic",project,Station.getAddress(),null,null);
                            }*//*
-                           System.out.println(project.getSub_topic()+"    " +gateway.getSub_topic());
-                           if(  isChange(project.getSub_topic(),gateway.getSub_topic())){
-                                if(!gateway.getSub_topic().contains(project.getSub_topic())){
-                                    cmd= getParamsJson("setTopic",project,gateway.getAddress(),null,null);
+                           System.out.println(project.getSub_topic()+"    " +Station.getSub_topic());
+                           if(  isChange(project.getSub_topic(),Station.getSub_topic())){
+                                if(!Station.getSub_topic().contains(project.getSub_topic())){
+                                    cmd= getParamsJson("setTopic",project,Station.getAddress(),null,null);
                                     cmds.add(cmd);
                                 }
                            }else{
 
                            }
                           //  System.out.println("bleVersion"+project.getBle_version());
-                        //   System.out.println("bleVersion"+gateway.getBle_version());
-                           if(  isChange(project.getBle_version(),gateway.getBle_version())){
-                               if(gateway.getBle_version()!=null&&!gateway.getBle_version().equals(""))
+                        //   System.out.println("bleVersion"+Station.getBle_version());
+                           if(  isChange(project.getBle_version(),Station.getBle_version())){
+                               if(Station.getBle_version()!=null&&!Station.getBle_version().equals(""))
                                {
-                                   redisUtil.set(redis_key_project_heart + gateway.getAddress(), heartState.getData().getTicks_cnt());
+                                   redisUtil.set(redis_key_project_heart + Station.getAddress(), heartState.getData().getTicks_cnt());
                                    Ble ble = new Ble();
                                    // System.out.println("bleVersionaaa");
                                    Ble_firmware ble_firmware = ble.getVersionByKey(bleMapper, project.getCustomer_key(), project.getBle_version());
-                                   cmd = getParamsJson("bleVersion", project, gateway.getAddress(), ble_firmware, null);
+                                   cmd = getParamsJson("bleVersion", project, Station.getAddress(), ble_firmware, null);
                                    cmds.add(cmd);
                                }
                            }
                           *//*
-                            if((project.getBle_version()!=null&&gateway.getBle_version()==null)||(project.getBle_version()!=null&&!gateway.getBle_version().equals(project.getBle_version()))){
+                            if((project.getBle_version()!=null&&Station.getBle_version()==null)||(project.getBle_version()!=null&&!Station.getBle_version().equals(project.getBle_version()))){
                                 Ble ble=new Ble();
                                 System.out.println("bleVersionaaa");
                                 Ble_firmware ble_firmware= ble.getVersionByKey(bleMapper,project.getCustomer_key(),project.getBle_version());
                                 System.out.println("bleVersionbbbb");
-                                cmd= getParamsJson("bleVersion",project,gateway.getAddress(),ble_firmware,null);
+                                cmd= getParamsJson("bleVersion",project,Station.getAddress(),ble_firmware,null);
                                 System.out.println("bleVersioncccc");
                             }*//*
                         //   System.out.println("WifiVersion");
-                           if(  isChange(project.getWifi_version(),gateway.getWifi_version())){
-                               if(gateway.getWifi_version()!=null&&!gateway.getWifi_version().equals("")){
-                                   redisUtil.set(redis_key_project_heart+gateway.getAddress(),heartState.getData().getTicks_cnt());
+                           if(  isChange(project.getWifi_version(),Station.getWifi_version())){
+                               if(Station.getWifi_version()!=null&&!Station.getWifi_version().equals("")){
+                                   redisUtil.set(redis_key_project_heart+Station.getAddress(),heartState.getData().getTicks_cnt());
                                    Wifi wifi=new Wifi();
                                    Wifi_firmware wifi_firmware= wifi.getVersionByKey(wifiMapper,project.getCustomer_key(),project.getWifi_version());
-                                   cmd= getParamsJson("wifiVersion",project,gateway.getAddress(),null,wifi_firmware);
+                                   cmd= getParamsJson("wifiVersion",project,Station.getAddress(),null,wifi_firmware);
                                    cmds.add(cmd);
                                }
                            }
-                           if(project.getScan_out()!=gateway.getScan_out()){
-                               cmd= getParamsJson("scan_report_onoff",project,gateway.getAddress(),null,null);
+                           if(project.getScan_out()!=Station.getScan_out()){
+                               cmd= getParamsJson("scan_report_onoff",project,Station.getAddress(),null,null);
                                cmds.add(cmd);
                            }
                        *//*    System.out.println("wifiVersion");
-                           if((project.getWifi_version()!=null&&gateway.getWifi_version()==null)||(project.getWifi_version()!=null&&!gateway.getWifi_version().equals(project.getWifi_version()))){
+                           if((project.getWifi_version()!=null&&Station.getWifi_version()==null)||(project.getWifi_version()!=null&&!Station.getWifi_version().equals(project.getWifi_version()))){
                                Wifi wifi=new Wifi();
                                Wifi_firmware wifi_firmware= wifi.getVersionByKey(wifiMapper,project.getCustomer_key(),project.getWifi_version());
-                               cmd= getParamsJson("wifiVersion",project,gateway.getAddress(),null,wifi_firmware);
+                               cmd= getParamsJson("wifiVersion",project,Station.getAddress(),null,wifi_firmware);
                            }*//*
                             //当心跳包来的时候，检查网关与项目的配置，不一致的话就更新网关
                             if( cmds.size()>0){
                                 for(String cmddata:cmds){
-                                    String topic=gateway.getSub_topic();
-                                    if(!topic.equals("SrvData")&&!topic.contains(gateway.getAddress())){
-                                        topic=topic+"/"+gateway.getAddress();
+                                    String topic=Station.getSub_topic();
+                                    if(!topic.equals("SrvData")&&!topic.contains(Station.getAddress())){
+                                        topic=topic+"/"+Station.getAddress();
                                     }
-                                    redisUtil.set(redis_key_project_sys+gateway.getAddress(),cmddata);
+                                    redisUtil.set(redis_key_project_sys+Station.getAddress(),cmddata);
                                     System.out.println("发送的指令="+cmddata+"==="+topic);
                                     RabbitMessage rabbitMessage=new RabbitMessage(topic,cmddata);
                                     directExchangeProducer.send(rabbitMessage.toString(),go_to_connect);
@@ -630,8 +630,8 @@ public class MessageCallback implements MqttCallback {
 
                             }
                             else{
-                                redisUtil.set(redis_key_project_sys+gateway.getAddress(),"ok");
-                                System.out.println("网关:"+gateway.getName()+"同步完成了");
+                                redisUtil.set(redis_key_project_sys+Station.getAddress(),"ok");
+                                System.out.println("网关:"+Station.getName()+"同步完成了");
                             }
                        }
                        else{
@@ -685,7 +685,7 @@ private Scan_report analysisScanReport(String jsonRaw){
     }
 
 
-    private String getParamsJson(String type, Gateway_config project, String address, Ble_firmware ble_firmware, Wifi_firmware wifi_firmware){
+    private String getParamsJson(String type, Station_config project, String address, Ble_firmware ble_firmware, Wifi_firmware wifi_firmware){
         String cmd="";
         switch (type){
             case "scan_report_interval":

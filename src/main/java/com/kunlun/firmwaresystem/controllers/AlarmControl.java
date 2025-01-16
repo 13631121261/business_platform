@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.GatewayMap;
+import static com.kunlun.firmwaresystem.NewSystemApplication.StationMap;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -127,7 +127,8 @@ public class AlarmControl {
     }
     @RequestMapping(value = "/userApi/Alarm/del", method = RequestMethod.POST, produces = "application/json")
     public JSONObject deleteAlarm(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
-
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
         List<Integer> id=new ArrayList<Integer>();
 
         for(Object ids:jsonArray){
@@ -138,12 +139,12 @@ public class AlarmControl {
         if(id.size()>0){
             int status = alarmMapper.deleteBatchIds(id);
             if(status!=-1){
-                return JsonConfig.getJsonObj(CODE_OK,null);
+                return JsonConfig.getJsonObj(CODE_OK,null,lang);
             }else{
-                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null);
+                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
             }
         }else{
-            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null);
+            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
         }
     }
     private Customer getCustomer(HttpServletRequest request) {

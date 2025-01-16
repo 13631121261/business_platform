@@ -1,13 +1,13 @@
 package com.kunlun.firmwaresystem.entity.device;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.kunlun.firmwaresystem.entity.Beacon;
+import com.kunlun.firmwaresystem.entity.Tag;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Devicep {
-    int fence_id;
+
+    String fence_id;
     int id;
     String name;
     String photo;
@@ -18,17 +18,17 @@ public class Devicep {
     int isopen;
     String userkey;
     String sn;
-    int type_id;
+    String type;
     @TableField(exist = false)
-    String type_name;
+    String fence_name;
     @TableField(exist = false)
     int sos;
     @TableField(exist = false)
     int online;
     @TableField(exist = false)
-    String gateway_mac;
+    String Station_mac;
     @TableField(exist = false)
-    String gateway_name;
+    String Station_name;
     @TableField(exist = false)
     String point_name;
     @TableField(exist = false)
@@ -36,6 +36,8 @@ public class Devicep {
 
     @TableField(exist = false)
     String map_name;
+    @TableField(exist = false)
+    String map_key;
     int open_run;
     String project_key;
     String idcard;
@@ -43,10 +45,9 @@ public class Devicep {
     String atime,btime;
     String customer_key;
     double bt;
-    String code_sn;
-    String batch;
-    int outbound;
-    BarnType barnType;
+
+
+
     int is_area;
     int area_id;
     @TableField(exist = false)
@@ -63,19 +64,18 @@ public class Devicep {
     String b_area_name;
     @TableField(exist = false)
     int area_sos;
-    String model;
-    String brand;
+
     public Devicep() {
 
     }
 
-    public Devicep(int type_id, String name,
+    public Devicep(String type, String name,
                    String photo,
                    String bind_mac,
                    int isbind,
                    int isopen,
                    String userkey,
-                   String sn   , int outbound, String customer_key,String idcard,String person_name) {
+                   String sn   , String customer_key,String idcard,String person_name) {
         SimpleDateFormat sp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         this.createtime = System.currentTimeMillis()/1000;
         this.bind_mac = bind_mac;
@@ -85,23 +85,39 @@ public class Devicep {
         this.userkey = userkey;
         this.sn = sn;
         this.name = name;
-        this.type_id = type_id;
-        this.outbound=outbound;
+        this.type=type;
+
         this.customer_key=customer_key;
         this.idcard=idcard;
         this.person_name=person_name;
     }
 
-    public void setGateway_name(String gateway_name) {
-        this.gateway_name = gateway_name;
+    public void setStation_name(String Station_name) {
+        this.Station_name = Station_name;
     }
 
-    public String getGateway_name() {
-        return gateway_name;
+    public String getStation_name() {
+        return Station_name;
     }
 
     public void setMap_name(String map_name) {
         this.map_name = map_name;
+    }
+
+    public void setMap_key(String map_key) {
+        this.map_key = map_key;
+    }
+
+    public String getMap_key() {
+        return map_key;
+    }
+
+    public void setFence_name(String fence_name) {
+        this.fence_name = fence_name;
+    }
+
+    public String getFence_name() {
+        return fence_name;
     }
 
     public String getMap_name() {
@@ -116,29 +132,17 @@ public class Devicep {
         return area_sos;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
 
-    public String getBrand() {
-        return brand;
-    }
 
-    public void setFence_id(int fence_id) {
+    public void setFence_id(String fence_id) {
         this.fence_id = fence_id;
     }
 
-    public int getFence_id() {
+    public String getFence_id() {
         return fence_id;
     }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
 
-    public String getModel() {
-        return model;
-    }
 
     public void setArea_name(String area_name) {
         this.area_name = area_name;
@@ -164,13 +168,7 @@ public class Devicep {
         return b_area_name;
     }
 
-    public void setBarnType(BarnType barnType) {
-        this.barnType = barnType;
-    }
 
-    public BarnType getBarnType() {
-        return barnType;
-    }
 
     public void setY(double y) {
         this.y = y;
@@ -212,12 +210,12 @@ public class Devicep {
         this.customer_key = customer_key;
     }
 
-    public int getType_id() {
-        return type_id;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public void setType_id(int type_id) {
-        this.type_id = type_id;
+    public String getType() {
+        return type;
     }
 
     public int getId() {
@@ -300,13 +298,7 @@ public class Devicep {
         this.sn = sn;
     }
 
-    public void setType_name(String type_name) {
-        this.type_name = type_name;
-    }
 
-    public String getType_name() {
-        return type_name;
-    }
 
     public void setOnline(int online) {
         this.online = online;
@@ -328,8 +320,8 @@ public class Devicep {
         this.point_name = point_name;
     }
 
-    public void setGateway_mac(String gateway_mac) {
-        this.gateway_mac = gateway_mac;
+    public void setStation_mac(String Station_mac) {
+        this.Station_mac = Station_mac;
     }
 
     public void setRssi(int rssi) {
@@ -344,8 +336,8 @@ public class Devicep {
         return point_name;
     }
 
-    public String getGateway_mac() {
-        return gateway_mac;
+    public String getStation_mac() {
+        return Station_mac;
     }
 
     public int getRssi() {
@@ -356,13 +348,6 @@ public class Devicep {
         return bt;
     }
 
-    public void setOutbound(int outbound) {
-        this.outbound = outbound;
-    }
-
-    public int getOutbound() {
-        return outbound;
-    }
 
     public void setAtime(String atime) {
         this.atime = atime;
@@ -400,25 +385,15 @@ public class Devicep {
         this.project_key = project_key;
     }
 
-    public void setCode_sn(String code_sn) {
-        this.code_sn = code_sn;
-    }
 
-    public String getCode_sn() {
-        return code_sn;
-    }
+
+
 
     public String getProject_key() {
         return project_key;
     }
 
-    public void setBatch(String batch) {
-        this.batch = batch;
-    }
 
-    public String getBatch() {
-        return batch;
-    }
 
     public void setArea_id(int area_id) {
         this.area_id = area_id;
@@ -442,13 +417,13 @@ public class Devicep {
         this.bind_mac="";
         this.isopen=0;
         this.isbind=0;
-        this.gateway_mac="";
+        this.Station_mac="";
         this.point_name="";
     }
-    public void bind(Beacon beacon){
-        this.bt=beacon.getBt();
-        this.rssi=beacon.getRssi();
-        this.bind_mac=beacon.getMac();
+    public void bind(Tag tag){
+        this.bt= tag.getBt();
+        this.rssi= tag.getRssi();
+        this.bind_mac= tag.getMac();
         this.isopen=1;
         this.isbind=1;
     }
@@ -467,15 +442,16 @@ public class Devicep {
                 ", isopen=" + isopen +
                 ", userkey='" + userkey + '\'' +
                 ", sn='" + sn + '\'' +
-                ", type_id=" + type_id +
-                ", type_name='" + type_name + '\'' +
+                ", type='" + type + '\'' +
+                ", fence_name='" + fence_name + '\'' +
                 ", sos=" + sos +
                 ", online=" + online +
-                ", gateway_mac='" + gateway_mac + '\'' +
-                ", gateway_name='" + gateway_name + '\'' +
+                ", Station_mac='" + Station_mac + '\'' +
+                ", Station_name='" + Station_name + '\'' +
                 ", point_name='" + point_name + '\'' +
                 ", rssi=" + rssi +
                 ", map_name='" + map_name + '\'' +
+                ", map_key='" + map_key + '\'' +
                 ", open_run=" + open_run +
                 ", project_key='" + project_key + '\'' +
                 ", idcard='" + idcard + '\'' +
@@ -484,10 +460,6 @@ public class Devicep {
                 ", btime='" + btime + '\'' +
                 ", customer_key='" + customer_key + '\'' +
                 ", bt=" + bt +
-                ", code_sn='" + code_sn + '\'' +
-                ", batch='" + batch + '\'' +
-                ", outbound=" + outbound +
-                ", barnType=" + barnType +
                 ", is_area=" + is_area +
                 ", area_id=" + area_id +
                 ", x=" + x +
@@ -497,8 +469,6 @@ public class Devicep {
                 ", b_area_id=" + b_area_id +
                 ", b_area_name='" + b_area_name + '\'' +
                 ", area_sos=" + area_sos +
-                ", model='" + model + '\'' +
-                ", brand='" + brand + '\'' +
                 '}';
     }
 }

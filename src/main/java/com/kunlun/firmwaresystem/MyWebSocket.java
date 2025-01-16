@@ -65,7 +65,7 @@ public class MyWebSocket extends WebSocketServer {
     }
 
     public void sendData(String key, String msg) {
-        System.out.println("触发发送");
+      //  System.out.println("触发发送MyWebSocket");
         WebSocket webSocket = connectlist.get(key);
         if (webSocket != null && webSocket.isOpen()) {
             webSocket.send(msg);

@@ -37,12 +37,12 @@ public class DeviceTask {
 
     @Scheduled(cron = "*/60 * * * * ?")
     public void execute() throws Exception
-    {   runcount++;
+    {
+        runcount++;
         if (runcount > 10000) {
             runcount = 0;
         }
-        //
-    for(String key:check_sheetMap.keySet()){
+   /* for(String key:check_sheetMap.keySet()){
         long thisTime = System.currentTimeMillis()/1000;
         Date date=new Date(thisTime);
         int h=date.getHours();
@@ -74,10 +74,7 @@ public class DeviceTask {
                 if(!deviceP.getUserkey().equals(key)){
                     continue;
                 }
-                //出库的资产，不做判断
-                if(deviceP.getOutbound()==1){
-                    continue;
-                }
+
                 //不是这个账号下的设备，不在这里做判断
 
                 count++;
@@ -90,7 +87,7 @@ public class DeviceTask {
                         online++;
                     } else {
                         offline++;
-                        //     deviceOffline_sql.addDeviceOffline(deviceOfflineMapper,new Device_offline(deviceP.getSn(),deviceP.getName(),deviceP.getRssi(),deviceP.getBt(),deviceP.getBind_mac(),deviceP.getPhoto(),deviceP.getType_id(),deviceP.getPoint_name(),deviceP.getGateway_mac(),deviceP.getLasttime()));
+                        //     deviceOffline_sql.addDeviceOffline(deviceOfflineMapper,new Device_offline(deviceP.getSn(),deviceP.getName(),deviceP.getRssi(),deviceP.getBt(),deviceP.getBind_mac(),deviceP.getPhoto(),deviceP.getType_id(),deviceP.getPoint_name(),deviceP.getStation_mac(),deviceP.getLasttime()));
                     }
                     if (deviceP.getSos() == 1) {
                         sos_count++;
@@ -102,11 +99,9 @@ public class DeviceTask {
                     else{
                         check_countout++;
                     }
-
                 } else {
                     unbind++;
                 }
-
             }
             if(count==0){
                 return;
@@ -122,7 +117,7 @@ public class DeviceTask {
         else{
             System.out.println("等到"+stoptime+"在运行");
         }
-    }
+    }*/
 
     }
 
@@ -159,7 +154,7 @@ public class DeviceTask {
             cell=row.createCell(4);
             cell.setCellValue(customerMap.get(deviceP.getCustomer_key()).getNickname());
             cell=row.createCell(5);
-            cell.setCellValue(deviceP.getType_name());
+            cell.setCellValue(deviceP.getType());
             cell=row.createCell(6);
             if(deviceP.getSos()==1){
                 cell.setCellValue("触发报警");
@@ -179,7 +174,7 @@ public class DeviceTask {
             cell=row.createCell(10);
             cell.setCellValue(deviceP.getRssi());
             cell=row.createCell(11);
-            cell.setCellValue(deviceP.getGateway_mac());
+            cell.setCellValue(deviceP.getStation_mac());
             cell=row.createCell(12);
             cell.setCellValue(deviceP.getBt()+"V");
             cell=row.createCell(13);

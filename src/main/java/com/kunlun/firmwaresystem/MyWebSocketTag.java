@@ -7,12 +7,15 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MyWebSocketTag extends WebSocketServer {
     private static MyWebSocketTag webSocket;
     private Map<String, WebSocket> connectlist;
+    private List<String> keys;
 
     public static MyWebSocketTag getWebSocket() {
         if (webSocket == null) {
@@ -24,6 +27,7 @@ public class MyWebSocketTag extends WebSocketServer {
     private MyWebSocketTag(int port) {
         super(new InetSocketAddress(port));
         connectlist = new HashMap<>();
+        keys= new ArrayList<>();
     }
 
     @Override
@@ -43,6 +47,7 @@ public class MyWebSocketTag extends WebSocketServer {
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         System.out.println("断开连接" + webSocket.getResourceDescriptor());
         connectlist.remove(s);
+        keys.remove(s);
 
     }
     @Override
@@ -55,21 +60,28 @@ public class MyWebSocketTag extends WebSocketServer {
                 break;
             }
         }
-      //  webSocket.send("收到了");
+        System.out.println("返回数据");
+        keys.add(s);
         connectlist.put(s, webSocket);
     }
     @Override
     public void onError(WebSocket webSocket, Exception e) {
+        System.out.println("异常启动");
     }
     @Override
-    public void onStart() {
+    public void onStart() {      System.out.println("正常启动");
     }
-    public void sendData(String key, String msg) {
-    //   System.out.println("触发发送");
-        WebSocket webSocket = connectlist.get(key);
-        if (webSocket != null && webSocket.isOpen()) {
-            webSocket.send(msg);
-           // System.out.println("发送和");
+    public void sendData(String map_key, String msg) {
+    //   System.out.println("触发发送"+key);
+        for(String key:keys){
+            if(key.contains(map_key)){
+                WebSocket webSocket = connectlist.get(key);
+                if (webSocket != null && webSocket.isOpen()) {
+                    webSocket.send(msg);
+                  //  System.out.println("位置推送到网页");
+                }
+            }
         }
+
     }
 }

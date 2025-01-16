@@ -1,17 +1,13 @@
 package com.kunlun.firmwaresystem.controllers;
 
 import com.kunlun.firmwaresystem.entity.Customer;
-import com.kunlun.firmwaresystem.entity.Gateway_config;
 import com.kunlun.firmwaresystem.entity.Rules;
-import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.RulesMapper;
-import com.kunlun.firmwaresystem.sql.GatewayConfig_sql;
 import com.kunlun.firmwaresystem.sql.Rules_sql;
 import com.kunlun.firmwaresystem.util.RedisUtils;
 import net.sf.json.JSONObject;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;

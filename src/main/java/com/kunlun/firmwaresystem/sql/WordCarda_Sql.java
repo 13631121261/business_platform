@@ -28,7 +28,7 @@ public class WordCarda_Sql {
         List<Wordcard_a> wordcard_aList = wordCardaMapper.selectList(null);
         HashMap<String, Wordcard_a> wordCardAHashMap = new HashMap<>();
         for (Wordcard_a wordCard_a : wordcard_aList) {
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             wordCardAHashMap.put(wordCard_a.getMac(), wordCard_a);
         }
         return wordCardAHashMap;

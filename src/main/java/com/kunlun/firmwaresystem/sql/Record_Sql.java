@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kunlun.firmwaresystem.device.PageRecord;
 import com.kunlun.firmwaresystem.entity.Record;
-import com.kunlun.firmwaresystem.entity.Tag;
 import com.kunlun.firmwaresystem.mappers.RecordMapper;
 
 public class Record_Sql {
@@ -24,7 +23,7 @@ public class Record_Sql {
            List<Beacon> beacons = beaconMapper.selectList(null);
            HashMap<String,Beacon> beaconHashMap=new HashMap<>();
            for(Beacon beacon:beacons) {
-               //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+               //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
                beaconHashMap.put(beacon.getMac(),beacon);
            }
            return beaconHashMap;

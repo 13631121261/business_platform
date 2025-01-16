@@ -33,7 +33,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
     private LogsMapper logsMapper;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        System.out.println("handler="+handler);
+       // System.out.println("handler="+handler);
         Customer customer=null;
         String token = request.getHeader("batoken");
         if(token==null||token.equals("")){
@@ -77,7 +77,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
         for (String s : list) {
             String parameter = request.getParameter(s);
             if (StringUtils.isBlank(parameter)) {
-                String result = JsonConfig.getJson(JsonConfig.CODE_PARAMETER_NULL, s);
+                String result = JsonConfig.getJson(JsonConfig.CODE_PARAMETER_NULL, s,"en");
                 response.setHeader("Content-type", "application/json;charset=UTF-8");
                 response.setHeader("Access-Control-Allow-Origin", "*");//跨域
                 response.getWriter().write(result);
@@ -87,7 +87,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
         if(handler.toString().contains("setMenu")){
             return true;
         }
-        if(handler.toString().contains("getGatewaybyMap")){
+        if(handler.toString().contains("getStationbyMap")){
             return true;
         }
         if(handler.toString().contains("getAoALocatorByMap")){
@@ -188,7 +188,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
                 else if(data.contains("add")){
                     b="Add";
                 } else if(data.contains("index")){
-                    b="Show";
+                    b="View";
                 }else if(data.contains("addProject")){
                     b="Project-Add";
                 }
@@ -204,8 +204,8 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
                 if(s!=null&&s.length>=3){
                     //     System.out.println(s[2]);
                     switch (s[2]){
-                        case "gateway":
-                            a="Gateway";
+                        case "Station":
+                            a="Station";
                             break;
                         case "Customer":
                             a="Administrator";
@@ -245,7 +245,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
                     if(s1!=null&&s1.length>=3){
                         //     System.out.println(s[2]);
                         switch (s1[2]){
-                            case "gateway":
+                            case "Station":
                                 a="网关管理";
                                 break;
                             case "Customer":
@@ -326,7 +326,6 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
         while (parameters.hasMoreElements()){
             list.add(parameters.nextElement().toString());
         }
-
         return list;
     }
 }

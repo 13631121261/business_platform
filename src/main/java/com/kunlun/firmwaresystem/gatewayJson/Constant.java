@@ -57,58 +57,72 @@ public class Constant {
     public static final String BleVersion = "BleVersion";
     public static final String App_Server = "App_Server";
 
-
+    //保存上一次的位置信息
+    public static final String redis_key_location = "b_redis_key_location";
     //Redis 保存的一些key,保持统一key,避免写错
     //下发消息时，针对消息ID
-    public static final String redis_key_sendToGateway = "sendToGateway_id=";
+    public static final String redis_key_sendToStation = "b_sendToStation_id=";
     //针对扫描上报时，存起来设备对饮网关的最强信号  一个设备最多缓存10个网关信息
-    public static final String redis_key_device_gateways = "device_gateways";
+    public static final String redis_key_device_Stations = "b_device_Stations";
     //针对扫描上报时，存起来设备对应网关的最强信号
-    public static final String redis_key_gateway = "gateway";
+    public static final String redis_key_Station = "b_Station";
     //缓存好单个配置项对应全部网关的在线离线问题
-    public static final String redis_key_gatewayConfig_onLine = "redis_key_gatewayConfig_onLine";
-    //public static final String redis_key_gateway_onLine = "redis_key_gateway_onLine";
+    public static final String redis_key_StationConfig_onLine = "b_redis_key_StationConfig_onLine";
+    //public static final String redis_key_Station_onLine = "b_redis_key_Station_onLine";
     //记录网关离线后首次上线时间
-    public static final String redis_key_gateway_onLine_time = "redis_key_gateway_onLine_time";
+    public static final String redis_key_Station_onLine_time = "b_redis_key_Station_onLine_time";
     //记录网关接收数据的包数量，只计算扫描上报数据包
-    public static final String redis_key_gateway_revice_count = "redis_key_gateway_revice_count";
+    public static final String redis_key_Station_revice_count = "b_redis_key_Station_revice_count";
     //判断网关是否同步完成
-    public static final String redis_key_project_sys = "redis_key_project_sys";
-    public static final String redis_key_project_heart = "redis_key_project_heart";
+    public static final String redis_key_project_sys = "b_redis_key_project_sys";
+    public static final String redis_key_project_heart = "b_redis_key_project_heart";
 
     //缓存beacon信息.一个转发类工卡设备缓存的map
-    public static final String redis_key_tag_map = "redis_key_tag_map";
+    public static final String redis_key_tag_map = "b_redis_key_tag_map";
 
     //根据地图唯一key缓存地图信息
-    public static final String redis_key_map = "redis_key_map";
+    public static final String redis_key_map = "b_redis_key_map";
     //根据地图唯一id缓存地图信息,此id由AOA生成
-    public static final String redis_id_map = "redis_id_map";
+    public static final String redis_id_map = "b_redis_id_map";
     //记录信标的在线情况
-    public static final String redis_key_beacon_onLine = "redis_key_beacon_onLine";
+    public static final String redis_key_beacon_onLine = "b_redis_key_beacon_onLine";
     //缓存beacon信息.一个信标或者转发类工卡设备缓存的map
-    public static final String redis_key_card_map = "redis_key_card_map";
+    public static final String redis_key_card_map = "b_redis_key_card_map";
     //AOA基站
-    public static final String redis_key_locator="redis_key_locator";
+    public static final String redis_key_locator="b_redis_key_locator";
+    //AOA基站项目对应的全部基站状态
+    public static final String redis_key_locator_project="b_redis_key_locator_project";
+    //蓝牙基站Station项目对应的全部基站状态
+    public static final String redis_key_Station_project="b_redis_key_Station_project";
+    //beacon项目对应的全部基站状态
+    public static final String redis_key_beacon_project="b_redis_key_beacon_project";
+    //人员-项目对应的全部基站状态
+    public static final String redis_key_person_project="b_redis_key_person_project";
+    //资产设备-项目对应的全部基站状态
+    public static final String redis_key_device_project="b_redis_key_device_project";
     //保存设备的对应SOS状态
-    public static final String redis_key_device_sos = "redis_key_device_sos";
+    public static final String redis_key_device_sos = "b_redis_key_device_sos";
     //当前升级的网关mac
-    public static final String redis_key_updateing_gateway = "redis_key_updateing_gateway";
+    public static final String redis_key_updateing_Station = "b_redis_key_updateing_Station";
     //缓存三点定位的设备的定位信息
-    public static final String redis_key_location_tag = "redis_key_location_tag";
+    public static final String redis_key_location_tag = "b_redis_key_location_tag";
     //实时连接状态
     public static final String ConnectState_searching = "searching";
     public static final String ConnectState_redy = "redy";
     public static final String ConnectState_sta_conn_params_updated = "sta_conn_params_updated";
-    public static final String fence_check_device="fence_check_device";
-    public static final String fence_check_device_res="fence_check_device_res";
-    public static final String fence_check_person="fence_check_person";
-    public static final String fence_check_person_res="fence_check_person_res";
-    public static final String device_check_online_status_res="device_check_online_status_res";
-    public static final String person_check_online_status_res="person_check_online_status_res";
-    public static final String device_check_sos_status_res="device_check_sos_status_res";
-    public static final String person_check_sos_status_res="person_check_sos_status_res";
-    public static final String device_check_bt_status_res="device_check_bt_status_res";
-    public static final String person_check_bt_status_res="person_check_bt_status_res";
-    public static final String device_check_run_status_res="device_check_run_status_res";
-    public static final String person_check_run_status_res="person_check_run_status_res";
+    public static final String fence_check_device="b_fence_check_device";
+    public static final String fence_check_device_res="b_fence_check_device_res";
+    public static final String fence_check_person="b_fence_check_person";
+    public static final String fence_check_person_res="b_fence_check_person_res";
+    public static final String device_check_online_status_res="b_device_check_online_status_res";
+    public static final String person_check_online_status_res="b_person_check_online_status_res";
+    public static final String device_check_sos_status_res="b_device_check_sos_status_res";
+    public static final String person_check_sos_status_res="b_person_check_sos_status_res";
+    public static final String device_check_bt_status_res="b_device_check_bt_status_res";
+    public static final String person_check_bt_status_res="b_person_check_bt_status_res";
+    public static final String device_check_run_status_res="b_device_check_run_status_res";
+    public static final String person_check_run_status_res="b_person_check_run_status_res";
+    public static final String fwordcard="b_fwordcard";
+    public static final String tag_address="tag_address";
+
 }

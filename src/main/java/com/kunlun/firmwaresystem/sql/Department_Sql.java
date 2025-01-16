@@ -5,15 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.kunlun.firmwaresystem.device.PageArea;
-import com.kunlun.firmwaresystem.device.PageBeacon;
 import com.kunlun.firmwaresystem.device.PageDepartment;
-import com.kunlun.firmwaresystem.entity.Area;
-import com.kunlun.firmwaresystem.entity.Beacon;
-import com.kunlun.firmwaresystem.entity.Check_record;
 import com.kunlun.firmwaresystem.entity.Department;
-import com.kunlun.firmwaresystem.mappers.AreaMapper;
-import com.kunlun.firmwaresystem.mappers.BeaconMapper;
 import com.kunlun.firmwaresystem.mappers.DepartmentMapper;
 
 import java.util.List;

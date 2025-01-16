@@ -40,7 +40,7 @@ public class Person_Sql {
         List<Person> Persons = PersonMapper.selectList(null);
         HashMap<String, Person> PersonHashMap = new HashMap<>();
         for (Person Person : Persons) {
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             PersonHashMap.put(Person.getIdcard(), Person);
         }
         return PersonHashMap;
@@ -52,7 +52,7 @@ public class Person_Sql {
         List<Person> Persons = PersonMapper.selectList(null);
         HashMap<String, Person> PersonHashMap = new HashMap<>();
         for (Person Person : Persons) {
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             PersonHashMap.put(Person.getName(), Person);
         }
         return PersonHashMap;
@@ -65,6 +65,14 @@ public class Person_Sql {
         }
         userLambdaQueryWrapper.like(Person::getIdcard, idcard);
         userLambdaQueryWrapper.like(Person::getName, name);
+        List<Person> Persons = PersonMapper.selectList(userLambdaQueryWrapper);
+        return Persons;
+    }
+
+    public List<Person> getAllPersonLike(PersonMapper PersonMapper, String idcard, String name,String project_key) {
+        LambdaQueryWrapper<Person> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        userLambdaQueryWrapper.eq(Person::getProject_key,project_key).like(Person::getIdcard, idcard)
+        .or().eq(Person::getProject_key,project_key).like(Person::getName, name);
         List<Person> Persons = PersonMapper.selectList(userLambdaQueryWrapper);
         return Persons;
     }
@@ -119,14 +127,25 @@ public class Person_Sql {
         PersonMapper.delete(queryWrapper);
     }
 
-    public PagePerson selectPagePerson(PersonMapper PersonMapper, int page, int limt,String quickSearch, String userkey,String Project_key) {
+    public PagePerson selectPagePerson(PersonMapper PersonMapper, int page, int limt,String quickSearch, String userkey,String Project_key,String bind_status) {
         Page<Person> userPage = new Page<>(page, limt);
         IPage<Person> userIPage;
         LambdaQueryWrapper<Person> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        int bind=Integer.parseInt(bind_status);
+        if(bind_status.equals("-1")){
+            userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).or()
+                    .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).or()
+                    .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch);
 
-        userLambdaQueryWrapper.eq(Person::getUser_key, userkey);
-        userLambdaQueryWrapper.eq(Person::getProject_key, Project_key);
-        userLambdaQueryWrapper.like(Person::getIdcard,quickSearch).or().like(Person::getName,quickSearch).or().like(Person::getDepartment_name,quickSearch);
+        }else{
+            userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).or()
+                    .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).or()
+                    .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch);
+
+        }
+    /*  userLambdaQueryWrapper;
+        userLambdaQueryWrapper.;
+        userLambdaQueryWrapper.;*/
         userIPage = PersonMapper.selectPage(userPage, userLambdaQueryWrapper);
         PagePerson pagePerson = new PagePerson(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pagePerson;

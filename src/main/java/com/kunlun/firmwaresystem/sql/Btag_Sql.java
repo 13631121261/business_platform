@@ -85,7 +85,20 @@ public class Btag_Sql {
         List<Beacon_tag> a = bTagMapper.selectList(queryWrapper);
         if (a != null && a.size() > 0) {
             return true;
-        } else
+        } else{
             return false;
+        }
+    }
+    public Beacon_tag getOne(BTagMapper bTagMapper,int  major,int minor) {
+        QueryWrapper<Beacon_tag> queryWrapper = Wrappers.query();
+        queryWrapper.eq("major",major);
+        queryWrapper.eq("minor", minor);
+        // queryWrapper.eq("username", user.getCustomername());
+//若是数据库中符合传入的条件的记录有多条，那就不能用这个方法，会报错
+        List<Beacon_tag> a = bTagMapper.selectList(queryWrapper);
+        if (a != null && a.size() ==1) {
+            return a.get(0);
+        } else
+            return null;
     }
 }

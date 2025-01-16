@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.kunlun.firmwaresystem.device.Gateway;
+import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.device.PageArea;
 import com.kunlun.firmwaresystem.device.PageFence;
 import com.kunlun.firmwaresystem.entity.*;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_gateway;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_Station;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -52,6 +52,7 @@ public class FenceControl {
     public JSONObject updateArea(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
         try {  JSONObject response = null;
             Customer customer = getCustomer(request);
+            String lang=customer.getLang();
             System.out.println("area666"+jsonObject.toString());
             Fence fence=null;
             Fence_Sql fence_sql=new Fence_Sql();
@@ -66,12 +67,12 @@ public class FenceControl {
                 fence.setUpdate_time(System.currentTimeMillis()/1000);
                 if (fence_sql.update(fenceMapper, fence)>0) {
                     fenceMap=  fence_sql.getAllFence(fenceMapper);
-                    response = JsonConfig.getJsonObj(CODE_OK, null);
+                    response = JsonConfig.getJsonObj(CODE_OK, null,lang);
                 } else {
-                    response = JsonConfig.getJsonObj(CODE_REPEAT, null);
+                    response = JsonConfig.getJsonObj(CODE_REPEAT, null,lang);
                 }
             }else{
-                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null);
+                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
             }
             return response;
         }catch (Exception e){
@@ -83,6 +84,7 @@ public class FenceControl {
     public JSONObject addFence(HttpServletRequest request,  @RequestBody JSONObject jsonObject) {
         try {  JSONObject response = null;
         Customer customer = getCustomer(request);
+        String lang=customer.getLang();
         System.out.println("area666"+jsonObject.toString());
         Fence fence=null;
 
@@ -97,9 +99,9 @@ public class FenceControl {
             Fence_Sql fence_sql=new Fence_Sql();
             if (fence_sql.addFence(fenceMapper, fence)) {
                 fenceMap=fence_sql.getAllFence(fenceMapper);
-                response = JsonConfig.getJsonObj(CODE_OK, null);
+                response = JsonConfig.getJsonObj(CODE_OK, null,lang);
             } else {
-                response = JsonConfig.getJsonObj(CODE_REPEAT, null);
+                response = JsonConfig.getJsonObj(CODE_REPEAT, null,lang);
             }
         return response;
         }catch (Exception e){
@@ -178,10 +180,15 @@ public class FenceControl {
     public JSONObject getAllArea1(HttpServletRequest request) {
 
         Customer customer = getCustomer(request);
+        String lang=customer.getLang();
         Fence_Sql fence_sql = new Fence_Sql();
         List<Fence> fences=fence_sql.getAllFence(fenceMapper,customer.getUserkey(),customer.getProject_key());
         Fence fence=new Fence();
-        fence.setName("不绑定围栏");
+        if(lang!=null&&lang.equals("en")){
+            fence.setName("UnBind");
+        }else {
+            fence.setName("不绑定围栏");
+        }
         fence.setId(-1);
         fences.add(0,fence);
         JSONObject jsonObject = new JSONObject();
@@ -196,6 +203,7 @@ public class FenceControl {
     public JSONObject deleteArea(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         String response = "默认参数";
         Customer user = getCustomer(request);
+        String lang=user.getLang();
         Fence_Sql fence_sql = new Fence_Sql();
         List<Integer> id=new ArrayList<Integer>();
         Person_Sql person_sql=new Person_Sql();
@@ -204,11 +212,11 @@ public class FenceControl {
         for(Object ids:jsonArray){
             List<Devicep> deviceps= deviceP_sql.getDeviceByFenceID(devicePMapper,Integer.parseInt(ids.toString()));
             if(deviceps!=null&&deviceps.size()>0){
-                return JsonConfig.getJsonObj(CODE_10,null);
+                return JsonConfig.getJsonObj(CODE_10,null,lang);
             }
             List<Person> personList= person_sql.getPersonByFenceID(personMapper,Integer.parseInt(ids.toString()));
             if(personList!=null&&personList.size()>0){
-                return JsonConfig.getJsonObj(CODE_10,null);
+                return JsonConfig.getJsonObj(CODE_10,null,lang);
             }
             id.add(Integer.parseInt(ids.toString()));
         }
@@ -218,12 +226,12 @@ public class FenceControl {
         if(id.size()>0){
             int status = fence_sql.deletes(fenceMapper, id);
             if(status!=-1){
-                return JsonConfig.getJsonObj(CODE_OK,null);
+                return JsonConfig.getJsonObj(CODE_OK,null,lang);
             }else{
-                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null);
+                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
             }
         }else{
-            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null);
+            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
         }
     }
     private Customer getCustomer(HttpServletRequest request) {

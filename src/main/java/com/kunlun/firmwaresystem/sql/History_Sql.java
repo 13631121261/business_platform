@@ -27,5 +27,20 @@ public class History_Sql {
         List<History> histories= historyMapper.selectList(queryWrapper);
         return histories;
     }
+    public  List<History> getHistory(HistoryMapper historyMapper,String sn,String type,long start_time,long stop_time,String project_key) {
 
+        QueryWrapper<History> queryWrapper = Wrappers.query();
+
+        queryWrapper.eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("sn",sn)
+                .or().eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("name",sn)
+.or().eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("name",sn);
+        List<History> histories= historyMapper.selectList(queryWrapper);
+        return histories;
+    }
+    public void deleteBy15Day(HistoryMapper historyMapper,long time){
+        QueryWrapper<History> queryWrapper = Wrappers.query();
+        queryWrapper. le("time",time/1000);
+        historyMapper.delete(queryWrapper);
+
+    }
 }

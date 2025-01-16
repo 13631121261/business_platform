@@ -16,12 +16,15 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_id_map;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_map;
 
 public class Map_Sql {
-    public boolean addMap(MapMapper mapMapper, Map map) {
+    public boolean addMap(MapMapper mapMapper, Map map,RedisUtils redisUtils) {
         boolean status = check(mapMapper, map);
         if (status) {
             return false;
         } else {
             mapMapper.insert(map);
+            Map map1=getMapByMapkey(mapMapper,map.getMap_key());
+            redisUtils.setnoTimeOut(redis_key_map+map.getMap_key(),map1);
+            redisUtils.setnoTimeOut(redis_id_map+map.getMap_id(),map1);
             return true;
         }
 
@@ -64,7 +67,7 @@ public class Map_Sql {
     public int update(MapMapper mapMapper, Map map) {
         int status= mapMapper.updateById(map);
 
-            return status;
+        return status;
     }
     public void delete(MapMapper mapMapper, String key) {
         QueryWrapper<Map> queryWrapper = Wrappers.query();
@@ -73,7 +76,7 @@ public class Map_Sql {
     }
     public int deletes(MapMapper mapMapper,  List<Integer> id) {
 
-      return  mapMapper.deleteBatchIds(id);
+        return  mapMapper.deleteBatchIds(id);
     }
     public PageMap selectPageMap(MapMapper mapMapper, int page, int limt, String userkey,String project_key, String name) {
         LambdaQueryWrapper<Map> userLambdaQueryWrapper = Wrappers.lambdaQuery();

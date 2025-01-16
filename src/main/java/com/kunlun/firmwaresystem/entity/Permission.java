@@ -10,10 +10,10 @@ public class Permission  implements Serializable {
     String name;
     int editbeacon;
     int editwordcard;
-    int editgateway;
+    int editStation;
     int lookbeacon;
     int lookword;
-    int lookgateway;
+    int lookStation;
     int editperson;
     int lookperson;
     int editasset;
@@ -36,10 +36,10 @@ public class Permission  implements Serializable {
             int lookdepartment, int edituser,  String name,
             int editbeacon,
             int editwordcard,
-            int editgateway,
+            int editStation,
             int lookbeacon,
             int lookword,
-            int lookgateway,
+            int lookStation,
             int editperson,
             int lookperson,
             int editasset,
@@ -54,10 +54,10 @@ public class Permission  implements Serializable {
         this.edituser=edituser;
         this.editbeacon=editbeacon;
         this.editwordcard=editwordcard;
-        this.editgateway=editgateway;
+        this.editStation=editStation;
         this.lookbeacon=lookbeacon;
         this.lookword=lookword;
-        this.lookgateway=lookgateway;
+        this.lookStation=lookStation;
         this.editperson=editperson;
         this.lookperson=lookperson;
         this.editasset=editasset;
@@ -127,12 +127,12 @@ public class Permission  implements Serializable {
         this.editwordcard = editwordcard;
     }
 
-    public int getEditgateway() {
-        return editgateway;
+    public int getEditStation() {
+        return editStation;
     }
 
-    public void setEditgateway(int editgateway) {
-        this.editgateway = editgateway;
+    public void setEditStation(int editStation) {
+        this.editStation = editStation;
     }
 
     public int getLookbeacon() {
@@ -151,12 +151,12 @@ public class Permission  implements Serializable {
         this.lookword = lookword;
     }
 
-    public int getLookgateway() {
-        return lookgateway;
+    public int getLookStation() {
+        return lookStation;
     }
 
-    public void setLookgateway(int lookgateway) {
-        this.lookgateway = lookgateway;
+    public void setLookStation(int lookStation) {
+        this.lookStation = lookStation;
     }
 
     public int getEditperson() {

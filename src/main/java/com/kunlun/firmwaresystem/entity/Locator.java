@@ -183,6 +183,7 @@ public class Locator {
     }
 
     public void setOnline(int online) {
+       // System.out.println("设置基站离线");
         this.online = online;
     }
 

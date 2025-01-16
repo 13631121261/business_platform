@@ -7,8 +7,8 @@ public class Record_sos {
     String handle_time;
     int handle = 0;
     String mac;
-    String gateway_name;
-    String gateway_mac;
+    String Station_name;
+    String Station_mac;
     String sn_idcard;
     String name;
     String type;
@@ -22,8 +22,8 @@ public class Record_sos {
     public Record_sos(int sos,
                       long time,
                       String mac,
-                      String gateway_mac,
-                      String gateway_name,
+                      String Station_mac,
+                      String Station_name,
                       String name,
                       String sn_idcard,
                       String type,    String customer_key,String userkey
@@ -32,8 +32,8 @@ public class Record_sos {
         this.userkey=userkey;
         this.sos= sos;
         this.time = time;
-        this.gateway_mac = gateway_mac;
-        this.gateway_name = gateway_name;
+        this.Station_mac = Station_mac;
+        this.Station_name = Station_name;
         this.name=name;
         this.sn_idcard=sn_idcard;
         this.type=type;
@@ -81,20 +81,20 @@ public class Record_sos {
         return type;
     }
 
-    public void setGateway_name(String gateway_name) {
-        this.gateway_name = gateway_name;
+    public void setStation_name(String Station_name) {
+        this.Station_name = Station_name;
     }
 
-    public void setGateway_mac(String gateway_mac) {
-        this.gateway_mac = gateway_mac;
+    public void setStation_mac(String Station_mac) {
+        this.Station_mac = Station_mac;
     }
 
-    public String getGateway_name() {
-        return gateway_name;
+    public String getStation_name() {
+        return Station_name;
     }
 
-    public String getGateway_mac() {
-        return gateway_mac;
+    public String getStation_mac() {
+        return Station_mac;
     }
 
     public int getId() {

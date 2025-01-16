@@ -1,5 +1,5 @@
 package com.kunlun.firmwaresystem.entity;
 
 public enum Alarm_object {
-    device,person,gateway
+    device,person,Station,locator,all
 }

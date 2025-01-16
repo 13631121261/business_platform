@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.kunlun.firmwaresystem.device.Gateway;
+import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.device.PageArea;
 import com.kunlun.firmwaresystem.device.PageMap;
 import com.kunlun.firmwaresystem.entity.Area;
@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_gateway;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_Station;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
@@ -63,7 +63,7 @@ public class AreaControl {
             area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
             }.getType());
 
-            System.out.println("area"+area.getGateway_mac());
+            System.out.println("area"+area.getStation_mac());
             if(area.getMap_key()!=null){
                 area.setUserkey(customer.getUserkey());
                 area.setProject_key(customer.getProject_key());
@@ -71,33 +71,33 @@ public class AreaControl {
                 area.setUpdatetime(System.currentTimeMillis()/1000);
                 Area_Sql area_sql=new Area_Sql();
                 Area area1=area_sql.getAreaById(areaMapper,area.getId());
-                String gateways=area1.getGateway_mac();
-                Gateway_sql gateway_sql=new Gateway_sql();
-                System.out.println("网关地址="+gateways);
-                if(gateways!=null||gateways.length()>2){
-                    String gs[]=gateways.split(",");
+                String Stations=area1.getStation_mac();
+                Station_sql Station_sql=new Station_sql();
+                System.out.println("网关地址="+Stations);
+                if(Stations!=null||Stations.length()>2){
+                    String gs[]=Stations.split(",");
 
                     for(int i=0;i<gs.length;i++){
                         if(gs[i]!=null&&gs[i].length()>0){
-                            Gateway gateway=(Gateway) redisUtil.get(redis_key_gateway+gs[i]);
-                            gateway.setArea_id(0);
-                            gateway_sql.updateGateway(gatewayMapper,gateway);
-                            GatewayMap=gateway_sql.getAllGateway(gatewayMapper);
-                            redisUtil.set(redis_key_gateway+gs[i],gateway);
+                            Station Station=(Station) redisUtil.get(redis_key_Station+gs[i]);
+                            Station.setArea_id(0);
+                            Station_sql.updateStation(StationMapper,Station);
+                            StationMap=Station_sql.getAllStation(StationMapper);
+                            redisUtil.set(redis_key_Station+gs[i],Station);
                         }
                     }
                 }
-                 gateways=area.getGateway_mac();
-                System.out.println("新的网关地址="+gateways);
-                if(gateways!=null||gateways.length()>2){
-                    String gs[]=gateways.split(",");
+                 Stations=area.getStation_mac();
+                System.out.println("新的网关地址="+Stations);
+                if(Stations!=null||Stations.length()>2){
+                    String gs[]=Stations.split(",");
                     for(int i=0;i<gs.length;i++){
                         if(gs[i]!=null&&gs[i].length()>0){
-                            Gateway gateway=(Gateway) redisUtil.get(redis_key_gateway+gs[i]);
-                            gateway.setArea_id(area.getId());
-                            gateway_sql.updateGateway(gatewayMapper,gateway);
-                            GatewayMap=gateway_sql.getAllGateway(gatewayMapper);
-                            redisUtil.set(redis_key_gateway+gs[i],gateway);
+                            Station Station=(Station) redisUtil.get(redis_key_Station+gs[i]);
+                            Station.setArea_id(area.getId());
+                            Station_sql.updateStation(StationMapper,Station);
+                            StationMap=Station_sql.getAllStation(StationMapper);
+                            redisUtil.set(redis_key_Station+gs[i],Station);
                             System.out.println("保存新的区域ID");
                         }
                     }
@@ -122,7 +122,7 @@ public class AreaControl {
 
         try {  JSONObject response = null;
             Customer customer = getCustomer(request);
-
+            String lang=customer.getLang();
             com.kunlun.firmwaresystem.entity.Area area=null;
 
             area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
@@ -135,13 +135,13 @@ public class AreaControl {
                 area.setCustomer_key(customer.getCustomerkey());
                 area.setCreatetime(System.currentTimeMillis()/1000);
                 Area_Sql area_sql=new Area_Sql();
-                Gateway_sql gateway_sql=new Gateway_sql();
+                Station_sql Station_sql=new Station_sql();
                 Locators_Sql locators_sql=new Locators_Sql();
                 if(area.getId()==0){
                     if (area_sql.addArea(areaMapper, area)) {
-                        String  gateways=area.getGateway_mac();
-                        if(gateways!=null||gateways.length()>2){
-                            String gs[]=gateways.split("-");
+                        String  Stations=area.getStation_mac();
+                        if(Stations!=null||Stations.length()>2){
+                            String gs[]=Stations.split("-");
                             for(int i=0;i<gs.length;i++){
                                 if(gs[i]!=null&&gs[i].length()>0){
                                     String[] address_=gs[i].split(",");
@@ -149,12 +149,11 @@ public class AreaControl {
                                         switch (address_[1]){
                                             //蓝牙网关
                                             case "1":
-                                                Gateway gateway=(Gateway) redisUtil.get(redis_key_gateway+address_[0]);
-                                                gateway.setArea_id(area.getId());
-                                                gateway.setArea_name(area.getName());
-                                                gateway_sql.updateGateway(gatewayMapper,gateway);
-                                                GatewayMap=gateway_sql.getAllGateway(gatewayMapper);
-                                                redisUtil.set(redis_key_gateway+address_[0],gateway);
+                                                Station Station=(Station) redisUtil.get(redis_key_Station+address_[0]);
+
+                                                Station_sql.updateStation(StationMapper,Station);
+                                              //  StationMap=Station_sql.getAllStation(StationMapper);
+                                                redisUtil.set(redis_key_Station+address_[0],Station);
                                                 break;
                                                 //AOA 网关
                                             case "2":
@@ -170,19 +169,19 @@ public class AreaControl {
                             }
                         }
                         area_Map=area_sql.getAllArea(areaMapper);
-                        response = JsonConfig.getJsonObj(CODE_OK, null);
+                        response = JsonConfig.getJsonObj(CODE_OK, null,lang);
                     } else {
-                        response = JsonConfig.getJsonObj(CODE_REPEAT, null);
+                        response = JsonConfig.getJsonObj(CODE_REPEAT, null,lang);
                     }
                 }else{
                     //编辑
 
                     Area area1=area_sql.getAreaById(areaMapper,area.getId());
-                    if(area1.getGateway_mac()!=null&&area1.getGateway_mac().length()>0){
-                        String  gateways=area1.getGateway_mac();
-                        if(gateways!=null||gateways.length()>2){
-                            String gs[]=gateways.split("-");
-                             gateway_sql=new Gateway_sql();
+                    if(area1.getStation_mac()!=null&&area1.getStation_mac().length()>0){
+                        String  Stations=area1.getStation_mac();
+                        if(Stations!=null||Stations.length()>2){
+                            String gs[]=Stations.split("-");
+                             Station_sql=new Station_sql();
                             for(int i=0;i<gs.length;i++){
                                 if(gs[i]!=null&&gs[i].length()>0){
                                     String[] address_=gs[i].split(",");
@@ -190,12 +189,11 @@ public class AreaControl {
                                         switch (address_[1]){
                                             //蓝牙网关
                                             case "1":
-                                                Gateway gateway=(Gateway) redisUtil.get(redis_key_gateway+address_[0]);
-                                                gateway.setArea_id(0);
-                                                gateway.setArea_name("");
-                                                gateway_sql.updateGateway(gatewayMapper,gateway);
-                                                GatewayMap=gateway_sql.getAllGateway(gatewayMapper);
-                                                redisUtil.set(redis_key_gateway+address_[0],gateway);
+                                                Station Station=(Station) redisUtil.get(redis_key_Station+address_[0]);
+
+                                                Station_sql.updateStation(StationMapper,Station);
+                                              //  StationMap=Station_sql.getAllStation(StationMapper);
+                                                redisUtil.set(redis_key_Station+address_[0],Station);
                                                 break;
                                             case "2":
                                                 Locator locator=(Locator) redisUtil.get(redis_key_locator+address_[0]);
@@ -210,10 +208,10 @@ public class AreaControl {
                         }
                     }
                     }
-                    if(area.getGateway_mac()!=null&&area.getGateway_mac().length()>0){
-                        String  gateways=area.getGateway_mac();
-                        if(gateways!=null||gateways.length()>2){
-                            String gs[]=gateways.split("-");
+                    if(area.getStation_mac()!=null&&area.getStation_mac().length()>0){
+                        String  Stations=area.getStation_mac();
+                        if(Stations!=null||Stations.length()>2){
+                            String gs[]=Stations.split("-");
                             for(int i=0;i<gs.length;i++){
                                 if(gs[i]!=null&&gs[i].length()>0){
                                     String[] address_=gs[i].split(",");
@@ -221,12 +219,10 @@ public class AreaControl {
                                         switch (address_[1]){
                                             //蓝牙网关
                                             case "1":
-                                                Gateway gateway=(Gateway) redisUtil.get(redis_key_gateway+address_[0]);
-                                                gateway.setArea_id(area.getId());
-                                                gateway.setArea_name(area.getName());
-                                                gateway_sql.updateGateway(gatewayMapper,gateway);
-                                                GatewayMap=gateway_sql.getAllGateway(gatewayMapper);
-                                                redisUtil.set(redis_key_gateway+address_[0],gateway);
+                                                Station Station=(Station) redisUtil.get(redis_key_Station+address_[0]);
+                                                Station_sql.updateStation(StationMapper,Station);
+                                              //  StationMap=Station_sql.getAllStation(StationMapper);
+                                                redisUtil.set(redis_key_Station+address_[0],Station);
                                                 break;
                                             //AOA 网关
                                             case "2":
@@ -246,7 +242,7 @@ public class AreaControl {
                 }
 
             }else{
-                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null);
+                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
             }
             return response;
         }catch (Exception e){
@@ -272,17 +268,17 @@ public class AreaControl {
             area.setCreatetime(System.currentTimeMillis()/1000);
             Area_Sql area_sql=new Area_Sql();
             if (area_sql.addArea(areaMapper, area)) {
-               String  gateways=area.getGateway_mac();
-                if(gateways!=null||gateways.length()>2){
-                    String gs[]=gateways.split(",");
-                    Gateway_sql gateway_sql=new Gateway_sql();
+               String  Stations=area.getStation_mac();
+                if(Stations!=null||Stations.length()>2){
+                    String gs[]=Stations.split(",");
+                    Station_sql Station_sql=new Station_sql();
                     for(int i=0;i<gs.length;i++){
                         if(gs[i]!=null&&gs[i].length()>0){
-                            Gateway gateway=(Gateway) redisUtil.get(redis_key_gateway+gs[i]);
-                            gateway.setArea_id(area.getId());
-                            gateway_sql.updateGateway(gatewayMapper,gateway);
-                            GatewayMap=gateway_sql.getAllGateway(gatewayMapper);
-                            redisUtil.set(redis_key_gateway+gs[i],gateway);
+                            Station Station=(Station) redisUtil.get(redis_key_Station+gs[i]);
+                            Station.setArea_id(area.getId());
+                            Station_sql.updateStation(StationMapper,Station);
+                            StationMap=Station_sql.getAllStation(StationMapper);
+                            redisUtil.set(redis_key_Station+gs[i],Station);
                         }
                     }
                 }
@@ -372,28 +368,7 @@ public class AreaControl {
         Customer user1 = getCustomer(request);
         Area_Sql area_sql = new Area_Sql();
         PageArea pageArea = area_sql.selectPageArea(areaMapper,Integer.parseInt(page),Integer.parseInt(limit), user1.getUserkey(),user1.getProject_key(),quickSearch);
-        for(com.kunlun.firmwaresystem.entity.Area area:pageArea.getAreaList()) {
-            int sum=0;
-            for (String key : GatewayMap.keySet()) {
-                if (GatewayMap.get(key).getArea_id()==(area.getId())) {
-                   sum++;
-                }
-            }
-            String gateways=area.getGateway_mac();
-            if(gateways!=null||gateways.length()>2){
-                String gs[]=gateways.split(",");
-                int m=0;
-                for(int i=0;i<gs.length;i++){
-                    if(gs[i]!=null&&gs[i].length()>0){
-                        m++;
-                    }
-                }
-                area.setG_count(m);
-            }else{
-                area.setG_count(0);
-            }
 
-        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", 1);
         jsonObject.put("msg", "ok");
@@ -430,6 +405,7 @@ public class AreaControl {
     public JSONObject deleteArea(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         String response = "默认参数";
         Customer user = getCustomer(request);
+        String lang=user.getLang();
         Area_Sql area_sql = new Area_Sql();
         List<Integer> id=new ArrayList<Integer>();
 
@@ -438,7 +414,7 @@ public class AreaControl {
         for(Object ids:jsonArray){
             List<Devicep> deviceps= deviceP_sql.getDeviceByAreaID(devicePMapper,Integer.parseInt(ids.toString()));
             if(deviceps!=null&&deviceps.size()>0){
-                return JsonConfig.getJsonObj(CODE_10,null);
+                return JsonConfig.getJsonObj(CODE_10,null,lang);
             }
                 id.add(Integer.parseInt(ids.toString()));
 
@@ -446,12 +422,12 @@ public class AreaControl {
         if(id.size()>0){
             int status = area_sql.deletes(areaMapper, id);
             if(status!=-1){
-                return JsonConfig.getJsonObj(CODE_OK,null);
+                return JsonConfig.getJsonObj(CODE_OK,null,lang);
             }else{
-                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null);
+                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
             }
         }else{
-            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null);
+            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
         }
 
     }
@@ -459,53 +435,16 @@ public class AreaControl {
     public JSONObject delete1Area(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "id") int id) {
         System.out.println("区域ID="+id);
         Customer user = getCustomer(request);
+        String lang=user.getLang();
         Area_Sql area_sql = new Area_Sql();
         Area area1=area_sql.getAreaById(areaMapper,id);
         Fence_Sql fence_sql=new Fence_Sql();
         boolean have=fence_sql.isHaveArea(fenceMapper,id);
         if(have){
-            return JsonConfig.getJsonObj(CODE_10,null);
-        }
-
-        if(area1.getGateway_mac()!=null&&area1.getGateway_mac().length()>0){
-            String  gateways=area1.getGateway_mac();
-            if(gateways!=null||gateways.length()>2){
-                String gs[]=gateways.split("-");
-                Gateway_sql gateway_sql=new Gateway_sql();
-                Locators_Sql locators_sql=new Locators_Sql();
-                for(int i=0;i<gs.length;i++){
-                    if(gs[i]!=null&&gs[i].length()>0){
-                        String[] address_=gs[i].split(",");
-                        if(address_.length==2){
-                            try {
-                                switch (address_[1]) {
-                                    //蓝牙网关
-                                    case "1":
-                                        Gateway gateway = (Gateway) redisUtil.get(redis_key_gateway + address_[0]);
-                                        gateway.setArea_id(0);
-                                        gateway.setArea_name("");
-                                        gateway_sql.updateGateway(gatewayMapper, gateway);
-                                        GatewayMap = gateway_sql.getAllGateway(gatewayMapper);
-                                        redisUtil.set(redis_key_gateway + address_[0], gateway);
-                                        break;
-                                    case "2":
-                                        Locator locator = (Locator) redisUtil.get(redis_key_locator + address_[0]);
-                                        locator.setArea_name("");
-                                        locator.setArea_id(0);
-                                        locators_sql.update(locatorMapper, locator);
-                                        redisUtil.set(redis_key_locator + address_[0], locator);
-                                        break;
-                                }
-                            }catch (Exception e){
-                                continue;
-                            }
-                        }
-                    }
-                }
-            }
+            return JsonConfig.getJsonObj(CODE_10,null,lang);
         }
         area_sql.delete(areaMapper,id);
-        return JsonConfig.getJsonObj(CODE_OK,null);
+        return JsonConfig.getJsonObj(CODE_OK,null,lang);
 
 
     }

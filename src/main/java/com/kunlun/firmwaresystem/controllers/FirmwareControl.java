@@ -13,6 +13,7 @@ import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -114,7 +115,7 @@ public class FirmwareControl {
             jsonObject.put("msg","参数不完整");
             return jsonObject.toString();
         }else{
-            file.transferTo(new File("C:\\Users\\Administrator\\Desktop\\Gateway\\Server_update\\firmware\\" + type+"_"+version+".firmware"));
+            file.transferTo(new File("C:\\Users\\Administrator\\Desktop\\Station\\Server_update\\firmware\\" + type+"_"+version+".firmware"));
             if(type.equals("ble")){
                 Ble_firmware ble_firmware=new Ble_firmware( "http://"+"192.168.1.10"+":80/download",remake,   ft.format(dNow),  customization,  customization_name,  finishtime,  administrator,  "",  version);
 
@@ -146,9 +147,9 @@ public class FirmwareControl {
 
     @RequestMapping(value = "/download", method = RequestMethod.GET)
     @ResponseBody
-    public void download(HttpServletResponse response, @RequestParam("type") String type, @RequestParam("version") String version, @RequestParam("userKey") String userKey) throws UnsupportedEncodingException {
+    public void download(HttpServletRequest request,HttpServletResponse response, @RequestParam("type") String type, @RequestParam("version") String version, @RequestParam("userKey") String userKey) throws UnsupportedEncodingException {
         String filename = userKey + "/" + type + "_" + version + ".firmware";
-
+      
         String filePath = NewSystemApplication.paths;
 
         //String filePath = "E:\\蓝牙网关\\固件版本" ;

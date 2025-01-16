@@ -51,7 +51,7 @@ public class Rules_sql {
         List<Rules> rulesList = rulesMapper.selectList(queryWrapper);
         HashMap<String, Rules> rulesMap = new HashMap<>();
         for (Rules rules : rulesList) {
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             rulesMap.put(rules.getRule_key(), rules);
         }
         return rulesMap;
@@ -61,7 +61,7 @@ public class Rules_sql {
         List<Rules> rulesList = rulesMapper.selectList(null);
         HashMap<String, Rules> rulesMap = new HashMap<>();
         for (Rules rules : rulesList) {
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             rulesMap.put(rules.getRule_key(), rules);
         }
         return rulesMap;

@@ -7,8 +7,8 @@ public class Record {
     int id;
     String device_mac;
     String device_name;
-    String gateway_mac;
-    String gateway_name;
+    String Station_mac;
+    String Station_name;
     int rssi;
     String bt;
     String time;
@@ -26,14 +26,14 @@ public class Record {
     public Record(String device_mac,
 
                   String device_name,
-                  String gateway_mac,
-                  String gateway_name,
+                  String Station_mac,
+                  String Station_name,
                   int rssi,    String customer_key,String userkey
               ) {
         this.device_name = device_name;
         this.device_mac = device_mac;
-        this.gateway_mac = gateway_mac;
-        this.gateway_name = gateway_name;
+        this.Station_mac = Station_mac;
+        this.Station_name = Station_name;
         this.rssi = rssi;
         this.customer_key=customer_key;
         this.userkey=userkey;
@@ -117,8 +117,8 @@ public class Record {
                 "id=" + id +
                 ", device_mac='" + device_mac + '\'' +
                 ", device_name='" + device_name + '\'' +
-                ", gateway_mac='" + gateway_mac + '\'' +
-                ", gateway_name='" + gateway_name + '\'' +
+                ", Station_mac='" + Station_mac + '\'' +
+                ", Station_name='" + Station_name + '\'' +
                 ", rssi=" + rssi +
                 ", bt='" + bt + '\'' +
                 ", time='" + time + '\'' +

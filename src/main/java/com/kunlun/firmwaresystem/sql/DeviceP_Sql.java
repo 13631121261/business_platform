@@ -24,8 +24,7 @@ public class DeviceP_Sql {
             QueryWrapper<Devicep> queryWrapper = Wrappers.query();
             queryWrapper.eq("sn",deviceP.getSn());
             Devicep devicep1 =devicePMapper.selectOne(queryWrapper);
-            devicep1.setSn(devicep1.getCode_sn()+devicep1.getId());
-            devicePMapper.updateById(devicep1);
+            deviceP.setId(devicep1.getId());
         }
            /* ;*/
             return true;
@@ -52,36 +51,25 @@ public class DeviceP_Sql {
     }
     public Map<String, Devicep> getAllDeviceP(DevicePMapper devicePMapper) {
         List<Devicep> deviceps = devicePMapper.selectList(null);
-        HashMap<String, Devicep> beaconHashMap = new HashMap<>();
+        HashMap<String, Devicep> devicepHashMap = new HashMap<>();
         for (Devicep deviceP : deviceps) {
-            if(NewSystemApplication.devicePtypeMap.get(deviceP.getType_id())!=null){
-                deviceP.setType_name(NewSystemApplication.devicePtypeMap.get(deviceP.getType_id()).getName());
-            }else{
-                System.out.println("设备类型为空="+deviceP.getType_id());
-            }
-
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
-            beaconHashMap.put(deviceP.getSn(), deviceP);
+            devicepHashMap.put(deviceP.getSn(), deviceP);
         }
-        return beaconHashMap;
+        return devicepHashMap;
     }
     public Map<String, Devicep> getAllDeviceP(DevicePMapper devicePMapper,String userkey,String projectkey) {
         QueryWrapper<Devicep> queryWrapper = Wrappers.query();
         queryWrapper.eq("userkey",userkey);
         queryWrapper.eq("project_key",projectkey);
         List<Devicep> deviceps = devicePMapper.selectList(queryWrapper);
-        HashMap<String, Devicep> beaconHashMap = new HashMap<>();
+        HashMap<String, Devicep> devicepHashMap = new HashMap<>();
         for (Devicep deviceP : deviceps) {
-            if(NewSystemApplication.devicePtypeMap.get(deviceP.getType_id())!=null){
-                deviceP.setType_name(NewSystemApplication.devicePtypeMap.get(deviceP.getType_id()).getName());
-            }else{
-                System.out.println("设备类型为空="+deviceP.getType_id());
-            }
 
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
-            beaconHashMap.put(deviceP.getSn(), deviceP);
+
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            devicepHashMap.put(deviceP.getSn(), deviceP);
         }
-        return beaconHashMap;
+        return devicepHashMap;
     }
     public  List<Devicep> getDevicePBySn(DevicePMapper devicePMapper, String sn) {
         LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
@@ -89,14 +77,22 @@ public class DeviceP_Sql {
         List<Devicep> deviceps = devicePMapper.selectList(userLambdaQueryWrapper);
         return deviceps;
     }
-    public  HashMap<String, Devicep> getDeviceP(DevicePMapper devicePMapper, int typeId) {
+
+    public  List<Devicep> getDevicePByLike(DevicePMapper devicePMapper, String sn, String name,String project_key) {
+        LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        userLambdaQueryWrapper.eq(Devicep::getProject_key, project_key).like(Devicep::getSn,sn).or()
+                .eq(Devicep::getProject_key, project_key).like(Devicep::getName,name);
+        List<Devicep> deviceps = devicePMapper.selectList(userLambdaQueryWrapper);
+        return deviceps;
+    }
+    public  HashMap<String, Devicep> getDeviceP(DevicePMapper devicePMapper, String type) {
 
         LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
-        userLambdaQueryWrapper.eq(Devicep::getType_id, typeId);
+        userLambdaQueryWrapper.eq(Devicep::getType, type);
         List<Devicep> deviceps = devicePMapper.selectList(userLambdaQueryWrapper);
         HashMap<String, Devicep> devicePHashMap = new HashMap<>();
         for (Devicep deviceP : deviceps) {
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             devicePHashMap.put(deviceP.getSn(), deviceP);
         }
         return devicePHashMap;
@@ -119,7 +115,7 @@ public class DeviceP_Sql {
         List<Beacon> beacons = beaconMapper.selectList(userLambdaQueryWrapper);
         HashMap<String, Beacon> beaconHashMap = new HashMap<>();
         for (Beacon beacon : beacons) {
-            //System.out.println("初始化"+gateway.getSub_topic()+"==="+gateway.getPub_topic());
+            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             beaconHashMap.put(beacon.getMac(), beacon);
         }
         return beaconHashMap;

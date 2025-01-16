@@ -8,8 +8,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kunlun.firmwaresystem.device.PageArea;
 import com.kunlun.firmwaresystem.device.PageLogs;
 import com.kunlun.firmwaresystem.entity.Area;
+import com.kunlun.firmwaresystem.entity.History;
 import com.kunlun.firmwaresystem.entity.Logs;
 import com.kunlun.firmwaresystem.mappers.AreaMapper;
+import com.kunlun.firmwaresystem.mappers.HistoryMapper;
 import com.kunlun.firmwaresystem.mappers.LogsMapper;
 
 import java.util.HashMap;
@@ -18,9 +20,14 @@ import java.util.Map;
 
 public class Logs_Sql {
     public int add(LogsMapper logsMapper, Logs area) {
-        return logsMapper.insert(area);
+        return 0;// logsMapper.insert(area);
     }
+    public void deleteBy15Day(LogsMapper logsMapper, long time){
+        QueryWrapper<Logs> queryWrapper = Wrappers.query();
+        queryWrapper. le("create_time",time);
+        logsMapper.delete(queryWrapper);
 
+    }
 
     public void delete(LogsMapper logsMapper, int id) {
         QueryWrapper<Logs> queryWrapper = Wrappers.query();

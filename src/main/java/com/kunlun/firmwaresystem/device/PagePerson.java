@@ -1,6 +1,5 @@
 package com.kunlun.firmwaresystem.device;
 
-import com.kunlun.firmwaresystem.entity.Beacon;
 import com.kunlun.firmwaresystem.entity.Person;
 
 import java.util.List;

@@ -5,16 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.kunlun.firmwaresystem.device.PageBeacon;
 import com.kunlun.firmwaresystem.device.PageCheckRecord;
-import com.kunlun.firmwaresystem.entity.Beacon;
 import com.kunlun.firmwaresystem.entity.Check_record;
-import com.kunlun.firmwaresystem.mappers.BeaconMapper;
 import com.kunlun.firmwaresystem.mappers.CheckRecordMapper;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class CheckRecord_Sql {
     public boolean addRecord(CheckRecordMapper recordMapper, Check_record check_record) {

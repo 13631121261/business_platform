@@ -1,12 +1,11 @@
 package com.kunlun.firmwaresystem.util;
 
 
-import com.kunlun.firmwaresystem.device.Gateway;
+import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
-import com.kunlun.firmwaresystem.gatewayJson.type_scan_report.Scan_report_data_info;
 import com.kunlun.firmwaresystem.mqtt.RabbitMessage;
-import com.kunlun.firmwaresystem.sql.Gateway_sql;
+import com.kunlun.firmwaresystem.sql.Station_sql;
 import com.kunlun.firmwaresystem.sql.Moffline_Sql;
 import net.sf.json.JSONObject;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
@@ -20,7 +19,6 @@ import java.util.zip.Inflater;
 
 import static com.kunlun.firmwaresystem.DeviceTask.writeLog;
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
-import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.Push;
 import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.sendtoMap;
 
 public class StringUtil {
@@ -31,6 +29,26 @@ public class StringUtil {
     private static final String HexStr = "0123456789ABCDEF";
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    //int 转字节数组
+    public static byte[] intTo4ByteArray(int i) {
+        byte[] result = new byte[4];
+        // 由高位到低位
+        result[0] = (byte) ((i >> 24) & 0xFF);
+        result[1] = (byte) ((i >> 16) & 0xFF);
+        result[2] = (byte) ((i >> 8) & 0xFF);
+        result[3] = (byte) (i & 0xFF);
+        return result;
+    }
+    //long 转字节数组
+    public static byte[] intTo4ByteArray(long i) {
+        byte[] result = new byte[4];
+        // 由高位到低位
+        result[0] = (byte) ((i >> 24) & 0xFF);
+        result[1] = (byte) ((i >> 16) & 0xFF);
+        result[2] = (byte) ((i >> 8) & 0xFF);
+        result[3] = (byte) (i & 0xFF);
+        return result;
+    }
     public static String byteArrToHex(byte[] btArr) {
         char strArr[] = new char[btArr.length * 2];
         int i = 0;
@@ -54,7 +72,27 @@ public class StringUtil {
         }
         return btArr;
     }
-
+    //int 转字节数组
+    public static long ByteToLong(byte[] data) {
+        long a= (data[0]&0xFF)*16777216;
+        long b=(data[1]&0xff)*65536;
+        long c=(data[2]&0xff)*256;
+        long d=(data[3]&0xff);
+        long e=a+b+c+d;
+        return e*1000;
+    }
+    //int 转字节数组
+    public static long eByteToLong(byte[] data) {
+        long a= (data[0]&0xFF)*281474976710656l;
+        long b=(data[1]&0xff)*1099511627776l;
+        long c=(data[2]&0xff)*4294967296l;
+        long d=(data[3]&0xff)*16777216;
+        long e=(data[4]&0xff)*65536;
+        long f=(data[5]&0xff)*256;
+        long g=(data[6]&0xff);
+        long h=a+b+c+d+e+f+g;
+        return h;
+    }
     //小端转大端
     public static String LtoB(byte[] l) {
         byte[] b = new byte[l.length];
@@ -73,16 +111,7 @@ public class StringUtil {
         }
         return value;
     }
-    //int 转字节数组
-    public static byte[] intTo4ByteArray(int i) {
-        byte[] result = new byte[4];
-        // 由高位到低位
-        result[0] = (byte) ((i >> 24) & 0xFF);
-        result[1] = (byte) ((i >> 16) & 0xFF);
-        result[2] = (byte) ((i >> 8) & 0xFF);
-        result[3] = (byte) (i & 0xFF);
-        return result;
-    }
+
 
     //int 转字节数组
     public static byte[] intTo2ByteArray(int i) {
@@ -170,177 +199,14 @@ public class StringUtil {
     //室内定位，计算位置公式
 
 
-    //保存一个文件，全部的信号值，全部设备全部信号一个列。
-    private static Scan_report_data_info getLast(ArrayList<Scan_report_data_info> list) {
-        ArrayList<Scan_report_data_info> lists = new ArrayList<>();
-        long stime;
-        try {
-            String strDateFormat = "yyyy-MM-dd HH:mm:ss";
-            SimpleDateFormat sdf = new SimpleDateFormat(strDateFormat);
 
-
-            Date time1 = sdf.parse(list.get(0).getTime());
-            Date time2 = sdf.parse(list.get(list.size() - 1).getTime());
-            stime = time2.getTime() - time1.getTime();
-        } catch (Exception e) {
-            System.out.println("rrrrr" + e.getMessage());
-            return null;
-
-        }
-
-        int index;
-        int length = list.size();
-        for (int b = 0; b < length; b++) {
-            index = 0;
-            for (int j = 1; j < list.size(); j++) {
-                if (list.get(index).getRssi() <= list.get(j).getRssi()) {
-                    index = j;
-                }
-            }
-            try {
-                lists.add(list.get(index));
-                System.out.println("信号排序=" + list.get(index).getRssi());
-                list.remove(index);
-            } catch (Exception e) {
-                System.out.println("++++" + e.getMessage());
-                return null;
-
-            }
-        }
-
-        for (int i = 0; i < 20; i++) {
-            lists.remove(0);
-            lists.remove(lists.size() - 1);
-        }
-        Double count;
-        count = 0.0;
-
-        for (int i = 0; i < lists.size(); i++) {
-            System.out.println("循环输出=" + i + " 信号=" + lists.get(i).getRssi());
-            count = count + lists.get(i).getRssi();
-        }
-        count = count / lists.size();
-        Scan_report_data_info beacon = new Scan_report_data_info("平均信号", count.intValue(), "" + stime / 1000);
-        return beacon;
-
-
-    }
-
-    //给第三方推送设备离线
-    public static void sendBeaconPush(Beacon beacon, int status) {
-        if (beacon.getUser_key() == null) {
-            writeLog("此信标异常，没有关联账户" + beacon.getMac());
-            return;
-        }
-        if (beacon.getOnline() != status) {
-            Check_sheet check_sheet = check_sheetMap.get(beacon.getUser_key());
-            if (check_sheet == null) {
-                writeLog("此配置文件异常，没有关联账户" + beacon.getUser_key());
-                return;
-            } else {
-                beacon.setOnline(status);
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("type", "beacon");
-                jsonObject.put("data", beacon);
-                id++;
-                jsonObject.put("id", id);
-                jsonObject.put("time", sdf.format(new Date()));
-               // System.out.println("原始" + sdf.format(new Date()) + "Push" + "id=" + id);
-                RabbitMessage rabbitMessage = new RabbitMessage();
-                rabbitMessage.setMsg(jsonObject.toString());
-                rabbitMessage.setUdp(check_sheet.getUdp());
-                directExchangeProducer.send(rabbitMessage.toString(), Push);
-
-
-            }
-
-        }
-    }
-
-
-    //给第三方推送设备离线
-    public static void sendGatewayPush(Gateway gateway, int status) {
-        if (gateway.getUser_key() == null) {
-            writeLog("此网关异常，没有关联账户" + gateway.getAddress());
-            return;
-        }
-        if (gateway.getOnline() != status) {
-            Check_sheet check_sheet = check_sheetMap.get(gateway.getUser_key());
-            if (check_sheet == null) {
-                writeLog("网关此配置文件异常，没有关联账户" + gateway.getUser_key());
-                return;
-            } else {
-
-                gateway.setOnline(status);
-                gateway.setOnline_txt("在线");
-                Gateway_sql gateway_sql = new Gateway_sql();
-                System.out.println("上线后更新到数据库");
-                gateway_sql.updateGateway(gatewayMapper, gateway);
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("type", "gateway");
-                jsonObject.put("data", gateway);
-                id++;
-                jsonObject.put("id", id);
-                jsonObject.put("time", sdf.format(new Date()));
-                System.out.println("原始" + sdf.format(new Date()) + "Push" + "id=" + id);
-                RabbitMessage rabbitMessage = new RabbitMessage();
-                rabbitMessage.setMsg(jsonObject.toString());
-                rabbitMessage.setUdp(check_sheet.getUdp());
-                directExchangeProducer.send(rabbitMessage.toString(), Push);
-            }
-
-        }
-    }
-
-    //给第三方推送设备离线
-    public static void sendDevicePush(Devicep devicep, int status) {
-        // System.out.println("预计推送"+devicep.getBind_mac()+"status="+devicep.toString());
-        if (devicep.getUserkey() == null) {
-            System.out.println("空格" + devicep.getUserkey());
-            writeLog("此资产异常，没有关联账户" + devicep.getSn());
-            return;
-        }
-        if (devicep.getOnline() != status) {
-            //  System.out.println("预备开始");
-            Check_sheet check_sheet = check_sheetMap.get(devicep.getUserkey());
-            //System.out.println(check_sheet);
-            if (check_sheet == null) {
-                //  System.out.println("算了");
-                writeLog("此资产异常配置文件异常，没有关联账户" + devicep.getUserkey());
-                return;
-            } else {
-                devicep.setOnline(status);
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("type", "device");
-                jsonObject.put("data", devicep);
-                RabbitMessage rabbitMessage = new RabbitMessage();
-                rabbitMessage.setMsg(jsonObject.toString());
-                rabbitMessage.setUdp(check_sheet.getUdp());
-                id++;
-                jsonObject.put("id", id);
-                jsonObject.put("time", sdf.format(new Date()));
-                directExchangeProducer.send(rabbitMessage.toString(), Push);
-               // System.out.println("原始" + sdf.format(new Date()) + "Push" + "id=" + id);
-
-                JSONObject jsonObject1 = new JSONObject();
-                jsonObject1.put("device", devicep);
-                jsonObject1.put("type", "device_line");
-                id++;
-                jsonObject1.put("id", id);
-                jsonObject1.put("time", sdf.format(new Date()));
-                System.out.println("原始" + sdf.format(new Date()) + "发给网页了" + "id=" + id);
-                RabbitMessage rabbitMessage1 = new RabbitMessage(devicep.getProject_key(), jsonObject1.toString());
-                directExchangeProducer.send(rabbitMessage1.toString(), "sendtoHtml");
-            }
-        }
-    }
 
     //人员围栏报警
     public static void sendFenceSosPerson(Person person) {
                 JSONObject jsonObject1 = new JSONObject();
                 jsonObject1.put("data", person);
                 jsonObject1.put("type", "fence_person");
-                RabbitMessage rabbitMessage1 = new RabbitMessage(person.getProject_key(), jsonObject1.toString());
+                RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),person.getProject_key());
                 directExchangeProducer.send(rabbitMessage1.toString(), "sendtoHtml");
     }
     //资产围栏报警
@@ -348,63 +214,36 @@ public class StringUtil {
         JSONObject jsonObject1 = new JSONObject();
         jsonObject1.put("data", devicep);
         jsonObject1.put("type", "fence_devicep");
-        RabbitMessage rabbitMessage1 = new RabbitMessage(devicep.getProject_key(), jsonObject1.toString());
+        RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),devicep.getProject_key());
         directExchangeProducer.send(rabbitMessage1.toString(), "sendtoHtml");
     }
-    //给第三方推送设备离线
-    public static void sendDeviceSoSPush(Devicep devicep, int status) {
-        if (devicep.getUserkey() == null) {
-            writeLog("此资产异常，没有关联账户" + devicep.getSn());
-            return;
-        }
-        if (devicep.getSos() != status) {
-            Check_sheet check_sheet = check_sheetMap.get(devicep.getUserkey());
-            if (check_sheet == null) {
-                writeLog("此资产异常配置文件异常，没有关联账户" + devicep.getUserkey());
-                return;
-            } else {
-                devicep.setSos(status);
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("type", "device_sos");
-                jsonObject.put("data", devicep);
-                id++;
-                jsonObject.put("id", id);
-                jsonObject.put("time", sdf.format(new Date()));
-                RabbitMessage rabbitMessage = new RabbitMessage();
-                rabbitMessage.setMsg(jsonObject.toString());
-                rabbitMessage.setUdp(check_sheet.getUdp());
 
-                directExchangeProducer.send(rabbitMessage.toString(), Push);
-              //  System.out.println("原始" + sdf.format(new Date()) + "Push" + "id=" + id);
-                JSONObject jsonObject1 = new JSONObject();
-                jsonObject1.put("device", devicep);
-                jsonObject1.put("type", "device_sos");
-                id++;
-                jsonObject1.put("id", id);
-                jsonObject1.put("time", sdf.format(new Date()));
-
-                System.out.println("原始" + sdf.format(new Date()) + "发给网页了" + "id=" + id);
-                RabbitMessage rabbitMessage1 = new RabbitMessage(devicep.getProject_key(), jsonObject1.toString());
-                directExchangeProducer.send(rabbitMessage1.toString(), "sendtoHtml");
-            }
-
-        }
-    }
     //给地图推送位置
-
     public static void sendTagPush(ArrayList<Object> devicep, String map_key ) {
-
         JSONObject jsonObject1 = new JSONObject();
         jsonObject1.put("device", devicep);
-
+        id++;
+        jsonObject1.put("id", id);
+        jsonObject1.put("time", sdf.format(new Date()));
+       // System.out.println("原始" + devicep);
+        //System.out.println("原始" + map_key);
+        RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),map_key);
+       directExchangeProducer.send(rabbitMessage1.toString(), sendtoMap);
+    }
+    //针对客户的项目配置，转发原始数据
+    public static void sendRelayPush(ArrayList<Object> devicep, String map_key ) {
+        JSONObject jsonObject1 = new JSONObject();
+        jsonObject1.put("tag", devicep);
         id++;
         jsonObject1.put("id", id);
         jsonObject1.put("time", sdf.format(new Date()));
         //System.out.println("原始" + map_key);
         //System.out.println("原始" + map_key);
-        RabbitMessage rabbitMessage1 = new RabbitMessage(map_key, jsonObject1.toString());
-       directExchangeProducer.send(rabbitMessage1.toString(), sendtoMap);
+        RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),map_key);
+        //directExchangeProducer.send(rabbitMessage1.toString(), sendtoMap);
     }
+
+
     public static String unzip(byte[] data) throws IOException,
             DataFormatException {
 

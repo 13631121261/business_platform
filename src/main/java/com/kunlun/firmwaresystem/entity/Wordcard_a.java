@@ -1,6 +1,8 @@
 package com.kunlun.firmwaresystem.entity;
 
-public class Wordcard_a extends Tag {
+import com.baomidou.mybatisplus.annotation.TableField;
+
+public class Wordcard_a  {
     int id;
     int sos;
     int run;
@@ -9,6 +11,81 @@ public class Wordcard_a extends Tag {
     String idcard;
     double x,y;
     String customer_key;
+    int type;
+    String mac;
+    double bt;
+    String user_key;
+    @TableField(exist = false)
+    String Station_address;
+    @TableField(exist = false)
+    int online;
+
+    long lastTime;
+    @TableField(exist = false)
+    int rssi;
+    public long getLastTime() {
+        return lastTime;
+    }
+
+    public void setOnline(int online) {
+        this.online = online;
+    }
+
+    public int getOnline() {
+        return online;
+    }
+
+    public void setLastTime(long lastTime) {
+        this.lastTime = lastTime;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public String getMac() {
+        return mac;
+    }
+
+    public void setMac(String mac) {
+        this.mac = mac;
+    }
+
+    public double getBt() {
+        return bt;
+    }
+
+    public void setBt(double bt) {
+        this.bt = bt;
+    }
+
+    public void setRssi(int rssi) {
+        this.rssi = rssi;
+    }
+
+    public int getRssi() {
+        return rssi;
+    }
+
+    public void setUser_key(String user_key) {
+        this.user_key = user_key;
+    }
+
+    public String getUser_key() {
+        return user_key;
+    }
+
+    public String getStation_address() {
+        return Station_address;
+    }
+
+    public void setStation_address(String Station) {
+        this.Station_address = Station;
+    }
 
 
     public Wordcard_a(String mac,

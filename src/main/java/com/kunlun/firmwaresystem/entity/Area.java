@@ -8,7 +8,7 @@ import java.util.Date;
 public class Area {
     double x,y;
     int id;
-    String gateway_mac;
+    String Station_mac;
     String userkey;
     String name;
     long createtime;
@@ -24,26 +24,26 @@ public class Area {
     String map_key;
     String map_name;
 
-    public Area(String name,    String gateway_mac,
+    public Area(String name,    String Station_mac,
             String userkey, String customer_key) {
 
         this.name = name;
         this.userkey=userkey;
-        this.gateway_mac=gateway_mac;
+        this.Station_mac=Station_mac;
         SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
         Date date = new Date();// 获取当前时间
         this.createtime = System.currentTimeMillis()/1000;
         this.customer_key=customer_key;
     }
-    public Area(String name,    String gateway_mac,
+    public Area(String name,    String Station_mac,
                 String userkey, String customer_key,  String project_key,
                         String point,
                         String data) {
 
         this.name = name;
         this.userkey=userkey;
-        this.gateway_mac=gateway_mac;
+        this.Station_mac=Station_mac;
         SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
 
@@ -154,8 +154,8 @@ public class Area {
         return y;
     }
 
-    public void setGateway_mac(String gateway_mac) {
-        this.gateway_mac = gateway_mac;
+    public void setStation_mac(String Station_mac) {
+        this.Station_mac = Station_mac;
     }
 
     public String getUserkey() {
@@ -170,8 +170,8 @@ public class Area {
         return createtime;
     }
 
-    public String getGateway_mac() {
-        return gateway_mac;
+    public String getStation_mac() {
+        return Station_mac;
     }
 
     public String getCustomername() {

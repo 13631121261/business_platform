@@ -9,14 +9,14 @@ public class DirectExchangeRabbitMQConfig {
 
     public static final String directExchangeName = "directExchangeName";
     public static final String go_to_connect = "go_to_connect";
-    // public static final String config_gateway = "config_gateway";
+    // public static final String config_Station = "config_Station";
     //转发的
     public static final String transpond = "transpond";
     private static final String queue3BindingKey1 = "on_state";
 
 
-    //状态推送第三方
-    public static final String Push = "Push";
+   /* //状态推送第三方
+    public static final String Push = "Push";*/
 
     //推送给网页地图展示
     public static final String sendtoMap = "sendtoMap";
@@ -30,7 +30,7 @@ public class DirectExchangeRabbitMQConfig {
     // 声明消息队列
     @Bean
     public Queue messageQueue1() {
-        return new Queue("sendToGateway");
+        return new Queue("sendToStation");
     }
 
 /*
@@ -54,10 +54,10 @@ public class DirectExchangeRabbitMQConfig {
     public Queue messageQueue5() {
         return new Queue("mqtt_topic");
     }
-    @Bean
+/*    @Bean
     public Queue messageQueue4() {
         return new Queue(Push);
-    }
+    }*/
     @Bean
     public Queue messageQueue3() {
         return new Queue("sendtoHtml");
@@ -72,7 +72,7 @@ public class DirectExchangeRabbitMQConfig {
     Binding bindingQueue1Exchange(Queue messageQueue1, DirectExchange directExchange) {
         return BindingBuilder.bind(messageQueue1)
                 .to(directExchange)
-                .with("sendToGateway");
+                .with("sendToStation");
     }
 
     @Bean
@@ -88,12 +88,12 @@ public class DirectExchangeRabbitMQConfig {
                 .to(directExchange)
                 .with("sendtoHtml");
     }
-    @Bean
+/*    @Bean
     Binding bindingQueue4Exchange(Queue messageQueue4, DirectExchange directExchange) {
         return BindingBuilder.bind(messageQueue4)
                 .to(directExchange)
                 .with(Push);
-    }
+    }*/
     @Bean
     Binding bindingQueue5Exchange(Queue messageQueue5, DirectExchange directExchange) {
         return BindingBuilder.bind(messageQueue5)

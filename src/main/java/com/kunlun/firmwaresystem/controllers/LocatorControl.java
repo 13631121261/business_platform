@@ -108,9 +108,11 @@ public class LocatorControl {
         for(Locator locator:pageLocator.getLocatorList()){
             if(redisUtil.get(redis_key_locator+locator.getAddress())!=null){
                 Locator locator1=(Locator) redisUtil.get(redis_key_locator+locator.getAddress());
-                System.out.println(locator1);
+                // System.out.println(locator1);
                 locator1.setId(locator.getId());
                 locatorMapper.updateById(locator1);
+                locator.setOnline(locator1.getOnline());
+                locator.setLast_time(locator1.getLast_time());
                 redisUtil.set(redis_key_locator+locator.getAddress(),locator1);
             }
 
@@ -124,23 +126,31 @@ public class LocatorControl {
     }
     @RequestMapping(value = "/userApi/Locator/del", method = RequestMethod.POST, produces = "application/json")
     public JSONObject deleteLocator(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
-
         List<Integer> id=new ArrayList<Integer>();
-
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
         for(Object ids:jsonArray){
             if(ids!=null&&ids.toString().length()>0){
                 id.add(Integer.parseInt(ids.toString()));
             }
         }
         if(id.size()>0){
+            List<Locator> locators=locatorMapper.selectBatchIds(id);
             int status = locatorMapper.deleteBatchIds(id);
+            System.out.println("执行删除基站"+locators.size());
             if(status!=-1){
-                return JsonConfig.getJsonObj(CODE_OK,null);
+                //删除基站缓存
+                System.out.println("执行删除基站9"+locators.size());
+                for(Locator locator:locators){
+                    System.out.println("执行删除基站"+locator.getAddress());
+                    redisUtil.set(redis_key_locator+locator.getAddress(),null);
+                }
+                return JsonConfig.getJsonObj(CODE_OK,null,lang);
             }else{
-                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null);
+                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
             }
         }else{
-            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null);
+            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
         }
     }
 
@@ -152,14 +162,15 @@ public class LocatorControl {
         Locators_Sql locators_sql=new Locators_Sql();
 
         try{
-            List<Locator> gatewayList=locators_sql.selectByMap(locatorMapper,customer.getProject_key(),map_key);
+            List<Locator> StationList=locators_sql.selectByMap(locatorMapper,customer.getProject_key(),map_key);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", 1);
             jsonObject.put("msg", "ok");
-            jsonObject.put("count", gatewayList.size());
-            jsonObject.put("data", gatewayList);
+            jsonObject.put("count", StationList.size());
+            jsonObject.put("data", StationList);
             // System.out.println(System.currentTimeMillis());
-            return jsonObject;}catch (Exception e){
+            return jsonObject;
+        }catch (Exception e){
             System.out.println(e);
             return null;
         }
