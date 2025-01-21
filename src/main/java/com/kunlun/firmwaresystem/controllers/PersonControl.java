@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
@@ -69,7 +70,7 @@ public class PersonControl {
                 person.setOnline(person1.getOnline());
                 person.setLasttime(person1.getLasttime());
                 person1.setId(person.getId());
-                Fence fence = fenceMap.get(person1.getFence_id());
+                Fence fence = fenceMap.get(Optional.of(person1.getFence_id()));
                 if (fence != null) {
                     person.setFence_name(fence.getName());
                 }
@@ -79,7 +80,7 @@ public class PersonControl {
             }
         }
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", CODE_OK);
+        jsonObject.put("code", Optional.of(CODE_OK));
         jsonObject.put("msg", CODE_OK_txt);
         jsonObject.put("count", personList.getTotal());
         jsonObject.put("data", personList.getPersonList());

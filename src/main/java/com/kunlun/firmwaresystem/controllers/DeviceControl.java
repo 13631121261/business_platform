@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_Station;
@@ -79,58 +80,7 @@ public class DeviceControl {
         Customer customer = getCustomer(request);
         DeviceP_Sql  deviceP_sql=new DeviceP_Sql();
         PageDeviceP pageDeviceP=deviceP_sql.selectPageDeviceP(devicePMapper,Integer.valueOf(page),Integer.valueOf(limit),quickSearch,customer.getUserkey(),customer.getProject_key());
-        for(Devicep devicep:pageDeviceP.getDeviceList()){
-            if(devicePMap.get(devicep.getSn())==null){
-                continue;
-            }
 
-            System.out.println("输出="+devicep.getSn());
-            devicep.setLasttime(devicePMap.get(devicep.getSn()).getLasttime());
-            try {
-                if(devicep.getIs_area()==1){
-                    if(area_Map.get(devicep.getArea_id())!=null){
-                        devicep.setArea_name(area_Map.get(devicep.getArea_id()).getName());
-                    }
-
-                }else{
-                    devicep.setArea_name("未绑定");
-                }
-                System.out.println(devicep.getSn());
-                Devicep devicep1=devicePMap.get(devicep.getSn());
-                System.out.println(devicep1);
-                if(devicep1!=null){
-                    devicep.setStation_name(devicep1.getStation_name());
-                    devicep.setB_area_id(devicep1.getB_area_id());
-                    devicep.setB_area_name(devicep1.getB_area_name());
-                    devicep.setStation_mac(devicep1.getStation_mac());
-                    devicep.setLasttime(devicep1.getLasttime());
-                    devicep.setOnline(devicep1.getOnline());
-                    if(devicep.getOnline()==0){
-                        devicep.setBt(0);
-                        devicep.setSos(-1);
-                        devicep.setRun(-1);
-                    }else{
-                        devicep.setBt(devicep1.getBt());
-                        devicep.setSos(devicep1.getSos());
-                        devicep.setRun(devicep1.getRun());
-                    }
-
-                    devicep.setX(devicep1.getX());
-                    devicep.setY(devicep1.getY());
-                    devicep.setRssi(devicep1.getRssi());
-                    devicep.setMap_name(devicep1.getMap_name());
-                    devicep.setMap_key(devicep1.getMap_key());
-                    Fence fence=fenceMap.get(devicep1.getFence_id());
-                    if(fence!=null){
-                        devicep.setFence_name(fence.getName());
-                    }
-                    System.out.println("正常");
-                }
-
-            }catch (Exception e){
-                System.out.println("有点异常"+e.toString());
-            }
-        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", CODE_OK);
         jsonObject.put("msg", CODE_OK_txt);

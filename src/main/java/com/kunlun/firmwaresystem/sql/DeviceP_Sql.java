@@ -136,17 +136,23 @@ public class DeviceP_Sql {
     }
 
     public PageDeviceP selectPageDeviceP(DevicePMapper devicePMapper, int page, int limt, String search,String user_key,String project_key) {
-        LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
-        Page<Devicep> userPage = new Page<>(page, limt);
-        IPage<Devicep> userIPage;
-        //System.out.println("key="+user_key+"  "+project_key+"  s="+search);
 
-        userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key,project_key).like(Devicep::getSn,search).or()
-        .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key,project_key).like(Devicep::getPerson_name,search).or()
-        .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key,project_key).like(Devicep::getName,search);
-        userIPage = devicePMapper.selectPage(userPage, userLambdaQueryWrapper);
-        PageDeviceP pageDeviceP = new PageDeviceP(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
-        return pageDeviceP;
+       try {
+           LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+           Page<Devicep> userPage = new Page<>(page, limt);
+           IPage<Devicep> userIPage;
+           //System.out.println("key="+user_key+"  "+project_key+"  s="+search);
+
+           userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).or()
+                   .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getPerson_name, search).or()
+                   .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search);
+           userIPage = devicePMapper.selectPage(userPage, userLambdaQueryWrapper);
+           PageDeviceP pageDeviceP = new PageDeviceP(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
+           return pageDeviceP;
+       }catch (Exception e){
+           System.out.println("异常="+e.getMessage());
+           return null;
+       }
     }
 
     public boolean check(DevicePMapper devicePMapper, Devicep deviceP) {
