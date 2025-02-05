@@ -103,6 +103,12 @@ public class DeviceP_Sql {
         List<Devicep> deviceps = devicePMapper.selectList(userLambdaQueryWrapper);
         return deviceps;
     }
+    public    List<Devicep>  getDeviceByGroupID(DevicePMapper devicePMapper, int group_id) {
+        LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        userLambdaQueryWrapper.eq(Devicep::getGroup_id, group_id);
+        List<Devicep> deviceps = devicePMapper.selectList(userLambdaQueryWrapper);
+        return deviceps;
+    }
     public    List<Devicep>  getDeviceByFenceID(DevicePMapper devicePMapper, int fence_id) {
         LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         userLambdaQueryWrapper.eq(Devicep::getFence_id, fence_id);

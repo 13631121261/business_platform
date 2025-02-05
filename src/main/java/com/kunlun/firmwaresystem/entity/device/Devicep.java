@@ -45,7 +45,7 @@ public class Devicep {
     String atime,btime;
     String customer_key;
     double bt;
-
+    int group_id;
 
 
     int is_area;
@@ -90,6 +90,14 @@ public class Devicep {
         this.customer_key=customer_key;
         this.idcard=idcard;
         this.person_name=person_name;
+    }
+
+    public void setGroup_id(int group_id) {
+        this.group_id = group_id;
+    }
+
+    public int getGroup_id() {
+        return group_id;
     }
 
     public void setStation_name(String Station_name) {
