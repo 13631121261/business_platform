@@ -69,4 +69,15 @@ public class DevStatus<T> {
     public void setOffline_list(List<T> offline_list) {
         this.offline_list = offline_list;
     }
+
+    @Override
+    public String toString() {
+        return "DevStatus{" +
+                "online_sum=" + online_sum +
+                ", sum=" + sum +
+                ", offline_sum=" + offline_sum +
+                ", online_list=" + online_list +
+                ", offline_list=" + offline_list +
+                '}';
+    }
 }

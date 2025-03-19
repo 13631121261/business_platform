@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 public class MultipartResolverConfig {
     /*@Bean(name ="multipartResolver")
     public CommonsMultipartResolver multipartResolver() {
-        System.out.println("这生效");
+        myPrintln("这生效");
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
         multipartResolver.setDefaultEncoding(StandardCharsets.UTF_8.name());
         multipartResolver.setMaxUploadSize(2097152);//314572800

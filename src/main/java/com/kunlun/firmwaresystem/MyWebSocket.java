@@ -11,6 +11,8 @@ import java.nio.channels.SelectionKey;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class MyWebSocket extends WebSocketServer {
     private static MyWebSocket webSocket;
     private Map<String, WebSocket> connectlist;
@@ -19,6 +21,7 @@ public class MyWebSocket extends WebSocketServer {
         if (webSocket == null) {
             webSocket = new MyWebSocket(8088);
         }
+        myPrintln("网页链接"+webSocket);
         return webSocket;
     }
 
@@ -29,27 +32,27 @@ public class MyWebSocket extends WebSocketServer {
 
     @Override
     public void onOpen(org.java_websocket.WebSocket webSocket, ClientHandshake clientHandshake) {
-        System.out.println("onOpen" + webSocket.toString());
+        myPrintln("onOpen" + webSocket.toString());
 
     }
 
     @Override
     protected boolean onConnect(SelectionKey key) {
-        System.out.println("连接" + key.toString());
+        myPrintln("连接" + key.toString());
         return super.onConnect(key);
 
     }
 
     @Override
     public void onClose(org.java_websocket.WebSocket webSocket, int i, String s, boolean b) {
-        System.out.println("断开连接" + webSocket.getResourceDescriptor());
+        myPrintln("断开连接" + webSocket.getResourceDescriptor());
         connectlist.remove(s);
 
     }
 
     @Override
     public void onMessage(org.java_websocket.WebSocket webSocket, String s) {
-        System.out.println("接收消息" + s);
+        myPrintln("接收消息" + s);
       //  webSocket.send("收到了");
         connectlist.put(s, webSocket);
     }
@@ -65,11 +68,11 @@ public class MyWebSocket extends WebSocketServer {
     }
 
     public void sendData(String key, String msg) {
-      //  System.out.println("触发发送MyWebSocket");
+      //  myPrintln("触发发送MyWebSocket");
         WebSocket webSocket = connectlist.get(key);
         if (webSocket != null && webSocket.isOpen()) {
             webSocket.send(msg);
-            System.out.println("发送和");
+            myPrintln("发送和");
         }
 
     }

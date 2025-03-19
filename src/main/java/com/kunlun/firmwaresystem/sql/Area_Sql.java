@@ -24,7 +24,7 @@ public class Area_Sql {
             queryWrapper.eq("name", area.getName());
             queryWrapper.eq("project_key", area.getProject_key());
             Area area1 = areaMapper.selectOne(queryWrapper);
-            //System.out.println("申请的ID="+ devicep1.getId());
+            //myPrintln("申请的ID="+ devicep1.getId());
             area.setId(area1.getId());
             return true;
         }
@@ -59,7 +59,7 @@ public class Area_Sql {
         userLambdaQueryWrapper.eq(Area::getProject_key, project_key);
         userIPage = areaMapper.selectPage(userPage, userLambdaQueryWrapper);
 
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageArea pageArea = new PageArea(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageArea;
     }

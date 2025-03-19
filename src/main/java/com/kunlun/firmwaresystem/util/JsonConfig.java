@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 
 import java.util.HashMap;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class JsonConfig {
 
     //请求成功
@@ -143,7 +145,7 @@ public class JsonConfig {
         String b="/admin";
         String a=d+b;
         jsonObject1.put("routePath",a);
-        System.out.println(a);
+        myPrintln(a);
         jsonObject1.put("userInfo",object);
         jsonObject.put("data",jsonObject1);
         return jsonObject;

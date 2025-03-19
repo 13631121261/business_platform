@@ -1,6 +1,9 @@
 package com.kunlun.firmwaresystem.entity.device;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 public class Tagf {
+    @TableId(type = IdType.AUTO) // 确保 ID 为自增
     int id;
     String name;
     //0 表示为设备  1表示为人员
@@ -37,5 +40,15 @@ public class Tagf {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String toString() {
+        return "Tagf{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                ", project_key='" + project_key + '\'' +
+                '}';
     }
 }

@@ -22,7 +22,9 @@ import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.myMqttClientMap;
+//import static com.kunlun.firmwaresystem.NewSystemApplication.myMqttClientMap;
+import static com.kunlun.firmwaresystem.NewSystemApplication.mqttClient;
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 
 //import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.Push;
 
@@ -49,11 +51,11 @@ public class DirectExchangeConsumer {
             if (NewSystemApplication.check_sheetMap == null) {
                 return;
             }
-            for (Map.Entry<String, MyMqttClient> entry : myMqttClientMap.entrySet()) {
-                myMqttClient1= entry.getValue();
-               // System.out.println("key="+entry.getKey());
-                if (myMqttClient1 == null||!myMqttClient1.getStatus()) {
-                    System.out.println("2222myMqttClient=null");
+            //for (Map.Entry<String, MyMqttClient> entry : myMqttClientMap.entrySet()) {
+
+               // myPrintln("key="+entry.getKey());
+                if (mqttClient == null||!mqttClient.getStatus()) {
+                    myPrintln("2222myMqttClient=null");
                     return;
                 }
                 //全部的下发给网关的消息都在这里集中下发。
@@ -64,8 +66,8 @@ public class DirectExchangeConsumer {
                     myMqttClient1.sendToTopic(topic, data, 11);
                 }
               //  JSONObject jsonObject1 = JSONObject.parseObject(data);
-                //     System.out.println(sdf.format(new Date())+"发给网关关关了"+"id="+jsonObject1.getInteger("id"));
-            }
+                //     myPrintln(sdf.format(new Date())+"发给网关关关了"+"id="+jsonObject1.getInteger("id"));
+           // }
 
     }
 
@@ -85,12 +87,12 @@ public class DirectExchangeConsumer {
     @RabbitListener(queues = "sendtoMap",concurrency = "10")
     @RabbitHandler
     public void getQueue6Message(String msg) {
-       // System.out.println("这里"+msg);
+       // myPrintln("这里"+msg);
         JSONObject jsonObject = JSONObject.parseObject(msg);
         String key = jsonObject.getString("project_key");
         String data = jsonObject.getString("msg");
 
-        if (key != null && data != null) {
+        if (key != null&&!key.isEmpty() && data != null) {
 
             webSockettag.sendData(key, data);
         }
@@ -105,7 +107,7 @@ public class DirectExchangeConsumer {
                 String project_key=jsonObject.getString("project_key");
                 myMqttClient1=myMqttClientMap.get(project_key);
                 if(myMqttClient1!=null){
-                 //   System.out.println("实际主题="+topic);
+                 //   myPrintln("实际主题="+topic);
                     myMqttClient1.addSubTopic(topic);
                 }
 
@@ -129,11 +131,11 @@ public class DirectExchangeConsumer {
         String data = jsonObject.getString("msg");
         JSONObject jsonObject1 = JSONObject.parseObject(data);
         //udp  192.168.1.1:5656
-       // System.out.println("UDP="+udp);
+       // myPrintln("UDP="+udp);
         if(udp==null){
             return;
         }
-        System.out.println(sdf.format(new Date())+"发给UDP"+"id="+jsonObject1.getInteger("id"));
+        myPrintln(sdf.format(new Date())+"发给UDP"+"id="+jsonObject1.getInteger("id"));
         sendUdp(data,udp.split(":")[0],Integer.parseInt(udp.split(":")[1]));
     }*/
 
@@ -147,9 +149,9 @@ public class DirectExchangeConsumer {
             //创建DatagramSocket对象，数据包的发送和接受对象
             //调用ds对象的方法send，发送数据包
             ds.send(dp);
-            System.out.println("UDP发送完成");
+            myPrintln("UDP发送完成");
         } catch (Exception e) {
-            System.out.println("转发异常");
+            myPrintln("转发异常");
         }
     }
 

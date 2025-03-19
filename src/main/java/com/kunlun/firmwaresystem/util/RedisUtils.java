@@ -170,10 +170,10 @@ public class RedisUtils {
             return false;
         }
     }
-    public boolean setTimeOut_10s(String key, Object value) {
+    public boolean setTimeOut(String key, Object value,int time_out) {
         try {
             //redisTemplate.opsForValue().set(key, value);
-            redisTemplate.opsForValue().set(key, value,10, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(key, value,time_out, TimeUnit.SECONDS);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

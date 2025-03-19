@@ -39,7 +39,6 @@ public class HistoryControl {
             List<History> historyList = history_sql.getHistory(historyMapper, sn, type, Long.parseLong(start_time)*1000, Long.parseLong(stop_time)*1000, customer.getProject_key());
             List<MHistory> histories = new ArrayList<>();
             for (int i = 0; i < historyList.size(); i++) {
-                System.out.println(historyList.get(i));
                 if (i == 0) {
                     MHistory mHistory = new MHistory();
                     mHistory.setStart_time(historyList.get(i).getTime());
@@ -48,12 +47,17 @@ public class HistoryControl {
                     mHistory.setName(historyList.get(i).getName());
                     Map_Sql map_sql = new Map_Sql();
                     Map m = map_sql.getMapByMapkey(mapMapper, historyList.get(i).getMap_key());
-                    mHistory.setMap_name(m.getName());
-                    mHistory.setMap_data(m.getData());
+                    if(m != null) {
+                        mHistory.setMap_name(m.getName());
+                    }
+
+                    if (m != null) {
+                        mHistory.setMap_data(m.getData());
+                    }
                     mHistory.addHistory(historyList.get(i));
                     mHistory.setId(1);
                     histories.add(mHistory);
-                    System.out.println("首次=" + i);
+                    myPrintln("首次=" + i);
 
                 } else {
                     if(i==historyList.size()-1){
@@ -65,19 +69,19 @@ public class HistoryControl {
                     //没有换地图
                     if (i != 0 && historyList.get(i).getMap_key().equals(historyList.get(i - 1).getMap_key())) {
                         //没有离线
-                        if (i != 0 && (historyList.get(i).getTime() - historyList.get(i - 1).getTime() <= 10*1000)) {
+                        if (i != 0 && (historyList.get(i).getTime() - historyList.get(i - 1).getTime() <= 20*1000)) {
                             MHistory mHistory = histories.get(histories.size() - 1);
                             mHistory.addHistory(historyList.get(i));
-                          //  System.out.println("正常=" + i);
+                          //  myPrintln("正常=" + i);
                         }//连续10秒没有接收到信号，判断为重新上线
-                        else if (i != 0 && (historyList.get(i).getTime() - historyList.get(i - 1).getTime() > 10*1000)) {
-                           // System.out.println("新建=" + histories.size());
-                      // System.out.println("时间="+historyList.get(i).getTime());
-                       // System.out.println("时间="+historyList.get(i-1).getTime());
+                        else if (i != 0 && (historyList.get(i).getTime() - historyList.get(i - 1).getTime() > 20*1000)) {
+                           // myPrintln("新建=" + histories.size());
+                      // myPrintln("时间="+historyList.get(i).getTime());
+                       // myPrintln("时间="+historyList.get(i-1).getTime());
                             MHistory mHistory = histories.get(histories.size() - 1);
 
                             mHistory.setStop_time(historyList.get(i-1).getTime());
-                           // System.out.println("数据长度2=" + mHistory.getList().size());
+                           // myPrintln("数据长度2=" + mHistory.getList().size());
                             //离线的新建
                             MHistory mHistory1 = new MHistory();
                             mHistory1.setId(histories.size()+1);
@@ -94,10 +98,10 @@ public class HistoryControl {
                         }
                     }//换了地图
                     else {
-                        System.out.println("换地图=" + i);
+                        myPrintln("换地图=" + i);
                         MHistory mHistory = histories.get(histories.size() - 1);
                         mHistory.setStop_time(historyList.get(i-1).getTime());
-                        System.out.println("数据长度1=" + mHistory.getList().size());
+                        myPrintln("数据长度1=" + mHistory.getList().size());
                         //离线的新建
                         MHistory mHistory1 = new MHistory();
                         mHistory1.setId(histories.size()+1);
@@ -107,8 +111,13 @@ public class HistoryControl {
                         mHistory1.setName(historyList.get(i).getName());
                         Map_Sql map_sql = new Map_Sql();
                         Map m = map_sql.getMapByMapkey(mapMapper, historyList.get(i).getMap_key());
-                        mHistory1.setMap_name(m.getName());
-                        mHistory1.setMap_data(m.getData());
+                        if (m != null) {
+                            mHistory1.setMap_name(m.getName());
+                        }
+
+                        if (m != null) {
+                            mHistory1.setMap_data(m.getData());
+                        }
                         mHistory1.addHistory(historyList.get(i));
                         histories.add(mHistory1);
                     }
@@ -119,10 +128,10 @@ public class HistoryControl {
             jsonObject.put("code", 1);
             jsonObject.put("msg", "ok");
             jsonObject.put("data", histories);
-              System.out.println(histories.get(0).getList().size());
+            //  myPrintln(histories.get(0).getList().size());
             return jsonObject;
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            myPrintln(e.getMessage());
             return null;
         }
     }
@@ -255,7 +264,7 @@ public class HistoryControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -72,7 +74,7 @@ public class StationTypeControl {
 
     @RequestMapping(value = "/userApi/StationType/add", method = RequestMethod.POST,produces = "application/json")
     public JSONObject addStationType(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
-        System.out.println(jsonObject.toString());
+
         JSONObject response = null;
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
@@ -88,7 +90,7 @@ public class StationTypeControl {
                 response = JsonConfig.getJsonObj(JsonConfig.CODE_REPEAT, null, lang);
             }
         }catch (Exception e){
-            System.out.println("---"+e);
+            myPrintln("---"+e);
         }
         return response;
     }
@@ -109,7 +111,7 @@ public class StationTypeControl {
 
     @RequestMapping(value = "userApi/StationType/edit", method = RequestMethod.POST, produces = "application/json")
     public JSONObject update(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
-        System.out.println(jsonObject.toString());
+        myPrintln(jsonObject.toString());
         JSONObject response = null;
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
@@ -154,7 +156,7 @@ public class StationTypeControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 

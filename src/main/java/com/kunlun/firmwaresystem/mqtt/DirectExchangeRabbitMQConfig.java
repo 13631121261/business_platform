@@ -24,13 +24,13 @@ public class DirectExchangeRabbitMQConfig {
     // 声明直连交换机
     @Bean
     public DirectExchange directExchange() {
-        return new DirectExchange(directExchangeName);
+        return new DirectExchange(directExchangeName,false,    false);
     }
 
     // 声明消息队列
     @Bean
     public Queue messageQueue1() {
-        return new Queue("sendToStation");
+        return new Queue("sendToStation",false);
     }
 
 /*
@@ -48,11 +48,11 @@ public class DirectExchangeRabbitMQConfig {
 
     @Bean
     public Queue messageQueue2() {
-        return new Queue("transpond");
+        return new Queue("transpond",false);
     }
     @Bean
     public Queue messageQueue5() {
-        return new Queue("mqtt_topic");
+        return new Queue("mqtt_topic",false);
     }
 /*    @Bean
     public Queue messageQueue4() {
@@ -60,11 +60,11 @@ public class DirectExchangeRabbitMQConfig {
     }*/
     @Bean
     public Queue messageQueue3() {
-        return new Queue("sendtoHtml");
+        return new Queue("sendtoHtml",false);
     }
     @Bean
     public Queue messageQueue6() {
-        return new Queue(sendtoMap);
+        return new Queue(sendtoMap,false);
     }
 
     // 向主题交换机上绑定队列

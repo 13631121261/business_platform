@@ -51,12 +51,18 @@ public class Group_Sql {
         userLambdaQueryWrapper.eq(Group::getProject_key, project_key);
         userIPage = groupMapper.selectPage(userPage, userLambdaQueryWrapper);
 
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageGroup pageGroup = new PageGroup(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageGroup;
     }
 
-
+    public    List<Group> getFromFenceGroup(GroupMapper groupMapper,String project_key,int f_g_id) {
+        QueryWrapper<Group> queryWrapper = Wrappers.query();
+        queryWrapper.eq("project_key",project_key);
+        queryWrapper.eq("f_g_id",f_g_id);
+        List<Group> groups= groupMapper.selectList(queryWrapper);
+        return groups;
+    }
     public    List<Group> getAll(GroupMapper groupMapper,String project_key) {
         QueryWrapper<Group> queryWrapper = Wrappers.query();
         queryWrapper.eq("project_key",project_key);

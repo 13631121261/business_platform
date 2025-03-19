@@ -27,15 +27,14 @@ public class DeviceTask {
     @Autowired
     private CheckRecordMapper checkRecordMapper;
     private HashMap<String, Devicep> DevicePMap;
-    public static List<Record> recordList = new ArrayList<>();
-    public static Map<String, Record> recordMap = new HashMap<>();
+
     int runcount = 0;
     int runH=0;
     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 
     SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.s");//设置日期格式1
 
-    @Scheduled(cron = "*/60 * * * * ?")
+    @Scheduled(cron = "*/59 * * * * ?")
     public void execute() throws Exception
     {
         runcount++;
@@ -46,17 +45,17 @@ public class DeviceTask {
         long thisTime = System.currentTimeMillis()/1000;
         Date date=new Date(thisTime);
         int h=date.getHours();
-        System.out.println("小时="+h);
+        myPrintln("小时="+h);
         int stoptime= check_sheetMap.get(key).getStoptime();
         int starttime= check_sheetMap.get(key).getStarttime();
       //  stoptime=1;
         long dtime=60*60*(stoptime-starttime);
-        System.out.println("资产设备定时检测运行  60秒一次-------------------------------------------"+runcount);
-        System.out.println(stoptime+"时 才会检测-------------------------------------------");
+        myPrintln("资产设备定时检测运行  60秒一次-------------------------------------------"+runcount);
+        myPrintln(stoptime+"时 才会检测-------------------------------------------");
 
         //每个时间周期只执行一次
         if(h==stoptime&&runH!=h) {
-            System.out.println("资产盘点  "+stoptime+"小时一次-------------------------------------------"+runcount);
+            myPrintln("资产盘点  "+stoptime+"小时一次-------------------------------------------"+runcount);
             runH = h;
             runcount = 0;
             int count = 0;
@@ -78,7 +77,7 @@ public class DeviceTask {
                 //不是这个账号下的设备，不在这里做判断
 
                 count++;
-                System.out.println("输出多少次" + runcount++ + "  sn= " + sn);
+                myPrintln("输出多少次" + runcount++ + "  sn= " + sn);
                 if (deviceP.getIsbind() == 1) {
                     onbind++;
                     //只有绑定信标的设备才会有在线离线的说法。
@@ -115,13 +114,13 @@ public class DeviceTask {
             checkRecordSql.addRecord(checkRecordMapper, check_record);
         }
         else{
-            System.out.println("等到"+stoptime+"在运行");
+            myPrintln("等到"+stoptime+"在运行");
         }
     }*/
 
     }
 
-    public   void  createExcelTwo(String path , String[] title, Map<String, Devicep> map_list) {
+    /*public   void  createExcelTwo(String path , String[] title, Map<String, Devicep> map_list) {
         HSSFWorkbook workbook =new  HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet();
         HSSFRow row=null;
@@ -187,14 +186,14 @@ public class DeviceTask {
             workbook.write(stream);
             stream.close();
         }catch (IOException e){
-            System.out.println("盘点记录文件保存异常"+e.getMessage());
+            myPrintln("盘点记录文件保存异常"+e.getMessage());
         }
 
-    }
+    }*/
     public static void writeLog(String log) {
         /*try {
             String fileName = paths + "log.txt";
-          //  System.out.println("文件名称=" + fileName);
+          //  myPrintln("文件名称=" + fileName);
             File file = new File(fileName);
             if (!file.exists()) {
                 file.createNewFile();
@@ -210,7 +209,7 @@ public class DeviceTask {
                 e.printStackTrace();
             }
         } catch (Exception e) {
-            System.out.println("文件夹创建失败");
+            myPrintln("文件夹创建失败");
         }*/
     }
 }

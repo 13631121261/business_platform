@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public  class Menu_Sql {
     public boolean addArea(MenuMapper menuMapper, Menu menu) {
         /*    boolean status = check(menuMapper, menu);
@@ -27,7 +29,7 @@ public  class Menu_Sql {
                 /*  QueryWrapper<Area> queryWrapper = Wrappers.query();
               queryWrapper.eq("name",area.getName());
                 Area area1=areaMapper.selectOne(queryWrapper);
-                System.out.println("申请的ID="+area1.getId());
+                myPrintln("申请的ID="+area1.getId());
                 area.setId(area1.getId())*/;
         return true;
         //}
@@ -51,9 +53,8 @@ public  class Menu_Sql {
         userLambdaQueryWrapper.like(Area::getName, name);
         userLambdaQueryWrapper.eq(Area::getUserkey, userkey);
         userIPage = areaMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageArea pageArea = new PageArea(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageArea;
     }
@@ -106,7 +107,7 @@ public  class Menu_Sql {
             }*/
             return departmentList;
         }catch (Exception e){
-            System.out.println("异常="+e);
+            myPrintln("异常="+e);
             return null;
         }
 
@@ -116,7 +117,7 @@ public  class Menu_Sql {
         QueryWrapper<Menu> queryWrapper = Wrappers.query();
         queryWrapper.eq("shows",0);
         List<Menu> menus= menuMapper.selectList(queryWrapper);
-            System.out.println("长度="+menus.size());
+
         List<Menu> departmentList=new ArrayList<>();
         Map<Integer,Menu> menuHashMap=new HashMap<>();
         for(int i=0;i<menus.size();i++){
@@ -136,7 +137,7 @@ public  class Menu_Sql {
             }*/
         return departmentList;}
         catch (Exception e){
-            System.out.println("异常="+e);
+            myPrintln("异常="+e);
             return null;
         }
 

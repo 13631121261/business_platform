@@ -12,11 +12,13 @@ import com.kunlun.firmwaresystem.entity.Person;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.StationMapper;
+import com.kunlun.firmwaresystem.mappers.TagMapper;
 import com.kunlun.firmwaresystem.sql.Tag_Sql;
 import com.kunlun.firmwaresystem.sql.DeviceP_Sql;
 import com.kunlun.firmwaresystem.util.JsonConfig;
 import com.kunlun.firmwaresystem.util.RedisUtils;
 import com.kunlun.firmwaresystem.util.SystemUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,6 +39,8 @@ public class TagControl {
 
     @Resource
     private StationMapper StationMapper;
+    @Autowired
+    private TagMapper tagMapper;
 
     @RequestMapping(value = "userApi/Tag/index", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAlltag(HttpServletRequest request) {
@@ -60,14 +64,16 @@ public class TagControl {
         PageTag pageTag = tag_sql.selectPageTag(tagMapper,page,limit,quickSearch,customer.getUserkey(),customer.getProject_key());
         if(pageTag.getTagList().size()>0){
             for(Tag tag : pageTag.getTagList()){
-                Tag tag1 =(Tag)redisUtil.get(tag_address+tag.getMac());
+                Tag tag1=tagsMap.get(tag.getMac());
                 if(tag1!=null){
                     tag.setMap_key(tag1.getMap_key());
                     tag.setOnline(tag1.getOnline());
                     tag.setLastTime(tag1.getLastTime());
+                    tag.setRun(tag1.getRun());
+                    tag.setSos(tag1.getSos());
+                    tag.setBt(tag1.getBt());
                 }
                 }
-
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", 1);
@@ -81,10 +87,8 @@ public class TagControl {
     public JSONObject getAlltag1(HttpServletRequest request) {
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
-        String type=request.getParameter("type");
         Tag_Sql tag_sql =new Tag_Sql();
-        System.out.println("类型="+type);
-        List<Tag> tagList = tag_sql.getunAllTag(tagMapper,customer.getUserkey(),customer.getProject_key(),type);
+        List<Tag> tagList = tag_sql.getunAllTag(tagMapper,customer.getUserkey(),customer.getProject_key());
         JSONObject jsonObject = new JSONObject();
         if(lang!=null&&lang.equals("en")){
             tagList.add(0,new Tag("UnBind"));
@@ -92,7 +96,6 @@ public class TagControl {
         else{
             tagList.add(0,new Tag("不绑定标签"));
         }
-
         jsonObject.put("code", 1);
         jsonObject.put("msg", "ok");
         jsonObject.put("count", tagList.size());
@@ -100,8 +103,7 @@ public class TagControl {
         return jsonObject;
     }
 
-
-
+    
     @RequestMapping(value = "userApi/Tag/del", method = RequestMethod.POST, produces = "application/json")
     public JSONObject deletetag(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         Customer customer = getCustomer(request);
@@ -113,6 +115,14 @@ public class TagControl {
                 id.add(Integer.parseInt(ids.toString()));
             }
         }
+        for(int i=0;i<id.size();i++){
+            Tag    tag=tagMapper.selectById(id.get(i));
+            if (tag != null) {
+                if (tag.getIsbind()==1) {
+                    return JsonConfig.getJsonObj(CODE_10,"",customer.getLang());
+                }
+            }
+        }
         if(id.size()>0){
             int status = tag_sql.deletes(tagMapper, id);
             return JsonConfig.getJsonObj(CODE_OK,null,lang);
@@ -122,7 +132,7 @@ public class TagControl {
     }
     @RequestMapping(value = "userApi/Tag/add", method = RequestMethod.POST, produces = "application/json")
     public JSONObject addtag(HttpServletRequest request, @RequestBody JSONObject json) {
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
         Tag_Sql tag_sql =new Tag_Sql();
@@ -153,6 +163,7 @@ public class TagControl {
                 break;
         }
         boolean status= tag_sql.addTag(tagMapper, tag);
+        tagsMap=tag_sql.getAllTag(tagMapper);
         if(status){
 
             return JsonConfig.getJsonObj(CODE_OK,null,lang);
@@ -164,11 +175,11 @@ public class TagControl {
      @RequestMapping(value = "/userApi/uploadTag", method = RequestMethod.POST)
     public JSONObject uploadtag(HttpServletRequest request, @RequestParam("data") MultipartFile file, HttpServletResponse response)
              throws IOException {
-         System.out.println("ssssssssssss" + file.getName());
+         myPrintln("ssssssssssss" + file.getName());
          Customer customer = getCustomer(request);
          File outfile = new File(file.getName()+System.currentTimeMillis() + ".xlsx");
          outfile.createNewFile();
-         System.out.println("666" + file.getName());
+         myPrintln("666" + file.getName());
          if (file == null) {
           return  JsonConfig.getJsonObj(CODE_13,null,customer.getLang());
          }
@@ -176,14 +187,14 @@ public class TagControl {
          try {
              data = SystemUtil.readExcel(file, new String[]{"mac", "type"});
          } catch (Exception e) {
-             System.out.println("特别特别" + e);
+             myPrintln("特别特别" + e);
          }
          if (data == null) {
                  return  JsonConfig.getJsonObj(CODE_PARAMETER_TYPE_ERROR,null,customer.getLang());
          } else {
              Tag_Sql tag_sql = new Tag_Sql();
              for (Map<String, String> map : data) {
-                 System.out.println("循环");
+                 myPrintln("循环");
                  Tag tag = new Tag();
                  String types = map.get("type");
                  String mac=map.get("mac");
@@ -227,7 +238,7 @@ public class TagControl {
              }
              SystemUtil.writeExcel(outfile, new String[]{"mac","type","result"}, data);
              String file_name=outfile.getAbsolutePath();
-             System.out.println("文件保存地址="+file_name);
+             myPrintln("文件保存地址="+file_name);
              redisUtil.set("file_name",file_name);
              return JsonConfig.getJsonObj(CODE_OK,file_name,customer.getLang());
 
@@ -265,20 +276,20 @@ public class TagControl {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println("----------file download---" + file.getPath());
+            myPrintln("----------file download---" + file.getPath());
             try {
                 bis.close();
                 fis.close();
                 file.delete();
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("删除文件异常");
+                myPrintln("删除文件异常");
             }
         }
     }
   /*  @RequestMapping(value = "userApi/uploadtag", method = RequestMethod.POST, produces = "application/json")
     public String upload(MultipartHttpServletRequest request){
-        System.out.println("上传信标");
+        myPrintln("上传信标");
         Enumeration<String> parameter= request.getParameterNames();
         String project_key="";
         while (parameter.hasMoreElements()) {
@@ -286,9 +297,9 @@ public class TagControl {
             project_key=project_key+request.getParameter(parameter.nextElement());
         }
         if(project_key.length()>0){
-            System.out.println("旧的输出key=" +project_key);
+            myPrintln("旧的输出key=" +project_key);
         }else{
-            System.out.println("需要新的key  异常"  );
+            myPrintln("需要新的key  异常"  );
         }
         Map<String, MultipartFile> map = request.getFileMap();
         List<MultipartFile> files=new ArrayList<>();
@@ -298,7 +309,7 @@ public class TagControl {
                 try {
 
                     data = entry.getValue().getBytes();
-                    // System.out.println(svg_data);
+                    // myPrintln(svg_data);
                     File outfile=new File("result.xlsx");
                     outfile.createNewFile();
                     FileOutputStream inputStream=new FileOutputStream(outfile);
@@ -306,12 +317,12 @@ public class TagControl {
 
                     return map_key;
                 } catch (IOException ioException) {
-                    System.err.println("File Error!");
+                    System.err.myPrintln("File Error!");
                     return  "";
                 }
             }
-            //    System.out.println(entry.getKey());
-            //   System.out.println(entry.getValue().getSize());
+            //    myPrintln(entry.getKey());
+            //   myPrintln(entry.getValue().getSize());
             files.add(entry.getValue());
         }
 
@@ -319,7 +330,7 @@ public class TagControl {
     }*/
     @RequestMapping(value = "userApi/getTagByMap", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getStationbyMap(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "map_key") String map_key) {
-        // System.out.println(System.currentTimeMillis());
+        // myPrintln(System.currentTimeMillis());
         Customer customer = getCustomer(request);
         DeviceP_Sql deviceP_sql=new DeviceP_Sql();
         Map<String,Devicep> deviceps=deviceP_sql.getAllDeviceP(devicePMapper,customer.getUserkey(),customer.getProject_key());
@@ -334,16 +345,16 @@ public class TagControl {
             jsonObject.put("msg", "ok");
             jsonObject.put("count", deviceps1.size());
             jsonObject.put("data", deviceps1);
-            // System.out.println(System.currentTimeMillis());
+            // myPrintln(System.currentTimeMillis());
             return jsonObject;}catch (Exception e){
-            System.out.println(e);
+            myPrintln(e.toString());
             return null;
         }
     }
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 

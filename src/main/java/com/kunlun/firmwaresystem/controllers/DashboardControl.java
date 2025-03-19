@@ -65,7 +65,7 @@ public class DashboardControl {
                 beacon.setOnline(beacon1.getOnline());
                 if(beacon.getIsbind()==1&&beacon.getBind_type()==1){
                     if(beacon.getDevice_sn()!=null){
-                        System.out.println(beacon.getDevice_sn());
+                        myPrintln(beacon.getDevice_sn());
                         Devicep devicep=devicePMap.get(beacon.getDevice_sn());
                         if(devicep!=null){
                             beacon.setDevice_name(devicep.getName());
@@ -74,7 +74,7 @@ public class DashboardControl {
                 }
                 if(beacon.getIsbind()==1&&beacon.getBind_type()==2){
                     if(beacon.getDevice_sn()!=null){
-                        System.out.println(beacon.getDevice_sn());
+                        myPrintln(beacon.getDevice_sn());
                         Person person=personMap.get(beacon.getDevice_sn());
                         if(person!=null){
                             beacon.setDevice_name(person.getName());
@@ -97,7 +97,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
         String lang=customer.getLang();
         DevStatus devStatus=(DevStatus) redisUtil.get(redis_key_device_project+customer.getProject_key());
         if(devStatus!=null){
-            System.out.println(devStatus);
+            myPrintln(devStatus.toString());
         }
         return   getJsonObj(CODE_OK,devStatus,lang);
     }
@@ -108,7 +108,17 @@ public JSONObject getAssetState(HttpServletRequest request) {
         String lang=customer.getLang();
         DevStatus devStatus=(DevStatus) redisUtil.get(redis_key_beacon_project+customer.getProject_key());
         if(devStatus!=null){
-            System.out.println(devStatus);
+            myPrintln(devStatus.toString());
+        }
+        return   getJsonObj(CODE_OK,devStatus,lang);
+    }
+    @RequestMapping(value = "userApi/getPersonState", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getPersonState(HttpServletRequest request) {
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
+        DevStatus devStatus=(DevStatus) redisUtil.get(redis_key_person_project+customer.getProject_key());
+        if(devStatus!=null){
+            myPrintln(devStatus.toString());
         }
         return   getJsonObj(CODE_OK,devStatus,lang);
     }
@@ -118,7 +128,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
         String lang=customer.getLang();
         DevStatus devStatus=(DevStatus) redisUtil.get(redis_key_locator_project+customer.getProject_key());
         if(devStatus!=null){
-            System.out.println(devStatus);
+            myPrintln(devStatus.toString());
         }
         return   getJsonObj(CODE_OK,devStatus,lang);
     }
@@ -251,19 +261,26 @@ public JSONObject getAssetState(HttpServletRequest request) {
                 Devicep devicep=devicePMap.get(sn);
                 if(devicep!=null&&devicep.getMap_key()!=null&&devicep.getMap_key().equals(map_key)){
                    if(devicep.getOnline()==1){
-                       System.out.println(devicep);
+                      // myPrintln(devicep);
                        state[0]++;
-                   }else{
-                       state[1]++;
                    }
 
+                }
+            }
+            for(String idcard:personMap.keySet()){
+                Person person=personMap.get(idcard);
+                if(person!=null&&person.getMap_key()!=null&&person.getMap_key().equals(map_key)){
+                    if(person.getOnline()==1){
+                        // myPrintln(devicep);
+                        state[1]++;
+                    }
                 }
             }
             T t=new T();
             t.setName(map.getName());
             t.setOff(state[1]);
             t.setOn(state[0]);
-            System.out.println(t.toString());
+            myPrintln(t.toString());
             map_device.add(t);
 
         }
@@ -271,13 +288,13 @@ public JSONObject getAssetState(HttpServletRequest request) {
         jsonObject.put("code", 1);
         jsonObject.put("msg", "ok");
         jsonObject.put("data", map_device);
-        System.out.println(jsonObject.toString());
+        myPrintln(jsonObject.toString());
         return  jsonObject;
     }
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 

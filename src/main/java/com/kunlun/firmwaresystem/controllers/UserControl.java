@@ -95,14 +95,14 @@ public class UserControl {
             jsonObject = JsonConfig.getJsonObj(JsonConfig.CODE_RESPONSE_MORE, null,lang);
         } else {
             customer=customerList.get(0);
-            System.out.println("账号="+customer);
+            myPrintln("账号="+customer);
            String toketn="";
            if(customer.getType()==1){
                toketn = Base64.getEncoder().encodeToString((customer.getUserkey() + "_" + System.currentTimeMillis()).getBytes()).replaceAll("\\+", "");
            }else{
                toketn = Base64.getEncoder().encodeToString((customer.getCustomerkey() + "_" + System.currentTimeMillis()).getBytes()).replaceAll("\\+", "");
            }
-            System.out.println( new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+            myPrintln( new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
             customer.setToken(toketn);
             customer.setLast_login_time(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
             customer.setRefresh_token("");
@@ -115,7 +115,7 @@ public class UserControl {
             redisUtil.set(toketn, customer, ExpireTime);
 
             jsonObject = JsonConfig.getJsonToken(CODE_OK, customer,toketn,lang);
-            System.out.println("登录信息=" + customer);
+            myPrintln("登录信息=" + customer);
         }
 
         return jsonObject;
@@ -131,7 +131,7 @@ public class UserControl {
        String lang= customer.getLang();
        String project_key=httpRequest.getParameter("project_key");
        String time=( new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        System.out.println("获取参数"+customer.toString());
+        myPrintln("获取参数"+customer.toString());
        if(customer!=null){
             JSONObject data = new JSONObject();
             JSONObject json = new JSONObject();
@@ -146,10 +146,10 @@ public class UserControl {
             adminInfo.put("username",customer.getUsername());
             adminInfo.put("project_key",project_key);
             data.put("adminInfo",adminInfo);
-           String api="{\"siteName\": \"资产管理平台\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
+           String api="{\"siteName\": \"业务管理平台\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
 
            if(lang.equals("en")){
-               api="{\"siteName\": \"Asset Management Platform\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
+               api="{\"siteName\": \"Business Management Platform\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
            }
            JSONObject apiUrl=JSONObject.parseObject(api);
             data.put("time",System.currentTimeMillis()/1000);
@@ -270,8 +270,8 @@ public class UserControl {
                 return json;
             }
             else if(customer.getType()==1&&project_key!=null||customer.getType()==2){
-                System.out.println("账号"+customer.getProject_key());
-                System.out.println("语言="+customer.getLang());
+                myPrintln("账号"+customer.getProject_key());
+                myPrintln("语言="+customer.getLang());
                 switch (lang){
                     case  "en":
                         List<Menu_en> list=null;
@@ -288,7 +288,7 @@ public class UserControl {
                                 return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",lang);
                             }
                             else{
-                                System.out.println("RoseId"+customer.getRoles_id().substring(1));
+                                myPrintln("RoseId"+customer.getRoles_id().substring(1));
                                 String[] rolesid=customer.getRoles_id().substring(1).split("-");
                                 Roles roles=null;
                                 MenuEn_Sql menu_sql=new MenuEn_Sql();
@@ -296,7 +296,7 @@ public class UserControl {
                                 List<Integer> ids=new ArrayList<Integer>();
                                 List<Integer> ids1=new ArrayList<Integer>();
                                 for(String id:rolesid){
-                                    System.out.println("获取具体的权限ID");
+                                    myPrintln("获取具体的权限ID");
                                     roles=roles_sql.getOneRoles(rolesMapper,Integer.parseInt(id));
                                     String[] menu_ids=roles.getRules();
                                     for(String a:menu_ids){
@@ -315,7 +315,7 @@ public class UserControl {
                         /* JSONArray.parseArray(list.*/
                         // JSONArray menu=JSONArray.parseArray(menus);
                         //   data.put("menus",menu);
-                        System.out.println("id="+list.toString());
+                        myPrintln("id="+list.toString());
                         data.put("menus",list);
                         json.put("data",data);
                         return json;
@@ -328,14 +328,14 @@ public class UserControl {
                             customer.setProject_key(project_key);
                             redisUtil.set(httpRequest.getHeader("batoken"),customer,600);
                         }else if(customer.getType()==2){
-                            System.out.println("类型2");
+                            myPrintln("类型2");
                             //普通管理员，获取对应的权限
                             project_key=customer.getProject_key();
                             if(project_key==null||project_key.equals("")){
                                 return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",lang);
                             }
                             else{
-                                System.out.println("RoseId"+customer.getRoles_id().substring(1));
+                                myPrintln("RoseId"+customer.getRoles_id().substring(1));
                                 String[] rolesid=customer.getRoles_id().substring(1).split("-");
                                 Roles roles=null;
                                 Menu_Sql menu_sql=new Menu_Sql();
@@ -343,22 +343,22 @@ public class UserControl {
                                 List<Integer> ids=new ArrayList<Integer>();
                                 List<Integer> ids1=new ArrayList<Integer>();
                                 for(String id:rolesid){
-                                    System.out.println("RoseId"+id);
+                                    myPrintln("RoseId"+id);
                                     roles=roles_sql.getOneRoles(rolesMapper,Integer.parseInt(id));
                                     String[] menu_ids=roles.getRules();
                                     for(String a:menu_ids){
-                                        System.out.println("RoseId"+a);
+                                        myPrintln("RoseId"+a);
                                         ids.add(Integer.parseInt(a));
                                     }
                                 }
                                 for(int id:ids){
-                                    System.out.println("ids1+"+id);
+                                    myPrintln("ids1+"+id);
                                     ids1.add(id);
                                     Menu menu=  menu_sql.getMenu(menuMapper,id);
-                                    System.out.println(menu);
+                                    myPrintln(menu.toString());
                                     getMenu(menu_sql,menu.getPid(),ids1);
                                 }
-                                System.out.println("sdsd"+ids1);
+                                myPrintln("sdsd"+ids1);
                                 list1=menu_sql.getMenu(menuMapper,ids1);
                             }
                         }
@@ -389,7 +389,7 @@ public class UserControl {
       return (JSONObject) new JSONObject().put("data","cunstomer账号为空");
     }
 private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
-    System.out.println(" pid="+p_id);
+    myPrintln(" pid="+p_id);
     if(p_id!=0) {
         ids.add(p_id);
         Menu m = menu_sql.getMenu(menuMapper, p_id);
@@ -428,7 +428,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
 
 
         token=request.getHeader("batoken");
-        System.out.println("token"+token);
+        myPrintln("token"+token);
 
         Customer customer=(Customer)  redisUtil.get(token);
         String lang=customer.getLang();
@@ -457,7 +457,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     public com.alibaba.fastjson.JSONObject getDashboard(HttpServletRequest request){
 
        String token= request.getHeader("batoken");
-        System.out.println("Token="+token);
+        myPrintln("Token="+token);
        String a=    "{\n"+
                 "    \"code\": 1,\n"+
                 "    \"msg\": \"\",\n"+
@@ -473,7 +473,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/setMenu", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public JSONObject setMenu(HttpServletRequest request, HttpServletResponse httpServletResponse, @RequestBody JSONArray json) {
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         Gson gson = new Gson();
         ArrayList<Menu> menuArrayList  = gson.fromJson(json.toString(), new TypeToken<List<Menu>>(){}.getType());
         for(Menu menu:menuArrayList){
@@ -483,20 +483,20 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
 
     }
     private Menu getNext(Menu menu){
-       // System.out.println(menu);
+       // myPrintln(menu);
         if(menu.getChildren()!=null&&menu.getChildren().size()>0){
-            System.out.println(menu);
+
             addMenu(menu);
             for(Menu menus:menu.getChildren()){
-             //   System.out.println(menu);
+             //   myPrintln(menu);
                  getNext(menus);
             }
         }else{
-            System.out.println(menu);
+
             addMenu(menu);
-           // System.out.println("111");
+           // myPrintln("111");
         }
-    //    System.out.println("终止");
+    //    myPrintln("终止");
       return null;
     }
     private void addMenu(Menu menu){
@@ -589,7 +589,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         String rules="";
         int id=100;
         for(int i=0;i<jsonArray.size();i++){
-            System.out.println(jsonArray.get(i).toString());
+            myPrintln(jsonArray.get(i).toString());
             rules=rules+","+jsonArray.get(i).toString();
             if(Integer.parseInt(jsonArray.get(i).toString())<id){
                 id=Integer.parseInt(jsonArray.get(i).toString());
@@ -625,7 +625,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/Roles/del", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public JSONObject deleteRoles(HttpServletRequest request, @RequestBody JSONArray json) {
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
         if(json==null||json.size()==0){
@@ -635,15 +635,15 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             Customer_sql customer_sql=new Customer_sql();
             for(Object jsonObject:json){
                 try {
-                    System.out.println(jsonObject.toString());
+                    myPrintln(jsonObject.toString());
                      id = Integer.parseInt(jsonObject.toString());
                    boolean status= customer_sql.check(customerMapper,id,customer.getUserkey());
                    if(status){
-                       System.out.println("1");
+                       myPrintln("1");
                        return JsonConfig.getJsonObj(CODE_10,CODE_UNBIND,lang);
                    }
                 }catch (Exception e){
-                    System.out.println("2"+e.getMessage());
+                    myPrintln("2"+e.getMessage());
                     return JsonConfig.getJsonObj(CODE_DR,CODE_DR_txt,lang);
                 }
             }
@@ -653,7 +653,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     id = Integer.parseInt(jsonObject.toString());
                     roles_sql.delete(rolesMapper,id);
                 }catch (Exception e){
-                    System.out.println("3");
+                    myPrintln("3");
                     return JsonConfig.getJsonObj(CODE_DR,CODE_DR_txt,lang);
                 }
             }
@@ -665,7 +665,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/Roles/add", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public JSONObject addRoles(HttpServletRequest request, HttpServletResponse httpServletResponse, @RequestBody JSONObject json) {
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
         String project_key=customer.getProject_key();
@@ -681,13 +681,13 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             String rules="";
             int id=100;
             for(int i=0;i<jsonArray.size();i++){
-                System.out.println(jsonArray.get(i).toString());
+                myPrintln(jsonArray.get(i).toString());
                 rules=rules+","+jsonArray.get(i).toString();
                 if(Integer.parseInt(jsonArray.get(i).toString())<id){
                     id=Integer.parseInt(jsonArray.get(i).toString());
                 }
             }
-            System.out.println("id="+id);
+            myPrintln("id="+id);
 
             String details="";
             try {
@@ -715,7 +715,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             data.put("msg","ok");
             return data; }
             catch (Exception e){
-                System.out.println(e.getMessage());
+                myPrintln(e.getMessage());
                 return null;
             }
         }
@@ -747,7 +747,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     int group_arr[]=new int[ids.length];
                     int i=0;
                     for(String d:ids){
-                        System.out.println(d);
+                        myPrintln(d);
                        Roles roles= roles_sql.getOneRoles(rolesMapper,Integer.parseInt(d));
                        if(roles==null){
                            continue;
@@ -772,7 +772,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     public JSONObject addCustomer(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
-        System.out.println(jsonObject.toString());
+        myPrintln(jsonObject.toString());
         if(customer.getType()!=1){
             return JsonConfig.getJsonObj(CODE_noP,null,lang);
         }
@@ -787,7 +787,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
             sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
             Date date = new Date();// 获取当前时间
-            //   System.out.println("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
+            //   myPrintln("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
             String customerkey = customer1.getUserkey()+"_"+Base64.getEncoder().encodeToString((customer1.getUsername() + "_" + date.getTime()).getBytes()).replaceAll("\\+", "");
             customer1.setCreate_time(sdf.format(date));
             customer1.setCustomerkey(customerkey);
@@ -818,7 +818,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     public JSONObject updateCustomer(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
-        System.out.println(jsonObject.toString());
+        myPrintln(jsonObject.toString());
         if(customer.getType()!=1){
             return JsonConfig.getJsonObj(CODE_noP,null,lang);
         }
@@ -889,7 +889,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                 }
             }
             JSONObject jsonObject=JsonConfig.getJsonObj(CODE_OK,customer2,lang);
-            System.out.println(jsonObject.toString());
+            myPrintln(jsonObject.toString());
             JSONObject jsonObject1=jsonObject.getJSONObject("data");
             jsonObject1.put("group_name_arr",roles_name);
             jsonObject1.put("group_arr",roles_id);
@@ -914,14 +914,14 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         int id=0;
         for(Object jsonObject:json){
             try {
-                System.out.println(jsonObject.toString());
+                myPrintln(jsonObject.toString());
                 id = Integer.parseInt(jsonObject.toString());
                 int status= customer_sql.deleteCustomer(customerMapper,id);
                 if(status<0){
                     return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
                 }
             }catch (Exception e){
-                System.out.println("2"+e.getMessage());
+                myPrintln("2"+e.getMessage());
                 return JsonConfig.getJsonObj(CODE_DR,CODE_DR_txt,lang);
             }
         }
@@ -964,7 +964,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/Logs/del", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public JSONObject deleteLogs(HttpServletRequest request, @RequestBody JSONArray json) {
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
         if(json==null||json.size()==0){
@@ -974,17 +974,17 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             List<Integer> ids=new ArrayList<>();
             for(Object jsonObject:json){
                 try {
-                    System.out.println(jsonObject.toString());
+                    myPrintln(jsonObject.toString());
                     id = Integer.parseInt(jsonObject.toString());
                     ids.add(id);
                 }catch (Exception e){
-                    System.out.println("2"+e.getMessage());
+                    myPrintln("2"+e.getMessage());
                     return JsonConfig.getJsonObj(CODE_DR,CODE_DR_txt,lang);
                 }
             }
-            System.out.println(ids);
+
             int status=logsMapper.deleteBatchIds(ids);
-            System.out.println(status);
+
             return JsonConfig.getJsonObj(CODE_OK,"",lang);
         }
 
@@ -1014,7 +1014,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null,lang);
         }
        else if(customer.getPermission().getEdituser()==1 ){
-            System.out.println("对象为" + customer.getUsername());
+            myPrintln("对象为" + customer.getUsername());
             User user = new User(userName, passWord,  nickName, phoneNumber,permission_key);
             User_sql user_sql = new User_sql();
             int result = user_sql.addUser(userMapper, user);
@@ -1039,7 +1039,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null,lang);
         }
         else if(customer.getPermission().getEditdepartment()==1 ){
-            System.out.println("对象为" + customer.getUsername());
+            myPrintln("对象为" + customer.getUsername());
             Department department=new Department(name,customer.getUserkey(),p_id,customer.getCustomerkey());
             Department_Sql departmentSql = new Department_Sql();
             boolean result = departmentSql.addDepartment(departmentMapper, department);
@@ -1062,7 +1062,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null);
         }
         else if(customer.getPermission().getLookdepartment()==1 ){
-            System.out.println("对象为" + customer.getUsername());
+            myPrintln("对象为" + customer.getUsername());
             Department_Sql departmentSql = new Department_Sql();
             List<Department> departments = departmentSql.getAllDepartment(departmentMapper,customer.getUserkey());
             JSONObject jsonObject = new JSONObject();
@@ -1104,7 +1104,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null);
         }
         else if(customer.getPermission().getEditperson()==1 ){
-            System.out.println("对象为" + customer.getUsername());
+            myPrintln("对象为" + customer.getUsername());
             String pathss=null;
             Person person=new Person( name, phone, sex, pathss, p_id, "", 0,idcard, customer.getUserkey(),customer.getCustomerkey());
             Person_Sql person_sql=new Person_Sql();
@@ -1132,7 +1132,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null,lang);
         }
         else if(user1.getPermission().getEditperson()==1 ){
-            System.out.println("对象为" + user1.getUsername());
+            myPrintln("对象为" + user1.getUsername());
             Person person=personMap.get(idcard);
             if(person!=null){
                 String pathss=null;
@@ -1140,13 +1140,13 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     File path = new File(paths);
 
                     if (!path.exists()) {
-                        System.out.println("文件夹不存在创建=" + path.mkdirs());
+                        myPrintln("文件夹不存在创建=" + path.mkdirs());
                     }
                     try {
                         file.transferTo(new File(path.getPath() + "/" + idcard + ".png"));
                         pathss =path.getPath() + "/" + idcard + ".png";
                     }catch (Exception e){
-                        System.out.println("保存文件异常");
+                        myPrintln("保存文件异常");
                     }
                 }
 
@@ -1189,7 +1189,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         String info=json.getString("project_info");
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
-        System.out.println("2665"+json.toString()+response.toString());
+        myPrintln("2665"+json.toString()+response.toString());
         if(json==null){
             return response;
         }
@@ -1254,7 +1254,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/updateProject", method = RequestMethod.POST, produces = "application/json")
     public JSONObject updateProject(HttpServletRequest request, @RequestBody JSONObject json){
         JSONObject response =JSON.parseObject("{\"msg\":\"用户权限异常\",\"code\":2}");
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         String user_key=json.getString("user_key");
         String name=json.getString("project_name");
         String info=json.getString("project_info");
@@ -1293,8 +1293,8 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         String lang=customer.getLang();
         if (customer != null) {
             Station_sql Station_sql = new Station_sql();
-            Station Station = (Station) redisUtil.get(redis_key_Station + address);
-            redisUtil.set(redis_key_Station + address, Station);
+            Station Station = (Station) redisUtil.get(redis_key_locator + address);
+            redisUtil.set(redis_key_locator + address, Station);
             Station_sql.updateStation(StationMapper, Station);
             response = JsonConfig.getJson(CODE_OK, null,lang);
         }
@@ -1429,7 +1429,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         } else {
             jsonObject.put("ble", ble_firmware);
         }
-        //   System.out.println("json="+jsonObject.toString());
+        //   myPrintln("json="+jsonObject.toString());
         return jsonObject.toString();
     }
 
@@ -1453,11 +1453,11 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
 
     @RequestMapping(value = "/userApi/deleteBleVersion", method = RequestMethod.GET, produces = "text/plain")
     public String deleteBleVersion(HttpServletRequest request, @RequestParam(value = "version") String version) {
-        //   System.out.println("请求的地址"+request.getContextPath());
-        // System.out.println("请求的地址"+request.getRequestURI());
-        // System.out.println("请求的地址"+request.getServletPath());
-        // System.out.println("请求的地址"+request.getServerPort());
-        // System.out.println("请求的地址"+request.getLocalPort());
+        //   myPrintln("请求的地址"+request.getContextPath());
+        // myPrintln("请求的地址"+request.getRequestURI());
+        // myPrintln("请求的地址"+request.getServletPath());
+        // myPrintln("请求的地址"+request.getServerPort());
+        // myPrintln("请求的地址"+request.getLocalPort());
         Customer user = getCustomer(request);
         String lang=user.getLang();
         String response = "默认参数";
@@ -1535,34 +1535,34 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         }
         File path = new File(paths + user.getUserkey());
         if (!path.exists()) {
-            System.out.println("文件夹不存在创建=" + path.mkdirs());
+            myPrintln("文件夹不存在创建=" + path.mkdirs());
         }
         try {
             address = InetAddress.getLocalHost();
-            System.out.println("输出地址=" + address.getHostAddress() + "文件路径=" + path.getName());
+            myPrintln("输出地址=" + address.getHostAddress() + "文件路径=" + path.getName());
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        // System.out.println("[文件类型] - [{}]"+ file.getContentType());
-        // System.out.println("[文件名称] - [{}]"+ file.getOriginalFilename());
-        // System.out.println("[文件大小] - [{}]"+ file.getSize());
+        // myPrintln("[文件类型] - [{}]"+ file.getContentType());
+        // myPrintln("[文件名称] - [{}]"+ file.getOriginalFilename());
+        // myPrintln("[文件大小] - [{}]"+ file.getSize());
 
         Date dNow = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        //  System.out.println("当前时间为: " + ft.format(dNow));
+        //  myPrintln("当前时间为: " + ft.format(dNow));
         //保存
         JSONObject jsonObject = new JSONObject();
         file.transferTo(new File(path.getPath() + "/" + type + "_" + version + ".firmware"));
         if (type.equals("ble")) {
             Ble_firmware ble_firmware = new Ble_firmware(url, remake, ft.format(dNow), company_name, user.getUserkey(), version,user.getCustomerkey());
             int d = bleMapper.insert(ble_firmware);
-            // System.out.println("保存蓝牙固件数据的结果码="+d);
+            // myPrintln("保存蓝牙固件数据的结果码="+d);
         } else if (type.equals("wifi")) {
             Wifi_firmware wifi_firmware = new Wifi_firmware(url, remake, ft.format(dNow), company_name, user.getUserkey(), version,user.getCustomerkey());
 
             int d = wifiMapper.insert(wifi_firmware);
-            //  System.out.println("保存wifi数据的结果码="+d);
+            //  myPrintln("保存wifi数据的结果码="+d);
         }
         jsonObject.put("code", constant.code_ok);
         jsonObject.put("msg", "上传成功");
@@ -1606,7 +1606,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "/aa/getJsontest", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getJsontest(@RequestBody JSONObject json) {
-        // System.out.println("收到="+json.toString());
+        // myPrintln("收到="+json.toString());
         return "收";
     }
 
@@ -1650,7 +1650,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             int ok = 0;
             int fail = 0;
             for (java.util.Map<String, String> map : data) {
-                System.out.println("循环");
+                myPrintln("循环");
                 Station Station = new Station(map.get("ble_mac"), Double.parseDouble(map.get("x")), Double.parseDouble(map.get("y")));
                 Station.setUser_key(user.getUserkey());
                 Station.setProject_key(user.getProject_key());
@@ -1674,7 +1674,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     private Customer getCustomer(HttpServletRequest request) {
        String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-     //   System.out.println("customer="+customer);
+     //   myPrintln("customer="+customer);
         return customer;
     }
 
@@ -1843,7 +1843,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
 
         //String filePath = "E:\\蓝牙网关\\固件版本" ;
         File file = new File(filePath+"\\"+sn+".png");
-        System.out.println("路劲="+file.getPath());
+        myPrintln("路劲="+file.getPath());
         if (file.exists()) { //判断文件父目录是否存在q
             response.setContentType("application/vnd.ms-excel;charset=UTF-8");
             response.setCharacterEncoding("UTF-8");
@@ -1871,7 +1871,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println("----------file download---" + sn);
+            myPrintln("----------file download---" + sn);
             try {
                 bis.close();
                 fis.close();
@@ -1881,7 +1881,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             }
         }
         else{
-            System.out.println("文件异常"+file.getPath());
+            myPrintln("文件异常"+file.getPath());
         }
 
     }
@@ -1909,7 +1909,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             deviceP.setLasttime(devicePMap.get(deviceP.getSn()).getLasttime());
             deviceP.setType_name(devicePtypeMap.get(deviceP.getType_id()).getName());
             if(deviceP.getIsbind()==1&&deviceP.getBind_mac()!=null){
-                System.out.println("报警状态="+beaconsMap.get(deviceP.getBind_mac()).getSos()+"==="+deviceP.getBind_mac());
+                myPrintln("报警状态="+beaconsMap.get(deviceP.getBind_mac()).getSos()+"==="+deviceP.getBind_mac());
                 deviceP.setSos(beaconsMap.get(deviceP.getBind_mac()).getSos());
                 deviceP.setRssi(beaconsMap.get(deviceP.getBind_mac()).getRssi());
                 deviceP.setOnline(beaconsMap.get(deviceP.getBind_mac()).getOnline());
@@ -1945,24 +1945,24 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             isbind=1;
         }
         Customer user1 = getCustomer(request);
-        System.out.println("输出权限"+user1.getPermission());
+        myPrintln("输出权限"+user1.getPermission());
         if(user1.getPermission()==null||user1.getPermission().getEditbeacon()==0){
             return JsonConfig.getJson(CODE_noP,null);
         }
         else if(user1.getPermission().getEditbeacon()==1 ){
-            System.out.println("对象为" + user1.getUsername());
+            myPrintln("对象为" + user1.getUsername());
             String pathss=null;
             if(file!=null){
                 File path = new File(paths);
 
                 if (!path.exists()) {
-                    System.out.println("文件夹不存在创建=" + path.mkdirs());
+                    myPrintln("文件夹不存在创建=" + path.mkdirs());
                 }
                 try {
                     file.transferTo(new File(path.getPath() + "/" + sn + ".png"));
                     pathss =path.getPath() + "/" + sn + ".png";
                 }catch (Exception e){
-                    System.out.println("保存文件异常");
+                    myPrintln("保存文件异常");
                 }
             }
             Devicep deviceP=new Devicep(type_id,name, "/userApi/getPhoto?sn="+sn,beaconMac,isbind,1,user1.getUserkey(),sn,0,user1.getCustomerkey());
@@ -2039,13 +2039,13 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             File path = new File(paths);
 
             if (!path.exists()) {
-                System.out.println("文件夹不存在创建=" + path.mkdirs());
+                myPrintln("文件夹不存在创建=" + path.mkdirs());
             }
             try {
                 file.transferTo(new File(path.getPath() + "/" + sn + ".png"));
                 pathss =path.getPath() + "/" + sn + ".png";
             }catch (Exception e){
-                System.out.println("保存文件异常");
+                myPrintln("保存文件异常");
             }
         }
         if(user.getPermission().getEditbeacon()==0){
@@ -2060,7 +2060,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             deviceP.setType_name(devicePtypeMap.get(type).getName());
             deviceP.setPhoto("/userApi/getPhoto?sn="+deviceP.getSn());
             //已绑定，但是更换绑定信标或者解绑
-            System.out.println("deviceP.getBind_mac()"+deviceP.getBind_mac());
+            myPrintln("deviceP.getBind_mac()"+deviceP.getBind_mac());
 
             if (deviceP.getIsbind()==1&&!deviceP.getBind_mac().equals(bindmac)){
                 //解绑原有信标
@@ -2137,7 +2137,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             deviceP.setType_name(devicePtypeMap.get(type).getName());
             deviceP.setPhoto("/userApi/getPhoto?sn="+deviceP.getSn());
             //已绑定，但是更换绑定信标或者解绑
-            System.out.println("deviceP.getBind_mac()"+deviceP.getBind_mac());
+            myPrintln("deviceP.getBind_mac()"+deviceP.getBind_mac());
 
             if (deviceP.getIsbind()==1&&!deviceP.getBind_mac().equals(bindmac)){
                 //解绑原有信标
@@ -2199,7 +2199,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         Customer user=getCustomer(request);
         Tag tag;
 
-        System.out.println(name);
+        myPrintln(name);
         String lang=user.getLang();
         if(user.getPermission().getEditbeacon()==0){
             String json=getJson(CODE_noP,null,lang);
@@ -2211,7 +2211,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             deviceP.setType(type);
             deviceP.setName(name);
 
-            System.out.println("1111111111");
+            myPrintln("1111111111");
             //已绑定，但是更换绑定信标或者解绑
             if (deviceP.getIsbind()==1&&!deviceP.getBind_mac().equals(bindmac)){
                 //解绑原有信标
@@ -2231,7 +2231,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     deviceP.setIsopen(1);
                     deviceP.setIsbind(1);
                     tag =beaconsMap.get(bindmac);
-                   // System.out.println("2222beacon="+beacon);
+                   // myPrintln("2222beacon="+beacon);
                     if(tag !=null){
                         tag.setDevice_sn(deviceP.getSn());
                         tag.setDevice_name(deviceP.getName());
@@ -2253,7 +2253,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     deviceP.setIsopen(1);
                     deviceP.setIsbind(1);
                     tag =beaconsMap.get(bindmac);
-                    System.out.println("111beacon="+ tag);
+                    myPrintln("111beacon="+ tag);
                     if(tag !=null){
                         tag.setDevice_sn(deviceP.getSn());
                         tag.setDevice_name(deviceP.getName());
@@ -2312,7 +2312,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             Devicep deviceP;
             for (String sn : devicePMap.keySet()) {
                 deviceP = devicePMap.get(sn);
-                if (deviceP.getIsbind() == 1) {
+              /*  if (deviceP.getIsbind() == 1) {
                     onbind++;
                     //只有绑定信标的设备才会有在线离线的说法。
                     if (deviceP.getOnline() == 1) {
@@ -2325,11 +2325,11 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     }
                 } else {
                     unbind++;
-                }
+                }*/
             }
             String[] titles = {"设备名称", "序列号", "绑定状态", "信标mac", "谁添加", "资产类型", "报警状态", "在线情况", "在线时间", "区域位置", "信号值", "网关mac", "电量", "入库时间"};
             //在这里进行添加excel
-            SystemUtil.getUtil().createExcelTwo(paths + "/" + thisTime + ".xls", titles, devicePMap);
+         //   SystemUtil.getUtil().createExcelTwo(paths + "/" + thisTime + ".xls", titles, devicePMap);
             //每个excel保存在数据库
          /*   Check_record check_record = new Check_record(df.format(date), online, offline, count, 0, sos_count, unbind, onbind,thisTime+"");
             CheckRecord_Sql checkRecordSql = new CheckRecord_Sql();
@@ -2362,7 +2362,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println("----------file download---" + file.getPath());
+            myPrintln("----------file download---" + file.getPath());
             try {
                 bis.close();
                 fis.close();

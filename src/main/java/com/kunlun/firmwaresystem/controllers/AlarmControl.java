@@ -2,31 +2,20 @@ package com.kunlun.firmwaresystem.controllers;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.kunlun.firmwaresystem.device.PageAlarm;
-import com.kunlun.firmwaresystem.device.PageMap;
-import com.kunlun.firmwaresystem.entity.Alarm;
 import com.kunlun.firmwaresystem.entity.Customer;
+import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.AlarmMapper;
-import com.kunlun.firmwaresystem.mappers.MapMapper;
 import com.kunlun.firmwaresystem.sql.Alarm_Sql;
-import com.kunlun.firmwaresystem.sql.Map_Sql;
 import com.kunlun.firmwaresystem.util.JsonConfig;
 import com.kunlun.firmwaresystem.util.RedisUtils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.*;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.StationMap;
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -36,8 +25,43 @@ public class AlarmControl {
     @Resource
     private AlarmMapper alarmMapper;
 
+    @RequestMapping(value = "userApi/Alarm_Device/index", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getAlarmByDevice(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "sn") String sn) {
+        {
+            String page=request.getParameter("page");
+            String limit=request.getParameter("limit");
+            if(page==null|| page.isEmpty()){
+                page="1";
+            }
+            if(limit==null|| limit.isEmpty()){
+                limit="10";
+            }
+            String start_time=request.getParameter("start_time");
+            String stop_time=request.getParameter("stop_time");
+            if(start_time==null|| start_time.isEmpty()){
+                start_time="0";
+            }
+            if(stop_time==null|| stop_time.isEmpty()){
+                stop_time="32503680000";
+            }
+            try {
+                Customer user1 = getCustomer(request);
+                Alarm_Sql alarm_sql = new Alarm_Sql();
+                PageAlarm pageAlarm = alarm_sql.pageAlarm_getHistory(alarmMapper, sn, Long.parseLong(start_time) * 1000, Long.parseLong(stop_time) * 1000, user1.getProject_key(), Integer.parseInt(page), Integer.parseInt(limit));
 
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("code", 1);
+                jsonObject.put("msg", "ok");
+                jsonObject.put("count", pageAlarm.getTotal());
+                jsonObject.put("data", pageAlarm.getAlarmList());
+                return jsonObject;
+            }catch (Exception e) {
+                myPrintln("异常="+e.getMessage());
+                return new JSONObject();
+            }
+        }
 
+    }
 /*
     @RequestMapping(value = "userApi/selectPageMap", method = RequestMethod.GET, produces = "text/plain")
     public String selectPageMap(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "page") String page,
@@ -60,7 +84,7 @@ public class AlarmControl {
 
     /*@RequestMapping(value = "userApi/map/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
-       // System.out.println(System.currentTimeMillis());
+       // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -73,13 +97,13 @@ public class AlarmControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
 
     @RequestMapping(value = "userApi/map/index2", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllMap1(HttpServletRequest request) {
-        // System.out.println(System.currentTimeMillis());
+        // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -88,7 +112,7 @@ public class AlarmControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }*/
     @RequestMapping(value = "userApi/Alarm/index", method = RequestMethod.GET, produces = "application/json")
@@ -150,7 +174,7 @@ public class AlarmControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

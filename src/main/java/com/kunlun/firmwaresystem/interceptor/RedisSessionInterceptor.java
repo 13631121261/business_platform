@@ -33,7 +33,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
     private LogsMapper logsMapper;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-       // System.out.println("handler="+handler);
+       // myPrintln("handler="+handler);
         Customer customer=null;
         String token = request.getHeader("batoken");
         if(token==null||token.equals("")){
@@ -47,13 +47,13 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
             }
             if(o.getClass().getName().contains("Customer")){
                 customer=(Customer) (redisTemplate.opsForValue().get(token ));
-               // System.out.println("获取信息"+customer);
+               // myPrintln("获取信息"+customer);
                String lang= request.getParameter("lang");
 
                if(lang!=null){
                    customer.setLang(lang);
-                  // System.out.println("语言"+ customer.getLang());
-                  // System.out.println("11获取信息"+customer);
+                  // myPrintln("语言"+ customer.getLang());
+                  // myPrintln("11获取信息"+customer);
                }
             }
         }
@@ -69,7 +69,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
         //更新时间
         redisTemplate.opsForValue().set(token, customer, 600,TimeUnit.SECONDS);
         customer=(Customer) (redisTemplate.opsForValue().get(token ));
-       // System.out.println("22获取信息"+customer);
+       // myPrintln("22获取信息"+customer);
         if (!(handler instanceof HandlerMethod)) {
             return false;
         }
@@ -202,7 +202,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
                 }
                 String s[]=data.split("/");
                 if(s!=null&&s.length>=3){
-                    //     System.out.println(s[2]);
+                    //     myPrintln(s[2]);
                     switch (s[2]){
                         case "Station":
                             a="Station";
@@ -243,7 +243,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
                 }
                     String s1[]=data.split("/");
                     if(s1!=null&&s1.length>=3){
-                        //     System.out.println(s[2]);
+                        //     myPrintln(s[2]);
                         switch (s1[2]){
                             case "Station":
                                 a="网关管理";
@@ -313,7 +313,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
         for (Parameter parameter : parameters) {
             //判断这个参数时候被加入了 ParamsNotNull. 的注解
             //.isAnnotationPresent()  这个方法可以看一下
-          //  System.out.println("参数11="+parameter.getName());
+          //  myPrintln("参数11="+parameter.getName());
             if (parameter.isAnnotationPresent(ParamsNotNull.class)) {
                 list.add(parameter.getName());
             }

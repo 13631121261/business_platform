@@ -69,9 +69,9 @@ public class Customer implements Serializable {
         Date date = new Date();// 获取当前时间
         this.create_time = sdf.format(date);
         this.userkey=userkey;
-        //   System.out.println("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
+        //   myPrintln("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
         this.customerkey = userkey+"_"+Base64.getEncoder().encodeToString((username + "_" + date.getTime()).getBytes()).replaceAll("\\+", "");
-        // System.out.println("现在时间：" + sdf.format(date)+"==="+userkey); // 输出已经格式化的现在时间（24小时制）
+        // myPrintln("现在时间：" + sdf.format(date)+"==="+userkey); // 输出已经格式化的现在时间（24小时制）
 
     }
 

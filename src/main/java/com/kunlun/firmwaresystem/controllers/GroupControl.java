@@ -4,16 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.kunlun.firmwaresystem.device.PageArea;
-import com.kunlun.firmwaresystem.device.PageGroup;
-import com.kunlun.firmwaresystem.entity.Area;
+import com.kunlun.firmwaresystem.device.PageDeviceP;
 import com.kunlun.firmwaresystem.entity.Customer;
-import com.kunlun.firmwaresystem.entity.Locator;
-import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.entity.device.Group;
-import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
-import com.kunlun.firmwaresystem.mappers.AreaMapper;
 import com.kunlun.firmwaresystem.mappers.GroupMapper;
 import com.kunlun.firmwaresystem.mappers.MapMapper;
 import com.kunlun.firmwaresystem.sql.*;
@@ -27,8 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_Station;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -53,19 +45,61 @@ public class GroupControl {
     }
    @RequestMapping(value = "userApi/group/edit", method = RequestMethod.POST, produces = "application/json")
     public JSONObject updateGroup(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
-        try {  JSONObject response = null;
-            Customer customer = getCustomer(request);
-            Group  group=null;
-            group = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
-            }.getType());
+       try {
+           JSONObject response = null;
+           Customer customer = getCustomer(request);
 
-            group.setUpdate_time(System.currentTimeMillis()/1000);
-            groupMapper.updateById(group);
-            return response;
-        }catch (Exception e){
-            System.out.println(e);
-            return null;
+           Group group=null;
+           group = new Gson().fromJson(jsonObject.toString(), new TypeToken<Group>() {
+           }.getType());
+           group.setProject_key(customer.getProject_key());
+           group.getTag_names();
+           myPrintln("Group="+group);
+           group.setCreate_time(System.currentTimeMillis()/1000);
+
+           Group_Sql group_sql=new Group_Sql();
+           int status= group_sql.update(groupMapper,group);
+           if(status>0){
+               return JsonConfig.getJsonObj(CODE_OK,"","");
+           }else {
+               return JsonConfig.getJsonObj(CODE_REPEAT,"","");
+           }
+
+
+       }catch (Exception e){
+           myPrintln(e.toString());
+           return null;
+       }
+    }
+
+    //设备
+    @RequestMapping(value = "userApi/getDevice/index", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public JSONObject getDevice(HttpServletRequest request) {
+        myPrintln("输出访问"+request.getParameter("id"));
+        String quickSearch=request.getParameter("quickSearch");
+        String page=request.getParameter("page");
+        String id=request.getParameter("id");
+        String limit=request.getParameter("limit");
+        if(quickSearch==null||quickSearch.equals("")){
+            quickSearch="";
         }
+        if(page==null||page.equals("")){
+            page="1";
+        }
+        if(limit==null||limit.equals("")){
+            limit="20";
+        }
+        Customer customer = getCustomer(request);
+        DeviceP_Sql  deviceP_sql=new DeviceP_Sql();
+        PageDeviceP pageDeviceP=deviceP_sql.selectPageDevicePByGroup(devicePMapper,Integer.parseInt(page),Integer.parseInt(limit),quickSearch,customer.getUserkey(),customer.getProject_key(),Integer.parseInt(id));
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", CODE_OK);
+        jsonObject.put("msg", CODE_OK_txt);
+        jsonObject.put("count", pageDeviceP.getTotal());
+        jsonObject.put("data", pageDeviceP.getDeviceList());
+        return jsonObject;
     }
    /* @RequestMapping(value = "userApi/area/add_update_Area", method = RequestMethod.POST, produces = "application/json")
     public JSONObject add_update_Area(HttpServletRequest request,  @RequestBody JSONObject jsonObject) {
@@ -78,7 +112,7 @@ public class GroupControl {
             area = new Gson().fromJson(jsonObject.toString(), new TypeToken<Area>() {
             }.getType());
 
-            System.out.println("area"+area.getMap_key());
+            myPrintln("area"+area.getMap_key());
             if(area.getMap_key()!=null){
                 area.setUserkey(customer.getUserkey());
                 area.setProject_key(customer.getProject_key());
@@ -196,7 +230,7 @@ public class GroupControl {
             }
             return response;
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e);
             return null;
         }
 
@@ -208,13 +242,13 @@ public class GroupControl {
     public JSONObject addArea(HttpServletRequest request,  @RequestBody JSONObject jsonObject) {
         try {  JSONObject response = null;
         Customer customer = getCustomer(request);
-      //  System.out.println("area666"+jsonObject.toString());
+      //  myPrintln("area666"+jsonObject.toString());
         com.kunlun.firmwaresystem.entity.Area area=null;
 
         area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
             }.getType());
 
-        System.out.println("area"+area.getMap_key());
+        myPrintln("area"+area.getMap_key());
         if(area.getMap_key()!=null){
             area.setUserkey(customer.getUserkey());
             area.setProject_key(customer.getProject_key());
@@ -246,7 +280,7 @@ public class GroupControl {
         }
         return response;
         }catch (Exception e){
-        System.out.println(e);
+        myPrintln(e);
         return null;
     }
     }
@@ -273,7 +307,7 @@ public class GroupControl {
 
     /*@RequestMapping(value = "userApi/area/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
-       // System.out.println(System.currentTimeMillis());
+       // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -286,13 +320,12 @@ public class GroupControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }*/
 /*
     @RequestMapping(value = "userApi/getAreaByMap", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAreaByMap(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "map_key") String map_key) {
-
         Customer customer = getCustomer(request);
         Area_Sql area_sql = new Area_Sql();
         List<Area> areaList=area_sql.getAllArea(areaMapper,customer.getUserkey(),customer.getProject_key(), map_key);
@@ -301,11 +334,11 @@ public class GroupControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", areaList.size());
         jsonObject.put("data",  areaList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     */
-
+/*
     @RequestMapping(value = "userApi/group/index", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllGroup(HttpServletRequest request) {
         try {
@@ -332,25 +365,27 @@ public class GroupControl {
             jsonObject.put("count", pageGroup.getGroupList().size());
             jsonObject.put("data", pageGroup.getGroupList());
 
-            //  System.out.println(System.currentTimeMillis());
+            //  myPrintln(System.currentTimeMillis());
             return jsonObject;
         }catch (Exception e){
-            System.out.println("获取组别异常="+e.getMessage());
+            myPrintln("获取组别异常="+e.getMessage());
             return null;
         }
-    }
+    }*/
     @RequestMapping(value = "userApi/group/add", method = RequestMethod.POST, produces = "application/json")
     public JSONObject addArea(HttpServletRequest request,  @RequestBody JSONObject jsonObject) {
         try {
             JSONObject response = null;
             Customer customer = getCustomer(request);
-            //  System.out.println("area666"+jsonObject.toString());
+
             Group group=null;
             group = new Gson().fromJson(jsonObject.toString(), new TypeToken<Group>() {
             }.getType());
             group.setProject_key(customer.getProject_key());
-            System.out.println("Group="+group);
+            group.getTag_names();
+            myPrintln("Group="+group);
             group.setCreate_time(System.currentTimeMillis()/1000);
+
             Group_Sql group_sql=new Group_Sql();
             boolean status= group_sql.add(groupMapper,group);
             if(status){
@@ -361,10 +396,11 @@ public class GroupControl {
 
 
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e.toString());
             return null;
         }
     }
+
     @RequestMapping(value = "userApi/group/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllGroup1(HttpServletRequest request) {
 
@@ -385,7 +421,28 @@ public class GroupControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", groupList.size());
         jsonObject.put("data",  groupList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
+        return jsonObject;
+    }
+    @RequestMapping(value = "userApi/group/index", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getAllGroup(HttpServletRequest request) {
+
+        Customer customer = getCustomer(request);
+        Group_Sql group_sql=new Group_Sql();
+        List<Group> groupList=group_sql.getAll(groupMapper,customer.getProject_key());
+        DeviceP_Sql deviceP_sql=new DeviceP_Sql();
+        for (Group group : groupList) {
+            int g_id=group.getId();
+           List<Devicep> deviceps= deviceP_sql.getDeviceByGroupID(devicePMapper,g_id);
+           group.setCount(deviceps.size());
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", 1);
+        jsonObject.put("msg", "ok");
+        jsonObject.put("count", groupList.size());
+        jsonObject.put("data",  groupList);
+
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     @RequestMapping(value = "/userApi/group/del", method = RequestMethod.POST, produces = "application/json")
@@ -396,14 +453,19 @@ public class GroupControl {
         Group_Sql group_sql = new Group_Sql();
         List<Integer> id=new ArrayList<Integer>();
         DeviceP_Sql deviceP_sql=new DeviceP_Sql();
+
         for(Object ids:jsonArray){
-            List<Devicep> deviceps= deviceP_sql.getDeviceByAreaID(devicePMapper,Integer.parseInt(ids.toString()));
-            if(deviceps!=null&&deviceps.size()>0){
-                return JsonConfig.getJsonObj(CODE_10,null,lang);
+            for (String sn:devicePMap.keySet()){
+                Devicep devicep =devicePMap.get(sn);
+                if (devicep!=null){
+                    if (devicep.getGroup_id()==Integer.parseInt(ids.toString())){
+                        return JsonConfig.getJsonObj(CODE_10,"","");
+                    }
+                }
             }
                 id.add(Integer.parseInt(ids.toString()));
         }
-        if(id.size()>0){
+        if(!id.isEmpty()){
             int status = group_sql.deletes(groupMapper, id);
             if(status!=-1){
                 return JsonConfig.getJsonObj(CODE_OK,null,lang);
@@ -417,7 +479,7 @@ public class GroupControl {
     }
    /* @RequestMapping(value = "/userApi/group/delete", method = RequestMethod.GET, produces = "application/json")
     public JSONObject delete1Area(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "id") int id) {
-        System.out.println("区域ID="+id);
+        myPrintln("区域ID="+id);
         Customer user = getCustomer(request);
         String lang=user.getLang();
         Group_Sql group_sql = new Group_Sql();
@@ -433,7 +495,7 @@ public class GroupControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

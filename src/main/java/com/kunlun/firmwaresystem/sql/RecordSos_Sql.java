@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class RecordSos_Sql {
     public void addRecordSos(Record_SosMapper recordMapper, Record_sos record) {
         UpdateWrapper updateWrapper = new UpdateWrapper();//照搬
@@ -23,11 +25,11 @@ public class RecordSos_Sql {
         updateWrapper.eq("handle", 0);
         Record_sos record_sos = recordMapper.selectOne(updateWrapper);
         if (record_sos != null) {
-            System.out.println("只更新");
+            myPrintln("只更新");
             record.setId(record_sos.getId());
             recordMapper.updateById(record);
         } else {
-            System.out.println("只插入");
+            myPrintln("只插入");
             recordMapper.insert(record);
         }
 
@@ -48,7 +50,7 @@ public class RecordSos_Sql {
            List<Beacon> beacons = beaconMapper.selectList(null);
            HashMap<String,Beacon> beaconHashMap=new HashMap<>();
            for(Beacon beacon:beacons) {
-               //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+               //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
                beaconHashMap.put(beacon.getMac(),beacon);
            }
            return beaconHashMap;
@@ -70,9 +72,9 @@ public class RecordSos_Sql {
         userLambdaQueryWrapper.eq(Record_sos::getHandle, handle);
         userLambdaQueryWrapper.eq(Record_sos::getUserkey, userkey);
         userIPage = recordMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        myPrintln("总页数： " + userIPage.getPages());
+        myPrintln("总记录数： " + userIPage.getTotal());
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageRecordSos pageRecord = new PageRecordSos(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageRecord;
     }
@@ -85,9 +87,9 @@ public class RecordSos_Sql {
                 && !info.getColumn().equals("create_time"));
         userLambdaQueryWrapper.like(Record_sos::getDevice_name, name);
         userIPage = recordMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        myPrintln("总页数： " + userIPage.getPages());
+        myPrintln("总记录数： " + userIPage.getTotal());
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageRecordSos pageRecord = new PageRecordSos(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageRecord;
     }*/
@@ -105,7 +107,7 @@ public class RecordSos_Sql {
             List<Record_sos> list = recordMapper.selectList(userLambdaQueryWrapper);
             return list;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            myPrintln(e.getMessage());
             return null;
         }
     }

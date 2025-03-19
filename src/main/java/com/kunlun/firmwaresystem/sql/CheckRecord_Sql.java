@@ -38,9 +38,7 @@ public class CheckRecord_Sql {
         userLambdaQueryWrapper.eq(Check_record::getUserkey, userkey);
         userLambdaQueryWrapper.orderByDesc(Check_record::getId);
         userIPage = checkRecordMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageCheckRecord pageCheckRecord = new PageCheckRecord(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageCheckRecord;
     }

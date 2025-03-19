@@ -30,9 +30,7 @@ public class Rules_sql {
         IPage<Rules> userIPage;
         userLambdaQueryWrapper.eq(Rules::getUser_key,userKey);
         userIPage = rulesMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        //   userIPage.getRecords().forEach(System.out::println);
+        //   userIPage.getRecords().forEach(System.out::myPrintln);
         PageRules pageRules = new PageRules(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageRules;
     }
@@ -51,7 +49,7 @@ public class Rules_sql {
         List<Rules> rulesList = rulesMapper.selectList(queryWrapper);
         HashMap<String, Rules> rulesMap = new HashMap<>();
         for (Rules rules : rulesList) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             rulesMap.put(rules.getRule_key(), rules);
         }
         return rulesMap;
@@ -61,7 +59,7 @@ public class Rules_sql {
         List<Rules> rulesList = rulesMapper.selectList(null);
         HashMap<String, Rules> rulesMap = new HashMap<>();
         for (Rules rules : rulesList) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             rulesMap.put(rules.getRule_key(), rules);
         }
         return rulesMap;

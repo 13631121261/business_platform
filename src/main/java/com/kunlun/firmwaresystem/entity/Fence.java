@@ -1,11 +1,13 @@
 package com.kunlun.firmwaresystem.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+
 public class Fence {
     int id;
-    int area_id;
+
     FenceType fence_type;
     //触发停留时间
-    int timeout;
+    int trigger1;
     String notes;
     String name;
     String user_key;
@@ -20,10 +22,28 @@ public class Fence {
     String stop_time;
     String start_times;
     String stop_times;
-    String area_name;
-    String map_name;
 
-     public Fence(){
+    String map_name;
+    String points;
+    int time_out;
+
+    public void setTime_out(int time_out) {
+        this.time_out = time_out;
+    }
+
+    public int getTime_out() {
+        return time_out;
+    }
+
+    public void setPoints(String points) {
+        this.points = points;
+    }
+
+    public String getPoints() {
+        return points;
+    }
+
+    public Fence(){
 
      }
 
@@ -37,17 +57,13 @@ public class Fence {
 
 
 
-    public void setArea_name(String area_name) {
-        this.area_name = area_name;
-    }
+
 
     public void setMap_name(String map_name) {
         this.map_name = map_name;
     }
 
-    public String getArea_name() {
-        return area_name;
-    }
+
 
     public String getMap_name() {
         return map_name;
@@ -78,14 +94,6 @@ public class Fence {
         this.id = id;
     }
 
-    public int getArea_id() {
-        return area_id;
-    }
-
-    public void setArea_id(int area_id) {
-        this.area_id = area_id;
-    }
-
 
     public void setUpdate_time(long update_time) {
         this.update_time = update_time;
@@ -99,12 +107,12 @@ public class Fence {
         this.create_time = create_time;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public void setTrigger1(int trigger) {
+        this.trigger1 = trigger;
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public int getTrigger1() {
+        return trigger1;
     }
 
     public String getNotes() {
@@ -191,5 +199,31 @@ public class Fence {
 
     public String getStop_time() {
         return stop_time;
+    }
+
+    @Override
+    public String toString() {
+        return "Fence{" +
+                "id=" + id +
+                ", fence_type=" + fence_type +
+                ", trigger1=" + trigger1 +
+                ", notes='" + notes + '\'' +
+                ", name='" + name + '\'' +
+                ", user_key='" + user_key + '\'' +
+                ", project_key='" + project_key + '\'' +
+                ", create_time=" + create_time +
+                ", update_time=" + update_time +
+                ", customer_key='" + customer_key + '\'' +
+                ", map_key='" + map_key + '\'' +
+                ", open_status=" + open_status +
+                ", time_type=" + time_type +
+                ", start_time='" + start_time + '\'' +
+                ", stop_time='" + stop_time + '\'' +
+                ", start_times='" + start_times + '\'' +
+                ", stop_times='" + stop_times + '\'' +
+                ", map_name='" + map_name + '\'' +
+                ", points='" + points + '\'' +
+                ", time_out=" + time_out +
+                '}';
     }
 }

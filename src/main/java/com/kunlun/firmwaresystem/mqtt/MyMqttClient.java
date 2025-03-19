@@ -1,20 +1,23 @@
 package com.kunlun.firmwaresystem.mqtt;
 
 import com.kunlun.firmwaresystem.NewSystemApplication;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class MyMqttClient {
 
-    private  MqttClient client = null;
+    private MqttClient client = null;
     private String content = "Hello World";
     private int qos = 2;
     private String host;
@@ -35,41 +38,36 @@ public class MyMqttClient {
         this.host=host;
         this.port=port;
         sub_topic=new HashMap<>();
-        System.out.println("host="+host);
+        myPrintln("host="+host);
          this.clientId=clientId+"_"+project_key+System.currentTimeMillis()/1000;
         if(host==null){
             return;
         }
-        executorService = Executors.newCachedThreadPool();
-         MyMqttClient1(host,port);
+        executorService = Executors.newFixedThreadPool(1000);
+        MyMqttClient1(host,port);
     }
 
-   /* public  MyMqttClient regetMyMqttClient(String host,int port) {
-        //   executorService = Executors.newCachedThreadPool();
-        if (client != null) {
-            disConnect();
-            client=null;
-            new MyMqttClient(host,port);
-            return this;
-        }else{
-          new MyMqttClient(host,port);
-            return this;
-        }
-    }*/
+    public void reConnect() throws MqttException {
+        myPrintln("重连");
+        client.reconnect();
+        myPrintln(client.getServerURI());
+       // client.subscribe("/cle/mqtt",0);
+    }
     public void MyMqttClient1(String host,int port) {
         try {
 
             MemoryPersistence persistence = new MemoryPersistence();
-            System.out.println("地址=tcp://"+host+":"+port);
+
+            myPrintln("地址=tcp://"+host+":"+port);
             client = new MqttClient("tcp://"+host+":"+port, clientId, persistence);
-            System.out.println("地址="+  client.getServerURI());
-            System.out.println("地址="+  client);
+            myPrintln("地址="+  client.getServerURI());
+            myPrintln("ID="+  clientId);
         } catch (MqttException me) {
-            System.out.println("reason " + me.getReasonCode());
-            System.out.println("msg " + me.getMessage());
-            System.out.println("loc " + me.getLocalizedMessage());
-            System.out.println("cause " + me.getCause());
-            System.out.println("excep " + me);
+            myPrintln("reason " + me.getReasonCode());
+            myPrintln("msg " + me.getMessage());
+            myPrintln("loc " + me.getLocalizedMessage());
+            myPrintln("cause " + me.getCause());
+            myPrintln("excep " + me);
             me.printStackTrace();
         }
     }
@@ -92,52 +90,54 @@ public class MyMqttClient {
 
     public boolean start() {
         try {
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            if(password!=null&&password.length()>0){
-                connOpts.setPassword(password.toCharArray());
+
+
+
+            MqttConnectionOptions connOpts = new MqttConnectionOptions();
+
+            if(password!=null&& !password.isEmpty()){
+                connOpts.setPassword(password.getBytes());
             }
-            if(user!=null&&user.length()>0){
+            if(user!=null&& !user.isEmpty()){
                 connOpts.setUserName(user);
             }
-            connOpts.setCleanSession(true);
-            System.out.println("客户端="+client.getServerURI());
+            connOpts.setKeepAliveInterval(60);
+
+// 禁用自动重连（避免因重连逻辑干扰）
+           connOpts.setAutomaticReconnect(true);
+           //connOpts.setConnectionTimeout(10);
+
+
+
+
+            myPrintln("客户端="+client.getServerURI());
             // 设置回调
             MessageCallback c=new  MessageCallback(this);
-            System.out.println("回调="+c);
+            myPrintln("回调="+c);
             client.setCallback(c);
             // 建立连接
-          System.out.println("Connecting to broker: " + client);
+            myPrintln("Connecting to broker: " + client);
             client.connect(connOpts);
-            System.out.println("Connected");
-            if(sub!=null){
+            myPrintln(sub);
+           /* if(sub!=null){
                 addSubTopic(sub);
-            }
-            client.subscribe("/cle/mqtt");
-            client.subscribe("GwData");
-            client.subscribe("AlphaRsp");
-            client.subscribe("connected");
-            client.subscribe("disconnected");
-            client.subscribe("GwData12");
-
-            /*if(sub!=null&&sub.length()>0){
-                String subs[]=sub.split(",");
-                for(String sub1:subs){
-                    if(sub1!=null&&sub1.length()>0){
-                        addSubTopic(sub1);
-                    }
-                }
             }*/
-            // addSubTopic(check_sheet.getSub());
-
+            client.subscribe("location_engine",0);
+            client.subscribe("/cle/mqtt",0);
+        //    client.subscribe("GwData",0);
+           // client.subscribe("AlphaRsp",0);
+           // client.subscribe("connected",0);
+          //  client.subscribe("disconnected",0);
+          //  client.subscribe("GwData12",0);
             connect_count=0;
         } catch (MqttException e) {
-            System.out.println("重连="+host);
+            myPrintln("重连="+host);
             connect_count++;
             if(connect_count>5){
-                System.out.println("启动异常,不在重连");
+                myPrintln("启动异常,不在重连");
             }
             else{
-                System.out.println("启动异常,尝试重连计数="+connect_count);
+                myPrintln("启动异常,尝试重连计数="+connect_count);
                 start();
             }
             return false;
@@ -164,27 +164,26 @@ public boolean getStatus(){
                 topic=topic.replace("{blemac}","#");
             }
 
-
-
             if(topic.equals("#")){
                 return;
             }
-            if(sub_topic.get(topic)!=null)
+            sub_topic.put(topic,topic);
+         /*   if(sub_topic.get(topic)!=null)
             {
-                System.out.println("重复订阅主题=" + topic);
+                myPrintln("重复订阅主题=" + topic);
                 return;
             }
             else{
-                System.out.println("实际添加主题=" + topic);
-                sub_topic.put(topic,topic);
-            }
+                myPrintln("实际添加主题=" + topic);
+
+            }*/
         if(topic.equals("GwData12")){
             return;
         }
 
-            client.subscribe(topic);
+            client.subscribe(topic,0);
         } catch (Exception e) {
-            System.out.println("订阅主题异常 Topic=" + topic);
+            myPrintln("订阅主题异常 Topic=" + topic);
         }
     }
     //发布消息
@@ -193,16 +192,16 @@ public boolean getStatus(){
             MqttMessage message = new MqttMessage(msg.getBytes());
             message.setId(id);
             message.setQos(qos);
-            //System.out.println("发布主题消息"+topic);
+            //myPrintln("发布主题消息"+topic);
             if (topic == null || topic.length() == 0) {
-                System.out.println("主题有问题，return返回" + topic);
+                myPrintln("主题有问题，return返回" + topic);
                 return;
             }
-            //  System.out.println(df.format(new Date())+"真实发布 Topic=" + topic + "  meg=" + msg);
+            //  myPrintln(df.format(new Date())+"真实发布 Topic=" + topic + "  meg=" + msg);
             client.publish(topic, message);
-            //  System.out.println("Message published");
+            //  myPrintln("Message published");
         } catch (Exception e) {
-            System.out.println("发布消息异常 Topic=" + topic + "  meg=" + msg);
+            myPrintln("发布消息异常 Topic=" + topic + "  meg=" + msg);
         }
     }
 
@@ -262,14 +261,6 @@ public boolean getStatus(){
         this.messageCallback = messageCallback;
     }
 
-    public String getSub() {
-        return sub;
-    }
-
-    public String getPub() {
-        return pub;
-    }
-
     public String getUser() {
         return user;
     }
@@ -286,34 +277,7 @@ public boolean getStatus(){
         this.password = password;
     }
 
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
 
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
-    public int getConnect_count() {
-        return connect_count;
-    }
-
-    public SimpleDateFormat getDf() {
-        return df;
-    }
-
-    /*   //发布消息
-                                       public void sendToTopic(String topic, String msg, MqttStatusCallback mqttStatusCallback){
-                                           try {
-                                               messageCallback.setMqttCallback(mqttStatusCallback);
-                                               MqttMessage message = new MqttMessage(msg.getBytes());
-                                               message.setQos(qos);
-                                               client.publish(topic, message);
-                                               System.out.println("Message published");
-                                           }catch(MqttException e){
-                                               System.out.println("发布消息异常 Topic="+topic+"  meg="+msg);
-                                           }
-                                       }*/
     public void disConnect() {
         try {
 
@@ -321,7 +285,7 @@ public boolean getStatus(){
             client.close();
             client=null;
         } catch (MqttException e) {
-            System.out.println("断开MQTT连接异常=" + e.getMessage());
+            myPrintln("断开MQTT连接异常=" + e.getMessage());
         }
     }
 

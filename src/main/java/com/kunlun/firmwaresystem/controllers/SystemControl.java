@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.check_sheetMap;
-import static com.kunlun.firmwaresystem.NewSystemApplication.myMqttClientMap;
+import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 
 @RestController
 public class SystemControl {
@@ -28,25 +27,25 @@ public class SystemControl {
     @RequestMapping(value = "/userApi/SystemSet", method = RequestMethod.POST, produces = "text/plain")
     public String SystemSet(HttpServletRequest request, @RequestBody JSONObject json) {
         Customer customer=getCustomer(request);
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         String jsons=json.toString();
         jsons=jsons.replaceAll("true","1");
         jsons=jsons.replaceAll("false","0");
         json=JSONObject.parseObject(jsons);
         Check_sheet check_sheet=new Gson().fromJson(json.toString(),new TypeToken<Check_sheet>(){}.getType());
-        System.out.println(check_sheet);
+        myPrintln(check_sheet.toString());
         check_sheet.setProject_key(customer.getProject_key());
         check_sheet.setUserkey(customer.getUserkey());
         String jsonObject= JsonConfig.getJson(JsonConfig.CODE_OK,"",customer.getLang());
         CheckSheet_Sql checkSheet_sql=new CheckSheet_Sql();
         checkSheet_sql.update(checkSheetMapper,check_sheet);
-        new Thread(new Runnable() {
+        /*new Thread(new Runnable() {
             @Override
             public void run() {
                 check_sheetMap.put(customer.getProject_key(),check_sheet);
                 MyMqttClient myMqttClient=myMqttClientMap.get(customer.getProject_key());
                 if(myMqttClient!=null&&myMqttClient.getStatus()){
-                    System.out.println("sdsd");
+                    myPrintln("sdsd");
                     myMqttClient.disConnect();
                     myMqttClient.setHost(check_sheet.getHost());
                     myMqttClient.setPort(check_sheet.getPort());
@@ -57,14 +56,14 @@ public class SystemControl {
                     myMqttClient.start();
                 }
                 else{
-                    System.out.println("sss");
+                    myPrintln("sss");
                     myMqttClient = new MyMqttClient(check_sheet.getHost(),check_sheet.getPort(),check_sheet.getSub(),check_sheet.getPub(),check_sheet.getQos(),check_sheet.getUser(),check_sheet.getPassword(),check_sheet.getProject_key());
                     myMqttClient.start();
                     myMqttClientMap.put(customer.getProject_key(),myMqttClient);
                 }
 
             }
-        }).start();
+        }).start();*/
 
         return jsonObject;
 
@@ -72,19 +71,19 @@ public class SystemControl {
     @RequestMapping(value = "/userApi/SystemGet", method = RequestMethod.GET, produces = "application/json")
     public JSONObject SystemGet(HttpServletRequest request) {
         Customer customer=getCustomer(request);
-        System.out.println(customer.getProject_key());
-        System.out.println(check_sheetMap);
+        myPrintln(customer.getProject_key());
+        myPrintln(check_sheetMap.toString());
        Check_sheet check_sheet= check_sheetMap.get(customer.getProject_key());
         JSONObject jsonObject= JsonConfig.getJsonObj(JsonConfig.CODE_OK,check_sheet,customer.getLang());
-       boolean status=  myMqttClientMap.get(customer.getProject_key()).getStatus();
-        jsonObject.put("mqtt_status",status);
+      /* boolean status=  myMqttClientMap.get(customer.getProject_key()).getStatus();
+        jsonObject.put("mqtt_status",status);*/
         return jsonObject;
     }
 
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class Btag_Sql {
     public boolean addBeaconTag(BTagMapper bTagMapper, Beacon_tag beacon_tag) {
         boolean status = check(bTagMapper, beacon_tag);
@@ -32,7 +34,7 @@ public class Btag_Sql {
         List<Beacon_tag> beacons = beaconMapper.selectList(queryWrapper);
         HashMap<String, Beacon_tag> beaconHashMap = new HashMap();
         for (Beacon_tag beacon_tag : beacons) {
-            System.out.println("初始化" + beacon_tag.getProject_key() + beacon_tag.getMajor() + "/" + beacon_tag.getMinor());
+            myPrintln("初始化" + beacon_tag.getProject_key() + beacon_tag.getMajor() + "/" + beacon_tag.getMinor());
             beaconHashMap.put(beacon_tag.getProject_key() + beacon_tag.getMajor() + "/" + beacon_tag.getMinor(), beacon_tag);
         }
         return beaconHashMap;
@@ -43,7 +45,7 @@ public class Btag_Sql {
         List<Beacon_tag> beacons = beaconMapper.selectList(queryWrapper);
         HashMap<String, Beacon_tag> beaconHashMap = new HashMap();
         for (Beacon_tag beacon_tag : beacons) {
-            System.out.println("初始化" + beacon_tag.getProject_key() + beacon_tag.getMajor() + "/" + beacon_tag.getMinor());
+            myPrintln("初始化" + beacon_tag.getProject_key() + beacon_tag.getMajor() + "/" + beacon_tag.getMinor());
             beaconHashMap.put(beacon_tag.getProject_key() + beacon_tag.getMajor() + "/" + beacon_tag.getMinor(), beacon_tag);
         }
         return beaconHashMap;

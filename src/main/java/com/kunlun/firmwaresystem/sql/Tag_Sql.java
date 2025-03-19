@@ -23,7 +23,7 @@ public class Tag_Sql {
             QueryWrapper<Tag> queryWrapper = Wrappers.query();
             queryWrapper.eq("mac", tag.getMac());
             Tag tag1 = tagMapper.selectOne(queryWrapper);
-            //System.out.println("申请的ID="+ devicep1.getId());
+            //myPrintln("申请的ID="+ devicep1.getId());
             tag.setId(tag1.getId());
             return true;
         }
@@ -49,7 +49,7 @@ public class Tag_Sql {
         List<Tag> tags = tagMapper.selectList(userLambdaQueryWrapper);
         HashMap<String, Tag> TagHashMap = new HashMap<>();
         for (Tag tag : tags) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             TagHashMap.put(tag.getMac(), tag);
         }
         return TagHashMap;
@@ -63,11 +63,11 @@ public class Tag_Sql {
         return tags;
     }
 
-    public List<Tag> getunAllTag(TagMapper tagMapper, String userkey, String project_key, String type) {
+    public List<Tag> getunAllTag(TagMapper tagMapper, String userkey, String project_key) {
         QueryWrapper<Tag> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("isbind",0);
         queryWrapper.eq("user_key",userkey);
-        queryWrapper.eq("type",type);
+     //   queryWrapper.eq("type",type);
         queryWrapper.eq("project_key",project_key);
         List<Tag> tagList = tagMapper.selectList(queryWrapper);
         return tagList;
@@ -92,9 +92,8 @@ public class Tag_Sql {
         IPage<Tag> userIPage;
         userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like);
         userIPage = tagMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageTag pageTag = new PageTag(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageTag;
     }
@@ -105,9 +104,7 @@ public class Tag_Sql {
         IPage<Tag> userIPage;
         userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getType,5).eq(Tag::getUser_key, userkey).like(Tag::getMac, like);
         userIPage = tagMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageTag pageTag = new PageTag(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageTag;
     }

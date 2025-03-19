@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class
 Device_offline {
     int id;
@@ -69,9 +71,9 @@ Device_offline {
             long m=t%(60*60*24)%(60*60)/60;
             long s1=t%(60*60*24)%(60*60)/60%60;
             keep_time=d1+"天"+h+"时"+m+"分"+s1+"秒";
-            System.out.println("持续时间="+keep_time);
+            myPrintln("持续时间="+keep_time);
         }catch (Exception e){
-            System.out.println("Device_offline时间格式异常，"+e.getMessage());
+            myPrintln("Device_offline时间格式异常，"+e.getMessage());
         }
 
 

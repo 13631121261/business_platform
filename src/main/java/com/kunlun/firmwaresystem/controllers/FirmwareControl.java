@@ -20,6 +20,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 @RestController
 public class FirmwareControl {
     @Autowired
@@ -29,10 +31,10 @@ public class FirmwareControl {
 
     /*  @RequestMapping(value = "/getFirmwareVersion",method = RequestMethod.GET)
       public String getFirmwareVersion(@RequestParam("type") String type,@RequestParam("mac") String mac,@RequestParam("wifi_version") String wifi_version,@RequestParam("ble_version") String ble_version) {
-          System.out.println("Mac="+mac);
-          System.out.println("type="+type);
-          System.out.println("wifi_version="+wifi_version);
-          System.out.println("ble_version="+ble_version);
+          myPrintln("Mac="+mac);
+          myPrintln("type="+type);
+          myPrintln("wifi_version="+wifi_version);
+          myPrintln("ble_version="+ble_version);
           Wifi wifi=new Wifi();
           Wifi_firmware wifi_firmware= wifi.getVersionOnAuto(wifiMapper);
           Ble ble=new Ble();
@@ -51,7 +53,7 @@ public class FirmwareControl {
           else {
               jsonObject.put("ble", ble_firmware);
           }
-          System.out.println("json="+jsonObject.toString());
+          myPrintln("json="+jsonObject.toString());
           return jsonObject.toString();
       }*/
     @RequestMapping(value = "/getCustomerFirmwareVersion", method = RequestMethod.GET)
@@ -73,7 +75,7 @@ public class FirmwareControl {
         } else {
             jsonObject.put("ble", ble_firmware);
         }
-        System.out.println("json=" + jsonObject.toString());
+        myPrintln("json=" + jsonObject.toString());
         return jsonObject.toString();
     }
     //  String version;
@@ -95,19 +97,19 @@ public class FirmwareControl {
         File path = new File(ResourceUtils.getURL("classpath:").getPath());
         try {
             address = InetAddress.getLocalHost();
-            System.out.println("输出地址="+address.getHostAddress()+"文件路径="+path.getName());
+            myPrintln("输出地址="+address.getHostAddress()+"文件路径="+path.getName());
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        System.out.println("[文件类型] - [{}]"+ file.getContentType());
-        System.out.println("[文件名称] - [{}]"+ file.getOriginalFilename());
-        System.out.println("[文件大小] - [{}]"+ file.getSize());
+        myPrintln("[文件类型] - [{}]"+ file.getContentType());
+        myPrintln("[文件名称] - [{}]"+ file.getOriginalFilename());
+        myPrintln("[文件大小] - [{}]"+ file.getSize());
 
         Date dNow = new Date( );
         SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd hh:mm:ss");
 
-        System.out.println("当前时间为: " + ft.format(dNow));
+        myPrintln("当前时间为: " + ft.format(dNow));
         //保存
         JSONObject jsonObject=new JSONObject();
         if(file==null||type==null||version==null||finishtime==null||author==null||administrator==null){
@@ -125,7 +127,7 @@ public class FirmwareControl {
                     bleMapper.update(null,bleFirmwareUpdateWrapper);
                 }
                 int d=bleMapper.insert(ble_firmware);
-                System.out.println("保存蓝牙固件数据的结果码="+d);
+                myPrintln("保存蓝牙固件数据的结果码="+d);
             }else if(type.equals("wifi")){
                 Wifi_firmware wifi_firmware=new Wifi_firmware( "http://"+"47.241.68.29"+":8080/download",remake,   ft.format(dNow),  customization,  customization_name,  finishtime,  author,  administrator,  "",  version);
                 if(auto==1){
@@ -134,7 +136,7 @@ public class FirmwareControl {
                     wifiMapper.update(null,wifiFirmwareUpdateWrapper);
                 }
                 int d=wifiMapper.insert(wifi_firmware);
-                System.out.println("保存wifi数据的结果码="+d);
+                myPrintln("保存wifi数据的结果码="+d);
             }
             jsonObject.put("code",constant.code_ok);
             jsonObject.put("msg","上传成功");
@@ -176,7 +178,7 @@ public class FirmwareControl {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println("----------file download---" + filename);
+            myPrintln("----------file download---" + filename);
             try {
                 bis.close();
                 fis.close();
@@ -217,7 +219,7 @@ public class FirmwareControl {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println("----------file download---" + file.getPath());
+            myPrintln("----------file download---" + file.getPath());
             try {
                 bis.close();
                 fis.close();

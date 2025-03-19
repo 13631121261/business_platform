@@ -75,7 +75,7 @@ public class PersonControl {
                 }
                 person_sql.update(personMapper, person1);
             }catch (Exception e){
-                System.out.println(e.getMessage());
+                myPrintln(e.getMessage());
             }
         }
         JSONObject jsonObject = new JSONObject();
@@ -119,7 +119,7 @@ public class PersonControl {
         }
         if(person.getBind_mac()!=null&&person.getBind_mac().length()>0){
             person.setIsbind(1);
-            Tag tag = beaconsMap.get(person.getBind_mac());
+            Tag tag = tagsMap.get(person.getBind_mac());
             tag.bind(person.getIdcard());
             tag.setBind_type(2);
             Tag_Sql tag_sql =new Tag_Sql();
@@ -140,11 +140,10 @@ public class PersonControl {
         try {
             Customer customer = getCustomer(request);
             String lang=customer.getLang();
-            System.out.println("111");
+            myPrintln("111");
             Person_Sql person_sql = new Person_Sql();
             Person person = new Gson().fromJson(json.toString(), new TypeToken<Person>() {
             }.getType());
-            System.out.println(person);
             person.setUser_key(customer.getUserkey());
             person.setCustomer_key(customer.getCustomerkey());
             person.setProject_key(customer.getProject_key());
@@ -155,13 +154,13 @@ public class PersonControl {
             } else {
                 person.setDepartment_id(0);
             }
-            System.out.println("222");
+            myPrintln("222");
             Person person1 = person_sql.getPersonById(personMapper, person.getId() + "");
             Tag_Sql tag_sql = new Tag_Sql();
-            System.out.println("222"+person1);
+            myPrintln("222"+person1);
             //原来设备有绑定，有变更
             //处理旧的信标
-            if (person1.getBind_mac() != null && person1.getBind_mac().length() > 0 && !person1.getBind_mac().equals(person.getBind_mac())) {
+            if (person1.getBind_mac() != null && !person1.getBind_mac().isEmpty() && !person1.getBind_mac().equals(person.getBind_mac())) {
                 List<Tag> tags = tag_sql.getTagByMac(tagMapper, person.getUser_key(), person.getProject_key(), person1.getBind_mac());
                 if (tags == null || tags.size() != 1) {
                     return JsonConfig.getJsonObj(CODE_SQL_ERROR, null,lang);
@@ -170,15 +169,15 @@ public class PersonControl {
                 tag1.setBind_type(0);
                 tag1.unbind();
                 tag_sql.update(tagMapper, tag1);
-                beaconsMap.put(tag1.getMac(), tag1);
+                tagsMap.put(tag1.getMac(), tag1);
             }
             //有绑定，处理新的信标
-           // System.out.println("3333"+person.getBind_mac());
-            if (person.getBind_mac().length() > 0 && !person.getBind_mac().equals("不绑定标签")&& !person.getBind_mac().equals("UnBind")) {
-               // System.out.println("4444");
+           // myPrintln("3333"+person.getBind_mac());
+            if (!person.getBind_mac().isEmpty() && !person.getBind_mac().equals("不绑定标签")&& !person.getBind_mac().equals("UnBind")) {
+               // myPrintln("4444");
                 person.setIsbind(1);
                 List<Tag> tags = tag_sql.getTagByMac(tagMapper, person.getUser_key(), person.getProject_key(), person.getBind_mac());
-                System.out.println("555"+person.getBind_mac());
+                myPrintln("555"+person.getBind_mac());
                 if (tags == null || tags.size() != 1) {
                     return JsonConfig.getJsonObj(CODE_SQL_ERROR, null,lang);
                 }
@@ -186,12 +185,15 @@ public class PersonControl {
                 tag1.bind(person.getIdcard());
                 tag1.setBind_type(2);
                 tag_sql.update(tagMapper, tag1);
-                beaconsMap.put(tag1.getMac(), tag1);
+                tagsMap.put(tag1.getMac(), tag1);
             }
-            System.out.println("666");
-            if (person.getBind_mac().length() == 0 || person.getBind_mac() == null || person.getBind_mac().equals("不绑定标签")|| person.getBind_mac().equals("UnBind")) {
+            myPrintln("666");
+            if (person.getBind_mac().isEmpty() || person.getBind_mac() == null || person.getBind_mac().equals("不绑定标签")|| person.getBind_mac().equals("UnBind")) {
                 person.setIsbind(0);
                 person.setBind_mac("");
+            }
+            if (personMap==null||personMap.isEmpty()) {
+                personMap=person_sql.getAllPerson(personMapper);
             }
             personMap.put(person.getIdcard(), person);
 
@@ -204,7 +206,7 @@ public class PersonControl {
                 return JsonConfig.getJsonObj(CODE_REPEAT, null,lang);
             }
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e.toString());
         }
         return null;
     }
@@ -230,24 +232,24 @@ public class PersonControl {
     //解绑
     @RequestMapping(value = "userApi/Person/unbind", method = RequestMethod.GET, produces = "application/json")
     public JSONObject unbindPerson(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "idcard") String idcard) {
-        System.out.println("返回状态"+idcard);
+        myPrintln("返回状态"+idcard);
         Person person=personMap.get(idcard);
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
         for(String key:personMap.keySet()){
-           // System.out.println("身份证="+key);
+           // myPrintln("身份证="+key);
         }
         if(person==null){
-          //  System.out.println("返回状态1");
+          //  myPrintln("返回状态1");
             return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
         }
-       // System.out.println("返回状态2");
+       // myPrintln("返回状态2");
         if(person!=null&&person.getIsbind()==1){
-          //  System.out.println("返回状态3");
+          //  myPrintln("返回状态3");
             String mac=person.getBind_mac();
             if(mac!=null&&mac.length()>0){
-              //  System.out.println("返回状态44");
-                Tag tag =beaconsMap.get(mac);
+              //  myPrintln("返回状态44");
+                Tag tag =tagsMap.get(mac);
                 if(tag !=null){
                     tag.setBind_type(0);
 
@@ -264,15 +266,15 @@ public class PersonControl {
         person.setIsbind(0);
         person.setBind_mac("");
         Person_Sql person_sql=new Person_Sql();
-        System.out.println("返回状态55");
+        myPrintln("返回状态55");
        boolean status=  person_sql.update(personMapper,person);
         if(status){
             personMap.put(person.getIdcard(),person);
-          //  System.out.println("返回状态666");
+          //  myPrintln("返回状态666");
             return JsonConfig.getJsonObj(CODE_OK,null,lang);
         }
         else{
-           // System.out.println("返回状态77");
+           // myPrintln("返回状态77");
             return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
         }
     }
@@ -302,12 +304,7 @@ public class PersonControl {
                     if(person!=null&&person.getId()==Integer.parseInt(ids.toString())&&person.getIsbind()==1){
                         return JsonConfig.getJsonObj(CODE_10,null,lang);
                     }
-                    for(String sn:devicePMap.keySet()){
-                        Devicep devicep=devicePMap.get(sn);
-                        if(devicep!=null&&devicep.getIdcard()!=null&&devicep.getIdcard().equals(key)){
-                            return JsonConfig.getJsonObj(CODE_10,null,lang);
-                        }
-                    }
+
                 }
 
             }

@@ -5,13 +5,13 @@ import com.kunlun.firmwaresystem.entity.device.Tagf;
 import com.kunlun.firmwaresystem.mappers.TagfMapper;
 import java.util.List;
 public class Tagf_Sql {
-    public boolean add(TagfMapper TagfMapper, Tagf Tagf) {
+    public int add(TagfMapper TagfMapper, Tagf Tagf) {
         boolean status = check(TagfMapper, Tagf);
         if (status) {
-            return false;
-        } else {
-            TagfMapper.insert(Tagf);
-            return true;
+            return -1;
+        } else {TagfMapper.insert(Tagf);
+            return  Tagf.getId();
+
         }
 
     }

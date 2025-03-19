@@ -28,7 +28,7 @@ public class WordCarda_Sql {
         List<Wordcard_a> wordcard_aList = wordCardaMapper.selectList(null);
         HashMap<String, Wordcard_a> wordCardAHashMap = new HashMap<>();
         for (Wordcard_a wordCard_a : wordcard_aList) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             wordCardAHashMap.put(wordCard_a.getMac(), wordCard_a);
         }
         return wordCardAHashMap;
@@ -62,9 +62,7 @@ public class WordCarda_Sql {
         userLambdaQueryWrapper.eq(Wordcard_a::getCustomer_key, userkey);
         userLambdaQueryWrapper.like(Wordcard_a::getMac, mac);
         userIPage = wordCardaMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageWordcarda pageWordcarda = new PageWordcarda(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageWordcarda;
     }

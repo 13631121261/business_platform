@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class Bracelet_Sql {
     public boolean addBracelet(BraceletMapper braceletMapper, Bracelet bracelet) {
         boolean status = check(braceletMapper, bracelet);
@@ -23,7 +25,7 @@ public class Bracelet_Sql {
             QueryWrapper<Bracelet> queryWrapper = Wrappers.query();
             queryWrapper.eq("mac",bracelet.getMac());
             Bracelet bracelet1 =braceletMapper.selectOne(queryWrapper);
-            //System.out.println("申请的ID="+ devicep1.getId());
+            //myPrintln("申请的ID="+ devicep1.getId());
             bracelet.setId(bracelet1.getId());
             return true;
         }
@@ -49,7 +51,7 @@ public class Bracelet_Sql {
         List<Bracelet> beacons = braceletMapper.selectList(userLambdaQueryWrapper);
         HashMap<String, Bracelet> beaconHashMap = new HashMap<>();
         for (Bracelet beacon : beacons) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             beaconHashMap.put(beacon.getMac(), beacon);
         }
         return beaconHashMap;
@@ -92,9 +94,9 @@ public class Bracelet_Sql {
         IPage<Bracelet> userIPage;
         userLambdaQueryWrapper.ne(Bracelet::getType,5).eq(Bracelet::getProject_key,project_key).eq(Bracelet::getUser_key, userkey).like(Bracelet::getMac, like);
         userIPage = braceletMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        myPrintln("总页数： " + userIPage.getPages());
+        myPrintln("总记录数： " + userIPage.getTotal());
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageBracelet pageBracelet = new PageBracelet(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageBracelet;
     }

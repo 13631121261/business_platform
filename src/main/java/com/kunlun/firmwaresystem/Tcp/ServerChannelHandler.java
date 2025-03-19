@@ -23,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 @Component
 @ChannelHandler.Sharable
 public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
@@ -37,13 +39,13 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
-       // System.out.println("11111111111111111有设备连接"+ctx);
+       // myPrintln("11111111111111111有设备连接"+ctx);
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         super.channelUnregistered(ctx);
-      //  System.out.println("222222222222222d断开设备连接"+ctx);
+      //  myPrintln("222222222222222d断开设备连接"+ctx);
     }
 
     @Override
@@ -60,13 +62,13 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
 //BDBDBDBDF3898604F01123C0757297A3BDBDBDBDBB104738303543472E434154312E4B4C313806473830354347F9BDBDBDBDA90100011A4169724D324D5F373830455F56313135365F4C54455F4C534154C2
         //=BDBDBDBDD606018B6F0B66010D470D00C5E2BA
         SimpleDateFormat sp=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-       // System.out.println("上报时间="+sp.format(System.currentTimeMillis()));
+       // myPrintln("上报时间="+sp.format(System.currentTimeMillis()));
         String raw="";
         try{
-          //  System.out.println("接收数据="+StringUtil.byteArrToHex((byte[])msg));
+          //  myPrintln("接收数据="+StringUtil.byteArrToHex((byte[])msg));
             raw= StringUtil.byteArrToHex((byte[])msg);
         }catch (Exception e){
-            System.out.println("异常="+e.getMessage());
+            myPrintln("异常="+e.getMessage());
 
         }
 
@@ -77,9 +79,9 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
         }
 
     if(raws!=null){
-        System.out.println(raws.length);
+        myPrintln(String.valueOf(raws.length));
         for(String datas:raws){
-            System.out.println(datas.length());
+            myPrintln(String.valueOf(datas.length()));
             if(datas.length()==0){
                 continue;
             }
@@ -88,7 +90,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
             if(data!=null&&data.length>=5){
                 switch (data[4]&0xff){
                     case 0xF0:
-                      //  System.out.println("初次TCP连接");
+                      //  myPrintln("初次TCP连接");
                         cmd=StringUtil.hexToByteArr("BDBDBDBDF1BDBDBDBDCC");
                         long time=System.currentTimeMillis()/1000;
                         byte[] times= StringUtil.intTo4ByteArray(time);
@@ -105,11 +107,11 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
                         imei[5]=data[6];
                         imei[6]=data[5];
                         long imeia=StringUtil.eByteToLong(imei);
-                      //  System.out.println("Imei="+imeia);
+                      //  myPrintln("Imei="+imeia);
 
                         byte crc= getCRC(cmd);
                         cmd[cmd.length-1]=crc;
-                        System.out.println(crc);
+                        myPrintln(String.valueOf(crc));
 
                         FWordcard wordcard=null;
                         FWordcard_Sql wordcard_sql=new FWordcard_Sql();
@@ -119,17 +121,17 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
                         }else{
                             wordCardhashMap.put(channelHandlerContext,imeia+"");
                             redisUtil.setnoTimeOut(Constant.fwordcard+imeia+"",wordcard);
-                            System.out.println("原始下发="+StringUtil.byteArrToHex(cmd));
+                            myPrintln("原始下发="+StringUtil.byteArrToHex(cmd));
                             channelHandlerContext.writeAndFlush(cmd).syncUninterruptibly();
                         }
 
 
                         break;
                     case 0xD6:
-                        System.out.println("单组原始数据="+"BDBDBDBD"+datas);
-                         System.out.println("刚才是蓝牙定位包的数据");
-                        System.out.println("类型="+data[5]);
-                        System.out.println("信标组数量是="+data[6]);
+                        myPrintln("单组原始数据="+"BDBDBDBD"+datas);
+                         myPrintln("刚才是蓝牙定位包的数据");
+                        myPrintln("类型="+data[5]);
+                        myPrintln("信标组数量是="+data[6]);
                         int d=6;
 
                         for(int i=1;i<=data[6];i++){
@@ -138,11 +140,11 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
                             time1[1]=data[d+3];
                             time1[2]=data[d+2];
                             time1[3]=data[d+1];
-                           // System.out.println("时间="+sp.format(StringUtil.ByteToLong(time1)));
-                            //System.out.println("此组收到信标数量为=="+data[d+5]);
+                           // myPrintln("时间="+sp.format(StringUtil.ByteToLong(time1)));
+                            //myPrintln("此组收到信标数量为=="+data[d+5]);
                             int sum=data[d+5];  d=d+5;
                             for(int o=1;o<=sum;o++){
-                             //   System.out.println("信标"+j);
+                             //   myPrintln("信标"+j);
                                 int major1=((data[d+2]&0xff)*256);
                                 int major2=data[d+1]&0xff;
                                 int major=major2+major1;
@@ -152,7 +154,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
                                 int rssi=data[d+5];
                                 int rssiAtoOne=data[d+6];
                                 d=d+6;
-                                System.out.println("major="+major+"  Minor="+minor+" rssi="+rssi+"   Rssi @1M="+rssiAtoOne);
+                                myPrintln("major="+major+"  Minor="+minor+" rssi="+rssi+"   Rssi @1M="+rssiAtoOne);
                              /*   Btag_Sql btag_sql=new Btag_Sql();
                                 btag_sql.selectPageTag()
                                 Beacon_tag beacon_tag=new Beacon_tag();
@@ -161,26 +163,26 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
                         }
                         break;
                     case 0xF6:
-                        System.out.println("88888888888888888 88888888888888888电量="+data[5]);
-                        System.out.println("信号强度="+data[11]);
+                        myPrintln("88888888888888888 88888888888888888电量="+data[5]);
+                        myPrintln("信号强度="+data[11]);
                         channelHandlerContext.writeAndFlush(new byte[]{0x01,0x02}).syncUninterruptibly();
                         break;
                     case 0x02:
-                        System.out.println("kssssssssssssssssssss");
+                        myPrintln("kssssssssssssssssssss");
                         if(data[5]==0x02){
-                            System.out.println("SOS按键报警");
+                            myPrintln("SOS按键报警");
                         }else if(data[5]==0x04){
-                            System.out.println("关机报警");
+                            myPrintln("关机报警");
                     }
                         else if((data[5]&0xff)==0x80){
-                            System.out.println("SOS取消报警");
+                            myPrintln("SOS取消报警");
                         }else{
-                            System.out.println("其他报警");
+                            myPrintln("其他报警");
                         }
                         break;
                         default:
-                            System.out.println("------------------------------单组原始数据="+"BDBDBDBD"+datas);
-                            System.out.println("其他的上报数据");
+                            myPrintln("------------------------------单组原始数据="+"BDBDBDBD"+datas);
+                            myPrintln("其他的上报数据");
                             break;
                 }
             }
@@ -196,7 +198,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
         byte ck_sum = 0;
         for(int i=0; i<cmd.length-1; i++)
         {
-        //    System.out.println(i);
+        //    myPrintln(i);
             ck_sum =(byte) (ck_sum + cmd[i]);
             ck_sum = (byte)(ck_sum % 0x100);
         }
@@ -211,7 +213,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Object> {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
         String strCurTime = df.format(curTime);
         String strRechk = "HTD02:RECHK:17:" + strCurTime + ":00;";
-//        System.out.println(strRechk);
+//        myPrintln(strRechk);
 
         chc.writeAndFlush(strRechk).syncUninterruptibly();
     }

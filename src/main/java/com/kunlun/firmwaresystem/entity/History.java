@@ -1,7 +1,7 @@
 package com.kunlun.firmwaresystem.entity;
 
 public class History {
-    int id;
+    long id;
     double x;
     double y;
     String map_key;
@@ -10,11 +10,11 @@ public class History {
     long time;
     String project_key;
     String name;
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -28,9 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.StationMap;
-import static com.kunlun.firmwaresystem.NewSystemApplication.StationMapper;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_Station;
+import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -41,17 +39,16 @@ public class MapControl {
     private MapMapper mapMapper;
     @RequestMapping(value = "userApi/map/upload", method = RequestMethod.POST, produces = "application/json")
     public String upload(MultipartHttpServletRequest request){
-            System.out.println("上传地图");
-            Enumeration<String> parameter= request.getParameterNames();
+           Enumeration<String> parameter= request.getParameterNames();
             String map_key="";
             while (parameter.hasMoreElements()) {
-               // System.out.println("输出key=" + parameter.nextElement());
+               // myPrintln("输出key=" + parameter.nextElement());
                 map_key=map_key+request.getParameter(parameter.nextElement());
             }
             if(map_key.length()>0){
-                System.out.println("旧的输出key=" +map_key);
+                myPrintln("旧的输出key=" +map_key);
             }else{
-                System.out.println("需要新的key");
+                myPrintln("需要新的key");
             }
             Map<String, MultipartFile> map = request.getFileMap();
             List<MultipartFile> files=new ArrayList<>();
@@ -60,19 +57,19 @@ public class MapControl {
                     String svg_data = null;
                     try {
                         svg_data = new String(entry.getValue().getBytes());
-                       // System.out.println(svg_data);
+                       // myPrintln(svg_data);
                         if(map_key.length()==0){
                             map_key = Base64.getEncoder().encodeToString(("map" + "_" + System.currentTimeMillis()).getBytes()).replaceAll("\\+", "");
                         }
                        redisUtil.set(map_key,svg_data);
                         return map_key;
                      } catch (IOException ioException) {
-                        System.err.println("File Error!");
+                       myPrintln("File Error!");
                         return  "";
                     }
                 }
-            //    System.out.println(entry.getKey());
-             //   System.out.println(entry.getValue().getSize());
+            //    myPrintln(entry.getKey());
+             //   myPrintln(entry.getValue().getSize());
                 files.add(entry.getValue());
             }
 
@@ -107,7 +104,7 @@ public class MapControl {
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
         com.kunlun.firmwaresystem.entity.Map map =new Gson().fromJson(jsonObject.toString(),new TypeToken<com.kunlun.firmwaresystem.entity.Map>(){}.getType());
-        System.out.println(map.toString());
+        myPrintln(map.toString());
         if(map.getMap_key()!=null){
             map.setUser_key(customer.getUserkey());
             map.setProject_key(customer.getProject_key());
@@ -180,7 +177,7 @@ public class MapControl {
 
     @RequestMapping(value = "userApi/map/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
-       // System.out.println(System.currentTimeMillis());
+       // myPrintln(System.currentTimeMillis());
         Customer customer=getCustomer(request);
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
@@ -199,13 +196,13 @@ public class MapControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
 
     @RequestMapping(value = "userApi/map/index2", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllMap1(HttpServletRequest request) {
-        // System.out.println(System.currentTimeMillis());
+        // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -214,11 +211,13 @@ public class MapControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
+
     @RequestMapping(value = "userApi/map/index", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllMap(HttpServletRequest request) {
+        Customer customer = getCustomer(request);
         String quickSearch=request.getParameter("quickSearch");
         String page=request.getParameter("page");
         String limit=request.getParameter("limit");
@@ -235,13 +234,20 @@ public class MapControl {
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         PageMap pageMap = map_sql.selectPageMap(mapMapper,Integer.parseInt(page),Integer.parseInt(limit), user1.getUserkey(),user1.getProject_key(),quickSearch);
-
+        Station_sql stationSql = new Station_sql();
+        for (com.kunlun.firmwaresystem.entity.Map map:pageMap.getMapList()){
+            String map_key=map.getMap_key();
+            List<Station> stations= stationSql.getStationByMapKey(StationMapper,customer.getUserkey(),customer.getProject_key(),map_key);
+            if (stations!=null&& !stations.isEmpty()){
+                map.setSum(stations.size());
+            }
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", 1);
         jsonObject.put("msg", "ok");
         jsonObject.put("count", pageMap.getMapList().size());
         jsonObject.put("data",  pageMap.getMapList());
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     @RequestMapping(value = "/userApi/map/del", method = RequestMethod.POST, produces = "application/json")
@@ -273,7 +279,7 @@ public class MapControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

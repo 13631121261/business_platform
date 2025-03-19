@@ -18,10 +18,10 @@ public class DirectExchangeProducer {
             public void run() {
 
                 rabbitMQTemplate.convertAndSend(DirectExchangeRabbitMQConfig.directExchangeName, routingKey, msg);
-          /*      System.out.println(routingKey+"开始时间="+dfs.format(new Date())+msg);
+          /*      myPrintln(routingKey+"开始时间="+dfs.format(new Date())+msg);
 
-                System.out.println("结束时间="+dfs.format(new Date()));
-                System.out.println("线程="+Thread.currentThread().getName());*/
+                myPrintln("结束时间="+dfs.format(new Date()));
+                myPrintln("线程="+Thread.currentThread().getName());*/
             }
         }).start();
 

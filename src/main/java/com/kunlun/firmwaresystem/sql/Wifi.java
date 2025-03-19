@@ -15,6 +15,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import java.util.List;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.util.constant.code_ok;
 import static com.kunlun.firmwaresystem.util.constant.wifi_type;
 
@@ -87,14 +88,14 @@ public class Wifi {
             session = MyBatisUtils.openSession();
             session.insert("Wifi_firmware.insert", wifi_firmware);
             session.commit();  //提交事务数据
-            System.out.println(wifi_firmware.getId());
+            myPrintln(wifi_firmware.getId()+"");
         } catch (Exception e) {
             if (session != null) {
                 session.rollback();  //如果出现异常，回滚事务
-                System.out.println("异常=" + e.getMessage());
+                myPrintln("异常=" + e.getMessage());
                 //   return -1;
             } else {
-                System.out.println("异常=" + e.getMessage());
+                myPrintln("异常=" + e.getMessage());
                 //  return -1;
             }
 
@@ -117,9 +118,9 @@ public class Wifi {
             userLambdaQueryWrapper.like(Wifi_firmware::getVersion, version);
         }
         userIPage = wifiMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        //  userIPage.getRecords().forEach(System.out::println);
+        myPrintln("总页数： " + userIPage.getPages());
+        myPrintln("总记录数： " + userIPage.getTotal());
+        //  userIPage.getRecords().forEach(System.out::myPrintln);
         PageWifiVersion pageWifiVersion = new PageWifiVersion(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageWifiVersion;
     }

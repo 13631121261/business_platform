@@ -11,6 +11,8 @@ import com.kunlun.firmwaresystem.mappers.BleMapper;
 
 import java.util.List;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class Ble {
     public Ble_firmware getVersionByKey(BleMapper bleMapper, String userKey, String version) {
         QueryWrapper<Ble_firmware> queryWrapper = Wrappers.query();
@@ -39,9 +41,9 @@ public class Ble {
             userLambdaQueryWrapper.like(Ble_firmware::getVersion, version);
         }
         userIPage = bleMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        //   userIPage.getRecords().forEach(System.out::println);
+        myPrintln("总页数： " + userIPage.getPages());
+        myPrintln("总记录数： " + userIPage.getTotal());
+        //   userIPage.getRecords().forEach(System.out::myPrintln);
         PageBleVersion pageBleVersion = new PageBleVersion(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageBleVersion;
     }

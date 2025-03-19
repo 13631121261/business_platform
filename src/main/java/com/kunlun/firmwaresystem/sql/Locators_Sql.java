@@ -23,7 +23,7 @@ public class Locators_Sql {
             QueryWrapper<Locator> queryWrapper = Wrappers.query();
             queryWrapper.eq("address",locator.getAddress());
             Locator locator1 =locatorMapper.selectOne(queryWrapper);
-            //System.out.println("申请的ID="+ devicep1.getId());
+            //myPrintln("申请的ID="+ devicep1.getId());
             locator.setId(locator1.getId());
             return true;
         }

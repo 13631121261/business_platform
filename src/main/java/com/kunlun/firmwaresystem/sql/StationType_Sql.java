@@ -11,6 +11,9 @@ import com.kunlun.firmwaresystem.entity.StationType;
 import com.kunlun.firmwaresystem.mappers.AlarmMapper;
 import com.kunlun.firmwaresystem.mappers.StationTypeMapper;
 import java.util.List;
+
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class StationType_Sql {
     public boolean addStationType(StationTypeMapper stationTypeMapper, StationType stationType) {
         boolean status = check(stationTypeMapper, stationType);
@@ -21,7 +24,7 @@ public class StationType_Sql {
                 stationTypeMapper.insert(stationType);
             }
             catch (Exception e){
-                System.out.println("有点异常="+e);
+                myPrintln("有点异常="+e);
             }
             return true;
         }

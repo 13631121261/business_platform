@@ -22,7 +22,7 @@ public class SignStreamFilter implements Filter {
         if (contentType != null && contentType.contains(method)) {
             // 将转化后的 request 放入过滤链中
                          // CommonsMultipartResolver
-          //  System.out.println("这里是文件");
+          //  myPrintln("这里是文件");
             request = new StandardServletMultipartResolver().resolveMultipart(request);
         }
         try {

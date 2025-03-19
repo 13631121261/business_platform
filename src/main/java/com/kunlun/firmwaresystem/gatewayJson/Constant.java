@@ -65,7 +65,8 @@ public class Constant {
     //针对扫描上报时，存起来设备对饮网关的最强信号  一个设备最多缓存10个网关信息
     public static final String redis_key_device_Stations = "b_device_Stations";
     //针对扫描上报时，存起来设备对应网关的最强信号
-    public static final String redis_key_Station = "b_Station";
+    public static final String redis_key_b_Station= "b_Station";
+
     //缓存好单个配置项对应全部网关的在线离线问题
     public static final String redis_key_StationConfig_onLine = "b_redis_key_StationConfig_onLine";
     //public static final String redis_key_Station_onLine = "b_redis_key_Station_onLine";
@@ -110,10 +111,10 @@ public class Constant {
     public static final String ConnectState_searching = "searching";
     public static final String ConnectState_redy = "redy";
     public static final String ConnectState_sta_conn_params_updated = "sta_conn_params_updated";
-    public static final String fence_check_device="b_fence_check_device";
-    public static final String fence_check_device_res="b_fence_check_device_res";
-    public static final String fence_check_person="b_fence_check_person";
-    public static final String fence_check_person_res="b_fence_check_person_res";
+  /*  public static final String fence_check_device="b_fence_check_device";
+    public static final String fence_check_device_res="b_fence_check_device_res";*/
+    public static final String fence_check_object="fence_check_object";
+    public static final String fence_check_object_res="fence_check_object_res";
     public static final String device_check_online_status_res="b_device_check_online_status_res";
     public static final String person_check_online_status_res="b_person_check_online_status_res";
     public static final String device_check_sos_status_res="b_device_check_sos_status_res";
@@ -124,5 +125,7 @@ public class Constant {
     public static final String person_check_run_status_res="b_person_check_run_status_res";
     public static final String fwordcard="b_fwordcard";
     public static final String tag_address="tag_address";
+    public static final String fence_group="fence_group";
+    public static final String device_person_group="device_person_group";
 
 }

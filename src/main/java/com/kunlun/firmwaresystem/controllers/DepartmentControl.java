@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -58,7 +60,7 @@ public class DepartmentControl {
     public JSONObject getDepartment(HttpServletRequest request) {
         String response = null;
         Customer customer = getCustomer(request);
-            System.out.println("对象为" + customer.getUsername());
+            myPrintln("对象为" + customer.getUsername());
             Department_Sql departmentSql = new Department_Sql();
             List<Department> departments = departmentSql.getAllDepartment(departmentMapper,customer.getUserkey());
             JSONObject jsonObject = new JSONObject();
@@ -196,7 +198,7 @@ public class DepartmentControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

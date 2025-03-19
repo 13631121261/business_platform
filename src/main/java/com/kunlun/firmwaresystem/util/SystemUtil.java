@@ -15,6 +15,7 @@ import java.io.*;
 import java.util.*;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.customerMap;
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static java.lang.Thread.sleep;
 
 public class SystemUtil {
@@ -68,7 +69,7 @@ public class SystemUtil {
             workbook.write(stream);
             stream.close();
         }catch (Exception e){
-            System.out.println("文件异常="+e.getMessage());
+            myPrintln("文件异常="+e.getMessage());
         }
         }
 
@@ -84,32 +85,32 @@ public class SystemUtil {
         if (file == null) {
             return null;
         }
-        System.out.println("地址=" + file.getOriginalFilename());
+        myPrintln("地址=" + file.getOriginalFilename());
         InputStream is = null;
         try {
-            System.out.println("1111");
+            myPrintln("1111");
             is =file.getInputStream();
-            System.out.println("12222"+is.available());
+            myPrintln("12222"+is.available());
             if (file.getOriginalFilename().contains("xlsx")) {
-                System.out.println("类型在此5");
+                myPrintln("类型在此5");
                 try {
-                    System.out.println("类型在8"+is);
+                    myPrintln("类型在8"+is);
                     wb = new XSSFWorkbook(is);
-                    System.out.println("类型在此66"+wb);
+                    myPrintln("类型在此66"+wb);
                 }catch (IOException e){
-                    System.out.println("大大的异常="+e.toString());
+                    myPrintln("大大的异常="+e.toString());
                 }
-                System.out.println("类型在此111");
+                myPrintln("类型在此111");
             } else if (file.getOriginalFilename().contains("xls")) {
-                System.out.println("类型在此"+is);
+                myPrintln("类型在此"+is);
                 wb = new HSSFWorkbook(is);
-                System.out.println("类型在此6666");
-                System.out.println(wb);
+                myPrintln("类型在此6666");
+                myPrintln(wb.toString());
             } else {
                 wb = null;
             }
             if (wb != null) {
-                System.out.println("65656");
+                myPrintln("65656");
                 // 用来存放表中数据
                 list = new ArrayList<HashMap<String, String>>();
                 // 获取第一个sheet
@@ -117,7 +118,7 @@ public class SystemUtil {
 
                 // 获取最大行数
                 int rownum = sheet.getPhysicalNumberOfRows();
-                System.out.println("输出行数="+rownum);
+                myPrintln("输出行数="+rownum);
                 // 获取第一行
                 rowHeader = sheet.getRow(0);
                 row = sheet.getRow(0);
@@ -131,14 +132,14 @@ public class SystemUtil {
                     row = sheet.getRow(i);
                     if (row != null) {
                         for (int j = 0; j < columns.length; j++) {
-                            System.out.println("J=" + j);
+                            myPrintln("J=" + j);
                             if (columns[j].equals(getCellFormatValue(rowHeader.getCell(j)))) {
                                 cellData = (String) getCellFormatValue(row
                                         .getCell(j));
-                                System.out.println("读取=" + cellData + "J=" + j);
+                                myPrintln("读取=" + cellData + "J=" + j);
                                 map.put(columns[j], cellData.replaceAll(" ", ""));
                                 /*DecimalFormat df = new DecimalFormat("#");
-                                System.out.println(    df.format(cellData));*/
+                                myPrintln(    df.format(cellData));*/
                                 // Logs.e("yy","cellData="+cellData);
                                 //Logs.e("yy","map="+map);
                             }
@@ -149,14 +150,14 @@ public class SystemUtil {
                     list.add(map);
                 }
             }else{
-                System.out.println("7878");
+                myPrintln("7878");
             }
         } catch (FileNotFoundException e) {
 
-            System.out.println("异常"+e.getMessage());
+            myPrintln("异常"+e.getMessage());
             return null;
         } catch (IOException e) {
-            System.out.println("异常22="+e.getMessage());
+            myPrintln("异常22="+e.getMessage());
 
 
             return null;
@@ -204,7 +205,7 @@ public class SystemUtil {
         return cellValue;
     }
 
-
+/*
 
 public static  void  createExcelTwo(String path , String[] title, Map<String, Devicep> map_list) {
     HSSFWorkbook workbook =new  HSSFWorkbook();
@@ -272,10 +273,10 @@ public static  void  createExcelTwo(String path , String[] title, Map<String, De
         workbook.write(stream);
         stream.close();
     }catch (IOException e){
-        System.out.println("盘点记录文件保存异常"+e.getMessage());
+        myPrintln("盘点记录文件保存异常"+e.getMessage());
     }
 
-}
+}*/
 
     public static  void  createExcelBeacon(String path , String[] title,    List<Tag> tagList) {
         HSSFWorkbook workbook =new  HSSFWorkbook();
@@ -326,7 +327,7 @@ public static  void  createExcelTwo(String path , String[] title, Map<String, De
             workbook.write(stream);
             stream.close();
         }catch (IOException e){
-            System.out.println("盘点记录文件保存异常"+e.getMessage());
+            myPrintln("盘点记录文件保存异常"+e.getMessage());
         }
 
     }

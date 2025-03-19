@@ -41,9 +41,8 @@ public class Moffline_Sql {
         userLambdaQueryWrapper.eq(Moffline::getUserkey, userkey);
         userLambdaQueryWrapper.orderByDesc(Moffline::getId);
         userIPage = mofflineMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageMoffline pageMoffline = new PageMoffline(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageMoffline;
     }

@@ -12,10 +12,12 @@ import com.kunlun.firmwaresystem.mappers.DeviceOfflineMapper;
 
 import java.util.List;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class DeviceOffline_Sql {
     public boolean addDeviceOffline(DeviceOfflineMapper deviceOfflineMapper, Device_offline device_offline) {
         if(!check(deviceOfflineMapper,device_offline)){
-            System.out.println("离线插入=");
+            myPrintln("离线插入=");
             deviceOfflineMapper.insert(device_offline);
         }else{
             UpdateWrapper updateWrapper=new UpdateWrapper();
@@ -25,7 +27,7 @@ public class DeviceOffline_Sql {
             updateWrapper.set("createtime",device_offline.getCreatetime());
             updateWrapper.set("keep_time",device_offline.getKeep_time());
            int n=  deviceOfflineMapper.update(null,updateWrapper);
-            System.out.println("离线更新="+n);
+            myPrintln("离线更新="+n);
         }
             return true;
     }
@@ -73,9 +75,9 @@ public class DeviceOffline_Sql {
         userLambdaQueryWrapper.like(Device_offline::getSn, sn);
         userLambdaQueryWrapper.orderByDesc(Device_offline::getId);
         userIPage = deviceOfflineMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        myPrintln("总页数： " + userIPage.getPages());
+        myPrintln("总记录数： " + userIPage.getTotal());
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageDeviceOffline pageDeviceOffline = new PageDeviceOffline(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageDeviceOffline;
     }

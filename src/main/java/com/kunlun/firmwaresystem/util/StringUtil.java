@@ -157,7 +157,7 @@ public class StringUtil {
                 i++;
             }
         }catch (Exception e){
-            System.out.println("异常在这里="+e.toString());
+            myPrintln("异常在这里="+e.toString());
         }
        i=0;
        for (String key:map_list.keySet()) {
@@ -186,9 +186,9 @@ public class StringUtil {
             FileOutputStream stream = new FileOutputStream(file);
             workbook.write(stream);
             stream.close();
-            System.out.println("----保存文档成功");
+            myPrintln("----保存文档成功");
         }catch (Exception e){
-            System.out.println("----"+e.toString());
+            myPrintln("----"+e.toString());
         }
 
 
@@ -225,8 +225,8 @@ public class StringUtil {
         id++;
         jsonObject1.put("id", id);
         jsonObject1.put("time", sdf.format(new Date()));
-       // System.out.println("原始" + devicep);
-        //System.out.println("原始" + map_key);
+       // myPrintln("原始" + devicep);
+        //myPrintln("原始" + map_key);
         RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),map_key);
        directExchangeProducer.send(rabbitMessage1.toString(), sendtoMap);
     }
@@ -237,8 +237,8 @@ public class StringUtil {
         id++;
         jsonObject1.put("id", id);
         jsonObject1.put("time", sdf.format(new Date()));
-        //System.out.println("原始" + map_key);
-        //System.out.println("原始" + map_key);
+        //myPrintln("原始" + map_key);
+        //myPrintln("原始" + map_key);
         RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),map_key);
         //directExchangeProducer.send(rabbitMessage1.toString(), sendtoMap);
     }

@@ -9,6 +9,7 @@ public class Station implements Serializable {
     String address;
     double x;
     double y;
+    double z;
     String map_key;
     String user_key;
     String project_key;
@@ -19,6 +20,16 @@ public class Station implements Serializable {
     String name;
     int type_id;
     String type_name;
+    @TableField(exist = false)
+    String map_name;
+
+    public void setMap_name(String map_name) {
+        this.map_name = map_name;
+    }
+
+    public String getMap_name() {
+        return map_name;
+    }
 
     public void setType_name(String type_name) {
         this.type_name = type_name;
@@ -52,6 +63,14 @@ public class Station implements Serializable {
             this.x=x;
             this.y=y;
             this.create_time=System.currentTimeMillis()/1000;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
+    }
+
+    public double getZ() {
+        return z;
     }
 
     public void setId(int id) {

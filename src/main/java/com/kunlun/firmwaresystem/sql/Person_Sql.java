@@ -25,7 +25,7 @@ public class Person_Sql {
             QueryWrapper<Person> queryWrapper = Wrappers.query();
             queryWrapper.eq("idcard",Person.getIdcard());
            Person person=PersonMapper.selectOne(queryWrapper);
-          // System.out.println("申请的ID="+person.getId());
+          // myPrintln("申请的ID="+person.getId());
            Person.setId(person.getId());
             return true;
         }
@@ -40,7 +40,7 @@ public class Person_Sql {
         List<Person> Persons = PersonMapper.selectList(null);
         HashMap<String, Person> PersonHashMap = new HashMap<>();
         for (Person Person : Persons) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             PersonHashMap.put(Person.getIdcard(), Person);
         }
         return PersonHashMap;
@@ -52,7 +52,7 @@ public class Person_Sql {
         List<Person> Persons = PersonMapper.selectList(null);
         HashMap<String, Person> PersonHashMap = new HashMap<>();
         for (Person Person : Persons) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             PersonHashMap.put(Person.getName(), Person);
         }
         return PersonHashMap;

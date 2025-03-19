@@ -53,6 +53,14 @@ public class Map_Sql {
         List<Map> mapList = mapMapper.selectList(queryWrapper);
         return mapList;
     }
+    public List<Map> getMapBymapId(MapMapper mapMapper, String user_key,String project_key,String map_id) {
+        QueryWrapper<Map> queryWrapper = Wrappers.query();
+        queryWrapper.eq("user_key", user_key);
+        queryWrapper.eq("project_key", project_key);
+        queryWrapper.eq("map_id", map_id);
+        List<Map> mapList = mapMapper.selectList(queryWrapper);
+        return mapList;
+    }
     public Map getMapById(MapMapper mapMapper, int id) {
 
         Map map = mapMapper.selectById(id );
@@ -87,7 +95,7 @@ public class Map_Sql {
         userLambdaQueryWrapper.like(Map::getName, name);
         userIPage = mapMapper.selectPage(userPage, userLambdaQueryWrapper);
 
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageMap pageMap = new PageMap(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageMap;
     }

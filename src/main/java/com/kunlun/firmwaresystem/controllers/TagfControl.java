@@ -7,16 +7,14 @@ import com.google.gson.reflect.TypeToken;
 import com.kunlun.firmwaresystem.entity.Customer;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.entity.device.Tagf;
+import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.TagfMapper;
 import com.kunlun.firmwaresystem.mappers.MapMapper;
 import com.kunlun.firmwaresystem.sql.DeviceP_Sql;
 import com.kunlun.firmwaresystem.sql.Tagf_Sql;
 import com.kunlun.firmwaresystem.util.JsonConfig;
 import com.kunlun.firmwaresystem.util.RedisUtils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.devicePMapper;
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
+
 
 @RestController
 public class TagfControl {
@@ -51,13 +51,13 @@ public class TagfControl {
     public JSONObject updateArea(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
         try {  JSONObject response = null;
             Customer customer = getCustomer(request);
-            System.out.println("area666"+jsonObject.toString());
+            myPrintln("area666"+jsonObject.toString());
             com.kunlun.firmwaresystem.entity.Area area=null;
 
             area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
             }.getType());
 
-            System.out.println("area"+area.getStation_mac());
+            myPrintln("area"+area.getStation_mac());
             if(area.getMap_key()!=null){
                 area.setUserkey(customer.getUserkey());
                 area.setProject_key(customer.getProject_key());
@@ -67,7 +67,7 @@ public class TagfControl {
                 Area area1=area_sql.getAreaById(areaMapper,area.getId());
                 String Stations=area1.getStation_mac();
                 Station_sql Station_sql=new Station_sql();
-                System.out.println("网关地址="+Stations);
+                myPrintln("网关地址="+Stations);
                 if(Stations!=null||Stations.length()>2){
                     String gs[]=Stations.split(",");
 
@@ -82,7 +82,7 @@ public class TagfControl {
                     }
                 }
                  Stations=area.getStation_mac();
-                System.out.println("新的网关地址="+Stations);
+                myPrintln("新的网关地址="+Stations);
                 if(Stations!=null||Stations.length()>2){
                     String gs[]=Stations.split(",");
                     for(int i=0;i<gs.length;i++){
@@ -92,7 +92,7 @@ public class TagfControl {
                             Station_sql.updateStation(StationMapper,Station);
                             StationMap=Station_sql.getAllStation(StationMapper);
                             redisUtil.set(redis_key_Station+gs[i],Station);
-                            System.out.println("保存新的区域ID");
+                            myPrintln("保存新的区域ID");
                         }
                     }
                 }
@@ -107,7 +107,7 @@ public class TagfControl {
             }
             return response;
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e);
             return null;
         }
     }*/
@@ -122,7 +122,7 @@ public class TagfControl {
             area = new Gson().fromJson(jsonObject.toString(), new TypeToken<Area>() {
             }.getType());
 
-            System.out.println("area"+area.getMap_key());
+            myPrintln("area"+area.getMap_key());
             if(area.getMap_key()!=null){
                 area.setUserkey(customer.getUserkey());
                 area.setProject_key(customer.getProject_key());
@@ -240,7 +240,7 @@ public class TagfControl {
             }
             return response;
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e);
             return null;
         }
 
@@ -252,13 +252,13 @@ public class TagfControl {
     public JSONObject addArea(HttpServletRequest request,  @RequestBody JSONObject jsonObject) {
         try {  JSONObject response = null;
         Customer customer = getCustomer(request);
-      //  System.out.println("area666"+jsonObject.toString());
+      //  myPrintln("area666"+jsonObject.toString());
         com.kunlun.firmwaresystem.entity.Area area=null;
 
         area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
             }.getType());
 
-        System.out.println("area"+area.getMap_key());
+        myPrintln("area"+area.getMap_key());
         if(area.getMap_key()!=null){
             area.setUserkey(customer.getUserkey());
             area.setProject_key(customer.getProject_key());
@@ -290,7 +290,7 @@ public class TagfControl {
         }
         return response;
         }catch (Exception e){
-        System.out.println(e);
+        myPrintln(e);
         return null;
     }
     }
@@ -317,7 +317,7 @@ public class TagfControl {
 
     /*@RequestMapping(value = "userApi/area/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
-       // System.out.println(System.currentTimeMillis());
+       // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -330,7 +330,7 @@ public class TagfControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }*/
 /*
@@ -345,7 +345,7 @@ public class TagfControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", areaList.size());
         jsonObject.put("data",  areaList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     */
@@ -376,10 +376,10 @@ public class TagfControl {
             jsonObject.put("count", pagetagf.gettagfList().size());
             jsonObject.put("data", pagetagf.gettagfList());
 
-            //  System.out.println(System.currentTimeMillis());
+            //  myPrintln(System.currentTimeMillis());
             return jsonObject;
         }catch (Exception e){
-            System.out.println("获取组别异常="+e.getMessage());
+            myPrintln("获取组别异常="+e.getMessage());
             return null;
         }
     }*/
@@ -388,23 +388,23 @@ public class TagfControl {
         try {
             JSONObject response = null;
             Customer customer = getCustomer(request);
-            //  System.out.println("area666"+jsonObject.toString());
+            //  myPrintln("area666"+jsonObject.toString());
             Tagf tagf=null;
             tagf = new Gson().fromJson(jsonObject.toString(), new TypeToken<Tagf>() {
             }.getType());
             tagf.setProject_key(customer.getProject_key());
-            System.out.println("tagf="+tagf);
+            myPrintln("tagf="+tagf);
             Tagf_Sql tagf_sql=new Tagf_Sql();
-            boolean status= tagf_sql.add(tagfMapper,tagf);
-            if(status){
-                return JsonConfig.getJsonObj(CODE_OK,"","");
+            int status= tagf_sql.add(tagfMapper,tagf);
+            if(status>0){
+                return JsonConfig.getJsonObj(CODE_OK,status,"");
             }else {
                 return JsonConfig.getJsonObj(CODE_REPEAT,"","");
             }
 
 
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e.toString());
             return null;
         }
     }
@@ -419,10 +419,10 @@ public class TagfControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", tagfList.size());
         jsonObject.put("data",  tagfList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
-    @RequestMapping(value = "/userApi/tagf/del", method = RequestMethod.POST, produces = "application/json")
+  /*  @RequestMapping(value = "/userApi/tagf/del", method = RequestMethod.POST, produces = "application/json")
     public JSONObject deleteArea(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         String response = "默认参数";
         Customer user = getCustomer(request);
@@ -448,26 +448,22 @@ public class TagfControl {
             return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
         }
 
-    }
-   /* @RequestMapping(value = "/userApi/tagf/delete", method = RequestMethod.GET, produces = "application/json")
+    }*/
+   @RequestMapping(value = "/userApi/tagf/delete", method = RequestMethod.GET, produces = "application/json")
     public JSONObject delete1Area(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "id") int id) {
-        System.out.println("区域ID="+id);
+
         Customer user = getCustomer(request);
         String lang=user.getLang();
-        tagf_Sql tagf_sql = new tagf_Sql();
-        tagf tagf=tagfMapper.selectById(id);
-        if(have){
-            return JsonConfig.getJsonObj(CODE_10,null,lang);
-        }
-        area_sql.delete(areaMapper,id);
+        Tagf_Sql tagf_sql = new Tagf_Sql();
+        tagf_sql.delete(tagfMapper,id);
         return JsonConfig.getJsonObj(CODE_OK,null,lang);
 
 
-    }*/
+    }
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

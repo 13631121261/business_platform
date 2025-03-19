@@ -16,6 +16,9 @@ import com.kunlun.firmwaresystem.mappers.FenceMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class Fence_Sql {
     public boolean addFence(FenceMapper fenceMapper, Fence fence) {
         boolean status = check(fenceMapper, fence);
@@ -27,7 +30,7 @@ public class Fence_Sql {
             queryWrapper.eq("name", fence.getName());
             queryWrapper.eq("project_key", fence.getProject_key());
             Fence fence1 = fenceMapper.selectOne(queryWrapper);
-            //System.out.println("申请的ID="+ devicep1.getId());
+            //myPrintln("申请的ID="+ devicep1.getId());
             fence.setId(fence1.getId());
             return true;
         }
@@ -61,19 +64,34 @@ public class Fence_Sql {
         PageFence pageFence = new PageFence(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageFence;
     }
+    public PageFence selectPageFence_used(FenceMapper areaMapper, int page, int limt,String userkey,String project_key, String name,String quick_map) {
+        LambdaQueryWrapper<Fence> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        Page<Fence> userPage = new Page<>(page, limt);
+        IPage<Fence> userIPage;
+        userLambdaQueryWrapper.like(Fence::getName, name);
+        userLambdaQueryWrapper.eq(Fence::getUser_key, userkey);
+        userLambdaQueryWrapper.eq(Fence::getOpen_status, 1);
+        userLambdaQueryWrapper.eq(Fence::getProject_key, project_key);
+        if(quick_map!=null&& !quick_map.isEmpty()){
+            userLambdaQueryWrapper.eq(Fence::getMap_key, quick_map);
+        }
+        userIPage = areaMapper.selectPage(userPage, userLambdaQueryWrapper);
+        PageFence pageFence = new PageFence(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
+        return pageFence;
+    }
     public   boolean isHaveArea(FenceMapper fenceMapper,int area_id) {
         try {
-            System.out.println("id==" + area_id);
+            myPrintln("id==" + area_id);
             QueryWrapper<Fence> queryWrapper = Wrappers.query();
             queryWrapper.eq("area_id", area_id);
             List<Fence> fences = fenceMapper.selectList(queryWrapper);
-            System.out.println("围栏=" + fences);
+            myPrintln("围栏=" + fences);
             if (fences != null && fences.size() > 0) {
                 return true;
             }
             return false;
         }catch (Exception e){
-            System.out.println("异常="+e.toString());
+            myPrintln("异常="+e.toString());
             return true;
         }
     }

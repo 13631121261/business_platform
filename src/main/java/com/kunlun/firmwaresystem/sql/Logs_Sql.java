@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class Logs_Sql {
     public int add(LogsMapper logsMapper, Logs area) {
         return 0;// logsMapper.insert(area);
@@ -36,7 +38,7 @@ public class Logs_Sql {
     }
 
     public PageLogs selectPageLogs(LogsMapper logsMapper, int page, int limt, String like, String userkey,String project_key) {
-        System.out.println(userkey+" = "+project_key+" = "+like);
+        myPrintln(userkey+" = "+project_key+" = "+like);
         LambdaQueryWrapper<Logs> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         Page<Logs> userPage = new Page<>(page, limt);
         IPage<Logs> userIPage;
@@ -45,7 +47,7 @@ public class Logs_Sql {
                               .eq(Logs::getProject_key,project_key).eq(Logs::getUserkey, userkey).like(Logs::getUsername, like).orderByDesc(true,Logs::getId);
         userIPage = logsMapper.selectPage(userPage, userLambdaQueryWrapper);
 
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageLogs pageArea = new PageLogs(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageArea;
     }

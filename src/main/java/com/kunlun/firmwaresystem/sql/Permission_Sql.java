@@ -11,6 +11,8 @@ import com.kunlun.firmwaresystem.mappers.PermissionMapper;
 
 import java.util.List;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class Permission_Sql {
     public boolean addPermission(PermissionMapper permissionMapper, Permission permission) {
        boolean status = check(permissionMapper, permission);
@@ -44,9 +46,9 @@ public class Permission_Sql {
         userLambdaQueryWrapper.eq(Permission::getCustomer_key, userkey);
         userLambdaQueryWrapper.like(Permission::getName, name);
         userIPage = permissionMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        myPrintln("总页数： " + userIPage.getPages());
+        myPrintln("总记录数： " + userIPage.getTotal());
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PagePermission pagePermission = new PagePermission(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pagePermission;
     }

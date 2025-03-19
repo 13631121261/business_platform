@@ -2,23 +2,30 @@ package com.kunlun.firmwaresystem.util;
 
 import java.util.Scanner;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class Test {
     public static void main(String[] arg0) {
+        String dd="-9635241-23-9635241-27";
+        String[] ids = dd.split("-9635241-");
+        for (String id : ids) {
+            myPrintln(id);
+        }
        /* Scanner sr = new Scanner(System.in);
 
         int n = sr.nextInt();
         //初始值为n依次倒叙判断
         for (int i = n; i >= 2; i--) {
-            System.out.println("输出i=" + i);
+            myPrintln("输出i=" + i);
             for (int j = 2; j < i; j++) {
-                System.out.println("输出j=" + j);
+                myPrintln("输出j=" + j);
                 //余数为零不是质数直接跳过
                 if (i % j == 0) {
                     break;
                 }
                 //继续判断直到	j 等于当前的数(i)-1
                 if (j == i - 1) {
-                    System.out.println(i);
+                    myPrintln(i);
                     //因为是求不大于n的最大质数，
                     //所有找到不大于n的第一个质数就可以用return结束程序
                     return;
@@ -33,18 +40,10 @@ public class Test {
     String a=msg.substring(8,28);
         String b=msg.substring(28,40);
         double nn=Math.pow(2, -1)+Math.pow(2, -2)+Math.pow(2, -3)+Math.pow(2, -4)+Math.pow(2, -5)+Math.pow(2, -6)+Math.pow(2, -7)+Math.pow(2, -8);
-        System.out.println(nn);
-        System.out.println(Math.pow(2, -1));
-        System.out.println(Math.pow(2, -2));
-        System.out.println(Math.pow(2, -3));
-        System.out.println(Math.pow(2, -4));
-        System.out.println(Math.pow(2, -5));
-        System.out.println(Math.pow(2, -6));
-        System.out.println(Math.pow(2, -7));
-        System.out.println(Math.pow(2, -8));
+
     byte[] data=msg.getBytes();
-      System.out.println(a);
-        System.out.println(b);
+      myPrintln(a);
+        myPrintln(b);
 
       /*  31
                 0.25*/
@@ -86,7 +85,7 @@ public class Test {
             bit[4]='1';
             aa=aa-0.03125;
         }*/
-        System.out.println(new String(bit));
+        myPrintln(new String(bit));
 
        /* aa=aa-0.5;
         aa=aa-0.25;
@@ -106,7 +105,7 @@ public class Test {
         030707E4BDA0E5A5BDE59097EFBC9FE5ADA9*/
         byte v=(byte)0xC8;
       //  v=(byte)(v|(byte)0x01);
-        System.out.println(v);
+        myPrintln(String.valueOf(v));
     }
     //zeng929620555
 

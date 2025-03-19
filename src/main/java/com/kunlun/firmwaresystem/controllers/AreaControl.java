@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_Station;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
@@ -57,13 +56,13 @@ public class AreaControl {
     public JSONObject updateArea(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
         try {  JSONObject response = null;
             Customer customer = getCustomer(request);
-            System.out.println("area666"+jsonObject.toString());
+            myPrintln("area666"+jsonObject.toString());
             com.kunlun.firmwaresystem.entity.Area area=null;
 
             area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
             }.getType());
 
-            System.out.println("area"+area.getStation_mac());
+            myPrintln("area"+area.getStation_mac());
             if(area.getMap_key()!=null){
                 area.setUserkey(customer.getUserkey());
                 area.setProject_key(customer.getProject_key());
@@ -73,7 +72,7 @@ public class AreaControl {
                 Area area1=area_sql.getAreaById(areaMapper,area.getId());
                 String Stations=area1.getStation_mac();
                 Station_sql Station_sql=new Station_sql();
-                System.out.println("网关地址="+Stations);
+                myPrintln("网关地址="+Stations);
                 if(Stations!=null||Stations.length()>2){
                     String gs[]=Stations.split(",");
 
@@ -88,7 +87,7 @@ public class AreaControl {
                     }
                 }
                  Stations=area.getStation_mac();
-                System.out.println("新的网关地址="+Stations);
+                myPrintln("新的网关地址="+Stations);
                 if(Stations!=null||Stations.length()>2){
                     String gs[]=Stations.split(",");
                     for(int i=0;i<gs.length;i++){
@@ -98,7 +97,7 @@ public class AreaControl {
                             Station_sql.updateStation(StationMapper,Station);
                             StationMap=Station_sql.getAllStation(StationMapper);
                             redisUtil.set(redis_key_Station+gs[i],Station);
-                            System.out.println("保存新的区域ID");
+                            myPrintln("保存新的区域ID");
                         }
                     }
                 }
@@ -113,7 +112,7 @@ public class AreaControl {
             }
             return response;
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e);
             return null;
         }
     }*/
@@ -128,7 +127,7 @@ public class AreaControl {
             area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
             }.getType());
 
-            System.out.println("area"+area.getMap_key());
+            myPrintln("area"+area.getMap_key());
             if(area.getMap_key()!=null){
                 area.setUserkey(customer.getUserkey());
                 area.setProject_key(customer.getProject_key());
@@ -140,7 +139,7 @@ public class AreaControl {
                 if(area.getId()==0){
                     if (area_sql.addArea(areaMapper, area)) {
                         String  Stations=area.getStation_mac();
-                        if(Stations!=null||Stations.length()>2){
+                        if(Stations!=null&&Stations.length()>2){
                             String gs[]=Stations.split("-");
                             for(int i=0;i<gs.length;i++){
                                 if(gs[i]!=null&&gs[i].length()>0){
@@ -149,11 +148,11 @@ public class AreaControl {
                                         switch (address_[1]){
                                             //蓝牙网关
                                             case "1":
-                                                Station Station=(Station) redisUtil.get(redis_key_Station+address_[0]);
+                                                Station Station=(Station) redisUtil.get(redis_key_locator+address_[0]);
 
                                                 Station_sql.updateStation(StationMapper,Station);
                                               //  StationMap=Station_sql.getAllStation(StationMapper);
-                                                redisUtil.set(redis_key_Station+address_[0],Station);
+                                                redisUtil.set(redis_key_locator+address_[0],Station);
                                                 break;
                                                 //AOA 网关
                                             case "2":
@@ -189,11 +188,11 @@ public class AreaControl {
                                         switch (address_[1]){
                                             //蓝牙网关
                                             case "1":
-                                                Station Station=(Station) redisUtil.get(redis_key_Station+address_[0]);
+                                                Station Station=(Station) redisUtil.get(redis_key_locator+address_[0]);
 
                                                 Station_sql.updateStation(StationMapper,Station);
                                               //  StationMap=Station_sql.getAllStation(StationMapper);
-                                                redisUtil.set(redis_key_Station+address_[0],Station);
+                                                redisUtil.set(redis_key_locator+address_[0],Station);
                                                 break;
                                             case "2":
                                                 Locator locator=(Locator) redisUtil.get(redis_key_locator+address_[0]);
@@ -219,10 +218,10 @@ public class AreaControl {
                                         switch (address_[1]){
                                             //蓝牙网关
                                             case "1":
-                                                Station Station=(Station) redisUtil.get(redis_key_Station+address_[0]);
+                                                Station Station=(Station) redisUtil.get(redis_key_locator+address_[0]);
                                                 Station_sql.updateStation(StationMapper,Station);
                                               //  StationMap=Station_sql.getAllStation(StationMapper);
-                                                redisUtil.set(redis_key_Station+address_[0],Station);
+                                                redisUtil.set(redis_key_locator+address_[0],Station);
                                                 break;
                                             //AOA 网关
                                             case "2":
@@ -246,7 +245,7 @@ public class AreaControl {
             }
             return response;
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e.toString());
             return null;
         }
     }/*
@@ -254,13 +253,13 @@ public class AreaControl {
     public JSONObject addArea(HttpServletRequest request,  @RequestBody JSONObject jsonObject) {
         try {  JSONObject response = null;
         Customer customer = getCustomer(request);
-      //  System.out.println("area666"+jsonObject.toString());
+      //  myPrintln("area666"+jsonObject.toString());
         com.kunlun.firmwaresystem.entity.Area area=null;
 
         area = new Gson().fromJson(jsonObject.toString(), new TypeToken<com.kunlun.firmwaresystem.entity.Area>() {
             }.getType());
 
-        System.out.println("area"+area.getMap_key());
+        myPrintln("area"+area.getMap_key());
         if(area.getMap_key()!=null){
             area.setUserkey(customer.getUserkey());
             area.setProject_key(customer.getProject_key());
@@ -292,7 +291,7 @@ public class AreaControl {
         }
         return response;
         }catch (Exception e){
-        System.out.println(e);
+        myPrintln(e);
         return null;
     }
     }
@@ -319,7 +318,7 @@ public class AreaControl {
 
     /*@RequestMapping(value = "userApi/area/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
-       // System.out.println(System.currentTimeMillis());
+       // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -332,23 +331,27 @@ public class AreaControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }*/
 
     @RequestMapping(value = "userApi/getAreaByMap", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAreaByMap(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "map_key") String map_key) {
-
-        Customer customer = getCustomer(request);
-        Area_Sql area_sql = new Area_Sql();
-        List<Area> areaList=area_sql.getAllArea(areaMapper,customer.getUserkey(),customer.getProject_key(), map_key);
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", 1);
-        jsonObject.put("msg", "ok");
-        jsonObject.put("count", areaList.size());
-        jsonObject.put("data",  areaList);
-        //  System.out.println(System.currentTimeMillis());
-        return jsonObject;
+        try {
+            Customer customer = getCustomer(request);
+            Area_Sql area_sql = new Area_Sql();
+            List<Area> areaList = area_sql.getAllArea(areaMapper, customer.getUserkey(), customer.getProject_key(), map_key);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("code", 1);
+            jsonObject.put("msg", "ok");
+            jsonObject.put("count", areaList.size());
+            jsonObject.put("data", areaList);
+            myPrintln(String.valueOf(System.currentTimeMillis()));
+            return jsonObject;
+        }catch (Exception e){
+            myPrintln("获取区域信息="+e.getMessage());
+            return null;
+        }
     }
     @RequestMapping(value = "userApi/area/index", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllArea(HttpServletRequest request) {
@@ -374,7 +377,7 @@ public class AreaControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", pageArea.getAreaList().size());
         jsonObject.put("data",  pageArea.getAreaList());
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     @RequestMapping(value = "userApi/area/index1", method = RequestMethod.GET, produces = "application/json")
@@ -398,7 +401,7 @@ public class AreaControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", areaList.size());
         jsonObject.put("data",  areaList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     @RequestMapping(value = "/userApi/area/del", method = RequestMethod.POST, produces = "application/json")
@@ -412,10 +415,10 @@ public class AreaControl {
         DeviceP_Sql deviceP_sql=new DeviceP_Sql();
 
         for(Object ids:jsonArray){
-            List<Devicep> deviceps= deviceP_sql.getDeviceByAreaID(devicePMapper,Integer.parseInt(ids.toString()));
+       /*     List<Devicep> deviceps= deviceP_sql.getDeviceByAreaID(devicePMapper,Integer.parseInt(ids.toString()));
             if(deviceps!=null&&deviceps.size()>0){
                 return JsonConfig.getJsonObj(CODE_10,null,lang);
-            }
+            }*/
                 id.add(Integer.parseInt(ids.toString()));
 
         }
@@ -433,16 +436,10 @@ public class AreaControl {
     }
     @RequestMapping(value = "/userApi/area/delete", method = RequestMethod.GET, produces = "application/json")
     public JSONObject delete1Area(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "id") int id) {
-        System.out.println("区域ID="+id);
+        myPrintln("区域ID="+id);
         Customer user = getCustomer(request);
         String lang=user.getLang();
         Area_Sql area_sql = new Area_Sql();
-        Area area1=area_sql.getAreaById(areaMapper,id);
-        Fence_Sql fence_sql=new Fence_Sql();
-        boolean have=fence_sql.isHaveArea(fenceMapper,id);
-        if(have){
-            return JsonConfig.getJsonObj(CODE_10,null,lang);
-        }
         area_sql.delete(areaMapper,id);
         return JsonConfig.getJsonObj(CODE_OK,null,lang);
 
@@ -451,7 +448,7 @@ public class AreaControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

@@ -26,7 +26,7 @@ public class Rules implements Serializable {
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
         Date date = new Date();// 获取当前时间
         this.create_time = sdf.format(date);
-        //   System.out.println("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
+        //   myPrintln("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
         this.rule_key = Base64.getEncoder().encodeToString((name + "_" + date.getTime()).getBytes()).replaceAll("\\+", "");
         this.user_key = userKey;
         this.customer_key=customer_key;

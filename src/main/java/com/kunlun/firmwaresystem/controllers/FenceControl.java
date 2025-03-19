@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_Station;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -53,13 +52,16 @@ public class FenceControl {
         try {  JSONObject response = null;
             Customer customer = getCustomer(request);
             String lang=customer.getLang();
-            System.out.println("area666"+jsonObject.toString());
+            myPrintln("area666"+jsonObject.toString());
             Fence fence=null;
             Fence_Sql fence_sql=new Fence_Sql();
             fence = new Gson().fromJson(jsonObject.toString(), new TypeToken<Fence>() {
             }.getType());
-
+            if(fence.getPoints()==null||fence.getPoints().isEmpty()){
+                return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
+            }
 ;
+            myPrintln(fence.toString());
             if(fence.getMap_key()!=null){
                 fence.setUser_key(customer.getUserkey());
                 fence.setProject_key(customer.getProject_key());
@@ -76,7 +78,7 @@ public class FenceControl {
             }
             return response;
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e.toString());
             return null;
         }
     }
@@ -85,12 +87,14 @@ public class FenceControl {
         try {  JSONObject response = null;
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
-        System.out.println("area666"+jsonObject.toString());
+        myPrintln("area666"+jsonObject.toString());
         Fence fence=null;
 
             fence = new Gson().fromJson(jsonObject.toString(), new TypeToken<Fence>() {
             }.getType());
-
+            if(fence.getPoints()==null||fence.getPoints().isEmpty()){
+                return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
+            }
             fence.setProject_key(customer.getProject_key());
             fence.setUser_key(customer.getUserkey());
             fence.setCustomer_key(customer.getCustomerkey());
@@ -105,7 +109,7 @@ public class FenceControl {
             }
         return response;
         }catch (Exception e){
-        System.out.println(e);
+        myPrintln(e.toString());
         return null;
     }
     }
@@ -132,7 +136,7 @@ public class FenceControl {
 
     /*@RequestMapping(value = "userApi/area/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
-       // System.out.println(System.currentTimeMillis());
+       // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -145,7 +149,7 @@ public class FenceControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }*/
 
@@ -173,7 +177,36 @@ public class FenceControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", pageFence.getFenceList().size());
         jsonObject.put("data",  pageFence.getFenceList());
-        System.out.println(System.currentTimeMillis());
+        myPrintln(String.valueOf(System.currentTimeMillis()));
+        return jsonObject;
+    }
+    @RequestMapping(value = "userApi/fence_used/index", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getFence_used(HttpServletRequest request) {
+        String quickSearch=request.getParameter("quickSearch");
+        String page=request.getParameter("page");
+        String limit=request.getParameter("limit");
+        if(quickSearch==null||quickSearch.equals("")){
+            quickSearch="";
+        }
+        String quick_map=request.getParameter("quick_map");
+
+        if(page==null||page.equals("")){
+            page="1";
+        }
+        if(limit==null||limit.equals("")){
+            limit="20";
+        }
+
+        Customer user1 = getCustomer(request);
+        Fence_Sql fence_sql = new Fence_Sql();
+        PageFence pageFence = fence_sql.selectPageFence_used(fenceMapper,Integer.parseInt(page),Integer.parseInt(limit), user1.getUserkey(),user1.getProject_key(),quickSearch,quick_map);
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", 1);
+        jsonObject.put("msg", "ok");
+        jsonObject.put("count", pageFence.getFenceList().size());
+        jsonObject.put("data",  pageFence.getFenceList());
+        myPrintln(String.valueOf(System.currentTimeMillis()));
         return jsonObject;
     }
     @RequestMapping(value = "userApi/fence/index1", method = RequestMethod.GET, produces = "application/json")
@@ -196,7 +229,30 @@ public class FenceControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", fences.size());
         jsonObject.put("data",  fences);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
+        return jsonObject;
+    }
+    @RequestMapping(value = "userApi/fence/index2", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getAllArea2(HttpServletRequest request) {
+
+        Customer customer = getCustomer(request);
+        String lang=customer.getLang();
+        Fence_Sql fence_sql = new Fence_Sql();
+        List<Fence> fences=fence_sql.getAllFence(fenceMapper,customer.getUserkey(),customer.getProject_key());
+    /*    Fence fence=new Fence();
+        if(lang!=null&&lang.equals("en")){
+            fence.setName("UnBind");
+        }else {
+            fence.setName("不绑定围栏");
+        }
+        fence.setId(-1);
+        fences.add(0,fence);*/
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", 1);
+        jsonObject.put("msg", "ok");
+        jsonObject.put("count", fences.size());
+        jsonObject.put("data",  fences);
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     @RequestMapping(value = "/userApi/fence/del", method = RequestMethod.POST, produces = "application/json")
@@ -210,14 +266,14 @@ public class FenceControl {
         DeviceP_Sql deviceP_sql=new DeviceP_Sql();
 
         for(Object ids:jsonArray){
-            List<Devicep> deviceps= deviceP_sql.getDeviceByFenceID(devicePMapper,Integer.parseInt(ids.toString()));
+        /*    List<Devicep> deviceps= deviceP_sql.getDeviceByFenceID(devicePMapper,Integer.parseInt(ids.toString()));
             if(deviceps!=null&&deviceps.size()>0){
                 return JsonConfig.getJsonObj(CODE_10,null,lang);
             }
             List<Person> personList= person_sql.getPersonByFenceID(personMapper,Integer.parseInt(ids.toString()));
             if(personList!=null&&personList.size()>0){
                 return JsonConfig.getJsonObj(CODE_10,null,lang);
-            }
+            }*/
             id.add(Integer.parseInt(ids.toString()));
         }
 
@@ -237,7 +293,7 @@ public class FenceControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

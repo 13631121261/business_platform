@@ -7,6 +7,7 @@ import com.kunlun.firmwaresystem.interceptor.HttpServletRequestReplacedFilter;
 import com.kunlun.firmwaresystem.mappers.*;
 import com.kunlun.firmwaresystem.mqtt.DirectExchangeProducer;
 import com.kunlun.firmwaresystem.mqtt.MyMqttClient;
+import com.kunlun.firmwaresystem.sql.*;
 import com.kunlun.firmwaresystem.util.RedisUtils;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,13 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @EnableCaching // 启用缓存功能
 @EnableScheduling // 开启定时任务功能
@@ -66,11 +72,11 @@ public class NewSystemApplication {
     public static Map<String, String> StationMap;
     public static Map<String, String> LocatorsMaps;
 
-
+    public static Map<String, String> station_maps;
     public static Map<String, Rules> rulesMap;
-    public static Map<String, Tag> beaconsMap;
+    public static Map<String, Tag> tagsMap;
     public static Map<String, Bracelet> braceletsMap;
-    public static Map<String, MyMqttClient> myMqttClientMap;
+    //public static Map<String, MyMqttClient> myMqttClientMap;
     public static Map<String, Wordcard_a> wordcard_aMap;
     public static Map<String, Customer> customerMap;
     public static Map<String, Beacon_tag> beacon_tagMap;
@@ -95,13 +101,19 @@ public class NewSystemApplication {
     public static CustomerMapper customerMapper;
     public static MapMapper mapMapper;
     public static  FenceMapper fenceMapper;
+    public static  FenceGroupMapper fenceGroupMapper;
     public static  LocatorMapper locatorMapper;
     public static NettyTcpServer nettyTcpServer;
     public static FWordcardMapper fWordcardMapper;
-
+    public static GroupMapper groupMapper;
+    public static StationMapper stationMapper;
+    static ExecutorService  executorService;
+    public  static  MyMqttClient mqttClient;
     @Autowired
-    public void setDataSource(Mqtt mqtt, FWordcardMapper fWordcardMapper, NettyTcpServer nettyTcpServer, HistoryMapper historyMapper, LocatorMapper locatorMapper, AlarmMapper alarmMapper, FenceMapper fenceMapper, MapMapper mapMapper, DeviceP_recordMapper devicePRecordMapper, MofflineMapper mofflineMapper, CheckRecordMapper checkRecordMapper, CheckSheetMapper checkSheetMapper, DevicePMapper devicePMapper, PersonMapper personMapper, BTagMapper bTagMapper, UserMapper userMapper, CustomerMapper customerMapper, Record_SosMapper recordSosMapper, AreaMapper areaMapper, WordCardaMapper wordCardaMapper, RecordMapper recordMapper, TagMapper tagMapper, BraceletMapper braceletMapper, WifiMapper wifiMapper, BleMapper bleMapper, RedisUtils redisUtil, DeviceModelMapper deviceModelMapper, DirectExchangeProducer topicExchangeProducer, StationMapper StationMapper, RulesMapper rulesMapper) {
+    public void setDataSource(StationMapper stationMapper,GroupMapper groupMapper, FenceGroupMapper fenceGroupMapper,Mqtt mqtt, FWordcardMapper fWordcardMapper, NettyTcpServer nettyTcpServer, HistoryMapper historyMapper, LocatorMapper locatorMapper, AlarmMapper alarmMapper, FenceMapper fenceMapper, MapMapper mapMapper, DeviceP_recordMapper devicePRecordMapper, MofflineMapper mofflineMapper, CheckRecordMapper checkRecordMapper, CheckSheetMapper checkSheetMapper, DevicePMapper devicePMapper, PersonMapper personMapper, BTagMapper bTagMapper, UserMapper userMapper, CustomerMapper customerMapper, Record_SosMapper recordSosMapper, AreaMapper areaMapper, WordCardaMapper wordCardaMapper, RecordMapper recordMapper, TagMapper tagMapper, BraceletMapper braceletMapper, WifiMapper wifiMapper, BleMapper bleMapper, RedisUtils redisUtil, DeviceModelMapper deviceModelMapper, DirectExchangeProducer topicExchangeProducer, StationMapper StationMapper, RulesMapper rulesMapper) {
         NewSystemApplication.mqtt=mqtt;
+        NewSystemApplication.groupMapper=groupMapper;
+        NewSystemApplication.fenceGroupMapper=fenceGroupMapper;
        NewSystemApplication.redisUtil = redisUtil;
         NewSystemApplication.fWordcardMapper=fWordcardMapper;
         NewSystemApplication.devicePRecordMapper =devicePRecordMapper;
@@ -122,6 +134,7 @@ public class NewSystemApplication {
         NewSystemApplication.bTagMapper = bTagMapper;
         NewSystemApplication.personMapper=personMapper;
         NewSystemApplication.devicePMapper=devicePMapper;
+        executorService = Executors.newCachedThreadPool();
 
         NewSystemApplication.checkSheetMapper=checkSheetMapper;
         NewSystemApplication.checkRecordMapper=checkRecordMapper;
@@ -132,6 +145,7 @@ public class NewSystemApplication {
         NewSystemApplication.alarmMapper=alarmMapper;
         NewSystemApplication.locatorMapper=locatorMapper;
         NewSystemApplication.historyMapper=historyMapper;
+        NewSystemApplication.stationMapper=stationMapper;
     }
 
     /* @Autowired
@@ -141,7 +155,8 @@ public class NewSystemApplication {
     public static void main(String[] args) {
 
         SpringApplication.run(NewSystemApplication.class, args);
-        //  System.out.println("启动结果："+redisUtil+"====>"+deviceModelMapper);
+      //  myMqttClientMap=new HashMap<>();
+        //  myPrintln("启动结果："+redisUtil+"====>"+deviceModelMapper);
 
         // client.addSubTopic("GwData");
  /*
@@ -164,7 +179,7 @@ public class NewSystemApplication {
         //92E011EF-C31C-4DB4-869D-BE922BD1532B
        File file=new File(paths+"kunlun/kunlun.license");
         if(!file.exists()){
-            System.out.println("需要激活文件，退出");
+            myPrintln("需要激活文件，退出");
             System.exit(0);
             return;
         }else{
@@ -173,13 +188,13 @@ public class NewSystemApplication {
                 byte[] bytes=new byte[inputStream.available()];
                 inputStream.read(bytes);
                 String license=new String(bytes).replaceAll(" ","");
-               System.out.println("验证吗="+license+"原来码="+(MachineCodeUtil.encode(id,"KUNLUN")+"acfc"));
+               myPrintln("验证吗="+license+"原来码="+(MachineCodeUtil.encode(id,"KUNLUN")+"acfc"));
                 if(!(MachineCodeUtil.encode(id,"KUNLUN")+"acfc").equals(license)){
-                    System.out.println("激活码不对");
+                    myPrintln("激活码不对");
                     System.exit(0);
                 }
             }catch (Exception e){
-                System.out.println("异常="+e);
+                myPrintln("异常="+e);
                 return;
             }
         }
@@ -188,11 +203,25 @@ public class NewSystemApplication {
         boolean result = redisUtil.deleteAll();
 
         if (result) {
-            System.out.println("成功删除所有的 key");
+            myPrintln("成功删除所有的 key");
         } else {
-            System.out.println("未能删除所有的 key");
+            myPrintln("未能删除所有的 key");
         }
-        System.out.println("线程=" + Thread.currentThread().getName());
+        myPrintln("线程=" + Thread.currentThread().getName());
+        CheckSheet_Sql checkSheet_sql=new CheckSheet_Sql();
+        check_sheetMap=checkSheet_sql.getCheckSheet(checkSheetMapper);
+        Tag_Sql tagSql = new Tag_Sql();
+        tagsMap = tagSql.getAllTag(tagMapper);
+        DeviceP_Sql deviceP_sql=new DeviceP_Sql();
+        devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
+        Fence_Sql fence_sql=new Fence_Sql();
+        fenceMap=  fence_sql.getAllFence(fenceMapper);
+        Station_sql stationSql=new Station_sql();
+        station_maps =stationSql.getAllStation(redisUtil,stationMapper);
+        Person_Sql personSql=new Person_Sql();
+        personMap=personSql.getAllPerson(personMapper);
+       //
+        // Person_Sql person_sql=new Person_Sql();
         /*DeviceModel_sql deviceModel_sql = new DeviceModel_sql();
         deviceModels = deviceModel_sql.getAllModel(redisUtil, deviceModelMapper);
         Station_sql Station_sql = new Station_sql();
@@ -204,15 +233,10 @@ public class NewSystemApplication {
         Btag_Sql btag_sql = new Btag_Sql();
         beacon_tagMap = btag_sql.getAllBeacon(bTagMapper);
 
-        Fence_Sql fence_sql=new Fence_Sql();
-       fenceMap=  fence_sql.getAllFence(fenceMapper);
-        Person_Sql person_sql=new Person_Sql();
+
         personMap=  person_sql.getAllPerson(personMapper);
 
-        DeviceP_Sql deviceP_sql=new DeviceP_Sql();
-        devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
-        Beacon_Sql beacon_sql = new Beacon_Sql();
-        beaconsMap = beacon_sql.getAllBeacon(beaconMapper);
+
         Bracelet_Sql braceletSql=new Bracelet_Sql();
        braceletsMap= braceletSql.getAllBracelet(braceletMapper);
         WordCarda_Sql wordCarda_sql = new WordCarda_Sql();
@@ -221,8 +245,7 @@ public class NewSystemApplication {
         userMap = user_sql.getAllUser(userMapper);*//*
         Customer_sql customer_sql = new Customer_sql();
         customerMap = customer_sql.getAllCustomer(customerMapper);
-        CheckSheet_Sql checkSheet_sql=new CheckSheet_Sql();
-        check_sheetMap=checkSheet_sql.getCheckSheet(checkSheetMapper);
+
         Area_Sql area_sql=new Area_Sql();
         area_Map= area_sql.getAllArea(areaMapper);
 
@@ -230,7 +253,7 @@ public class NewSystemApplication {
         map_sql.getAllMap(mapMapper,redisUtil);
        *//*  String a="aaa";
          String[] b=a.split("1");
-         System.out.println("长度="+b[0]);*//*
+         myPrintln("长度="+b[0]);*//*
         *//*topicExchangeProducer.send("连接","connect");
         topicExchangeProducer.send("状态","state");
         topicExchangeProducer.send("扫描","scan_report");*//*
@@ -238,12 +261,17 @@ public class NewSystemApplication {
         List<Locator> locators=  locatorMapper.selectList(null);
         LocatorsMaps=new HashMap<>();*/
 
+            new Thread(new Runnable() {
+                public void run() {
 
-              System.out.println("配置="+mqtt.getServer());
-            MyMqttClient client = new MyMqttClient(mqtt.getServer(),mqtt.getPort(),mqtt.getSubTopic(),"",0,"123","45","");
-            client.start();
-            //myMqttClientMap.put(key,client);
-           /*   for (Map.Entry<String, Check_sheet> entry : check_sheetMap.entrySet()) {
+                    myPrintln("配置="+mqtt.getServer());
+                    mqttClient = new MyMqttClient(mqtt.getServer(),mqtt.getPort(),mqtt.getSubTopic(),"",0,"business"+System.currentTimeMillis(),"45","");
+                    mqttClient.start();
+                   // myMqttClientMap.put("default",client);
+                }
+            }).start();
+
+            /*  for (Map.Entry<String, Check_sheet> entry : check_sheetMap.entrySet()) {
                   String key = entry.getKey();
                   Check_sheet value = entry.getValue();
                   if(value!=null&& !value.getHost().isEmpty()){
@@ -257,7 +285,6 @@ public class NewSystemApplication {
                       }).start();
                   }
               }*/
-
         MyWebSocket webSocket = MyWebSocket.getWebSocket();
         webSocket.start();
         MyWebSocketTag webSockettag = MyWebSocketTag.getWebSocket();
@@ -282,5 +309,47 @@ public class NewSystemApplication {
         registration.setOrder(1);
         return registration;
     }
+
+
+    // 示例：使用队列批量处理日志
+    private BlockingQueue<String> logQueue = new LinkedBlockingQueue<>();
+    private void startLogConsumer() {
+        executorService.submit(() -> {
+            while (!Thread.interrupted()) {
+                String log = null;
+                try {
+                    log = logQueue.take();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                // 实际输出到文件或控制台
+                System.out.println(log);
+            }
+        });
+    }
+
+    // 修改 myPrintln 方法
+    public void myPrintlns(String msg) {
+        logQueue.offer(msg); // 非阻塞写入队列
+    }
+    public static void myPrintln(String log){
+       // System.out.println("LOOO"+log);
+       // executorService.submit(() -> {
+            StackWalker.getInstance().walk(frames -> {
+                StackWalker.StackFrame frame = frames
+                        .skip(1) // 跳过当前 walk 方法的调用
+                        .findFirst()
+                        .orElseThrow();
+                // 提取信息
+                String fileName = frame.getFileName();
+                int lineNumber = frame.getLineNumber();
+                String methodName = frame.getMethodName();
+
+                // 打印结果
+                System.out.println("文件: " + fileName + "   方法: " + methodName + "   行号: " + lineNumber + "  Log=" + log);
+                return null;
+            });
+        }
+   // }
 
 }

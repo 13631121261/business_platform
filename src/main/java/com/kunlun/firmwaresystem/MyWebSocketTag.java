@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class MyWebSocketTag extends WebSocketServer {
     private static MyWebSocketTag webSocket;
     private Map<String, WebSocket> connectlist;
@@ -20,7 +22,7 @@ public class MyWebSocketTag extends WebSocketServer {
     public static MyWebSocketTag getWebSocket() {
         if (webSocket == null) {
             webSocket = new MyWebSocketTag(8089);
-        }
+        }  myPrintln("定位网页链接"+webSocket);
         return webSocket;
     }
 
@@ -32,27 +34,27 @@ public class MyWebSocketTag extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-        System.out.println("onOpen" + webSocket.toString());
+        myPrintln("onOpen" + webSocket.toString());
 
     }
 
     @Override
     protected boolean onConnect(SelectionKey key) {
-        System.out.println("连接" + key.toString());
+        myPrintln("连接" + key.toString());
         return super.onConnect(key);
 
     }
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-        System.out.println("断开连接" + webSocket.getResourceDescriptor());
+        myPrintln("断开连接" + webSocket.getResourceDescriptor());
         connectlist.remove(s);
         keys.remove(s);
 
     }
     @Override
     public void onMessage(WebSocket webSocket, String s) {
-        System.out.println("接收消息" + s);
+        myPrintln("Tag接收消息" + s);
         for(String key:connectlist.keySet()){
             WebSocket webSocket1=connectlist.get(key);
             if(webSocket1==webSocket){
@@ -60,25 +62,26 @@ public class MyWebSocketTag extends WebSocketServer {
                 break;
             }
         }
-        System.out.println("返回数据");
+        myPrintln("返回数据");
         keys.add(s);
         connectlist.put(s, webSocket);
     }
     @Override
     public void onError(WebSocket webSocket, Exception e) {
-        System.out.println("异常启动");
+        myPrintln("异常启动");
     }
     @Override
-    public void onStart() {      System.out.println("正常启动");
+    public void onStart() {      myPrintln("正常启动");
     }
     public void sendData(String map_key, String msg) {
-    //   System.out.println("触发发送"+key);
+       myPrintln("触发发送"+map_key);
+        myPrintln("触发发送"+msg);
         for(String key:keys){
             if(key.contains(map_key)){
                 WebSocket webSocket = connectlist.get(key);
                 if (webSocket != null && webSocket.isOpen()) {
                     webSocket.send(msg);
-                  //  System.out.println("位置推送到网页");
+                  //  myPrintln("位置推送到网页");
                 }
             }
         }

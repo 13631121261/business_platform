@@ -36,9 +36,9 @@ public class User implements Serializable {
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
         Date date = new Date();// 获取当前时间
         this.create_time = sdf.format(date);
-        //   System.out.println("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
+        //   myPrintln("现在时间：" + sdf.format(date)); // 输出已经格式化的现在时间（24小时制）
         userkey = Base64.getEncoder().encodeToString((username + "_" + date.getTime()).getBytes()).replaceAll("\\+", "");
-        // System.out.println("现在时间：" + sdf.format(date)+"==="+userkey); // 输出已经格式化的现在时间（24小时制）
+        // myPrintln("现在时间：" + sdf.format(date)+"==="+userkey); // 输出已经格式化的现在时间（24小时制）
 
     }
 

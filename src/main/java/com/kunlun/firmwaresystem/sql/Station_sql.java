@@ -7,8 +7,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kunlun.firmwaresystem.device.PageStation;
+import com.kunlun.firmwaresystem.entity.Locator;
 import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.entity.web_Structure.StationTree;
+import com.kunlun.firmwaresystem.mappers.LocatorMapper;
 import com.kunlun.firmwaresystem.mappers.StationMapper;
 import com.kunlun.firmwaresystem.util.RedisUtils;
 
@@ -17,33 +19,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.NewSystemApplication.redisUtil;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
 
 public class Station_sql {
     public boolean addStation(StationMapper StationMapper, Station Station) {
         if (!checkStation(StationMapper, Station)) {
-            System.out.println("输出="+Station.toString());
+            myPrintln("输出="+Station.toString());
             try {
                 int d = StationMapper.insert(Station);
-                System.out.println(d);
+                myPrintln(String.valueOf(d));
             }catch (Exception e){
-                System.out.println("异常="+e.getMessage());
+                myPrintln("异常="+e.getMessage());
             }
             return true;
         } else {
             return false;
         }
     }
-
+    public   List<Station> selectByMap(StationMapper stationMapper, String project_key, String map_key) {
+        QueryWrapper<Station> queryWrapper = Wrappers.query();
+        queryWrapper.eq("map_key",map_key);
+        queryWrapper.eq("project_key",project_key);
+        List<Station> a = stationMapper.selectList(queryWrapper);
+        return a;
+    }
     public int updateStation(StationMapper StationMapper, Station Station) {
-     //   System.out.println("更新网关1="+Station.toString());
+     //   myPrintln("更新网关1="+Station.toString());
         UpdateWrapper updateWrapper = new UpdateWrapper();//照搬
         updateWrapper.eq("address", Station.getAddress());
         return StationMapper.update(Station, updateWrapper);
     }
     public int updateStation(StationMapper StationMapper,int id,int isyn) {
-        System.out.println("更新网关2=");
+        myPrintln("更新网关2=");
         UpdateWrapper updateWrapper = new UpdateWrapper();//照搬
         updateWrapper.set("isyn", isyn);
         updateWrapper.eq("id", id);
@@ -57,7 +66,6 @@ public class Station_sql {
         return StationMapper.update(null,updateWrapper);
     }
     public int delete(StationMapper StationMapper, String address) {
-
         UpdateWrapper updateWrapper = new UpdateWrapper();//照搬
         updateWrapper.eq("address", address);
         return StationMapper.delete(updateWrapper);
@@ -74,9 +82,9 @@ public class Station_sql {
         updateWrapper.set("project_name", config_name);
         updateWrapper.set("x", x);
         updateWrapper.set("y", y);
-        Station Station = (Station) redisUtil.get(redis_key_Station + address);
+        Station Station = (Station) redisUtil.get(redis_key_locator + address);
 
-        redisUtil.set(redis_key_Station + address, Station);
+        redisUtil.set(redis_key_locator + address, Station);
         return StationMapper.update(null, updateWrapper);
     }
 
@@ -84,8 +92,8 @@ public class Station_sql {
         UpdateWrapper updateWrapper = new UpdateWrapper();//照搬
         updateWrapper.eq("address", address);
         updateWrapper.set("project_key", projectKey);
-        Station Station = (Station) redisUtil.get(redis_key_Station + address);
-        redisUtil.set(redis_key_Station + address, Station);
+        Station Station = (Station) redisUtil.get(redis_key_locator + address);
+        redisUtil.set(redis_key_locator + address, Station);
         return StationMapper.update(null, updateWrapper);
     }
 
@@ -121,12 +129,12 @@ public class Station_sql {
     }
 
     public Map<String, String> getAllStation(RedisUtils redisUtil, StationMapper StationMapper) {
-        System.out.println("执行一次获取全部数据");
+        myPrintln("执行一次获取全部数据");
         List<Station> StationList = StationMapper.selectList(null);
         HashMap<String, String> StationMap = new HashMap<>();
         for (Station Station : StationList) {
-            //System.out.println("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
-            redisUtil.set(redis_key_Station + Station.getAddress(), Station);
+            //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
+            redisUtil.set(redis_key_locator + Station.getAddress(), Station);
             StationMap.put(Station.getAddress(), Station.getAddress());
             redisUtil.set(redis_key_Station_onLine_time + Station.getAddress(), null);
             redisUtil.set(redis_key_Station_revice_count + Station.getAddress(), 0);
@@ -136,20 +144,20 @@ public class Station_sql {
 
 
     public Map<String, String> updateStation(RedisUtils redisUtil, StationMapper StationMapper,String config_key) {
-        System.out.println("更新一次取全部数据");
+        myPrintln("更新一次取全部数据");
         QueryWrapper<Station> queryWrapper = Wrappers.query();
         queryWrapper.eq("config_key",config_key);
         List<Station> StationList = StationMapper.selectList(queryWrapper);
         HashMap<String, String> StationMap = new HashMap<>();
         for (Station Station : StationList) {
             updateStation(StationMapper,Station);
-            redisUtil.set(redis_key_Station + Station.getAddress(), Station);
+            redisUtil.set(redis_key_locator + Station.getAddress(), Station);
         }
         return StationMap;
     }
 
     public Map<String, Station> getAllStation( StationMapper StationMapper) {
-        System.out.println("执行11一次获取全部数据");
+        myPrintln("执行11一次获取全部数据");
         List<Station> StationList = StationMapper.selectList(null);
         HashMap<String, Station> StationMap = new HashMap<>();
         for (Station Station : StationList) {
@@ -158,7 +166,7 @@ public class Station_sql {
         return StationMap;
     }
     public   List<StationTree> getAllStation(StationMapper StationMapper, String user_key, String project_key,String config_key) {
-        System.out.println("执行333一次获取全部数据");
+        myPrintln("执行333一次获取全部数据");
         QueryWrapper<Station> queryWrapper = Wrappers.query();
         queryWrapper.eq("user_key",user_key);
         queryWrapper.eq("project_key",project_key);
@@ -169,9 +177,7 @@ public class Station_sql {
             StationTree StationTree=new StationTree();
             StationTree.setId(Station.getId());
             StationTree.setDisabled(false);
-
             StationTree.setAddress(Station.getAddress());
-
         }
         List<StationTree> only=new ArrayList<>();
         int i=-100;
@@ -189,7 +195,7 @@ public class Station_sql {
     }
 
     public   List<Station> getAllStations(StationMapper StationMapper, String user_key, String project_key,String config_key) {
-        System.out.println("执行44一次获取全部数据");
+        myPrintln("执行44一次获取全部数据");
         QueryWrapper<Station> queryWrapper = Wrappers.query();
         queryWrapper.eq("user_key",user_key);
         queryWrapper.eq("project_key",project_key);
@@ -241,11 +247,11 @@ public class Station_sql {
         return only;
     }*/
     public PageStation selectPageStation(StationMapper StationMapper, int page, int limt, String quickSearch, String userKey,String project_key) {
-        System.out.println("执行55一次获取全部数据"+page+"  "+limt);
+        myPrintln("执行55一次获取全部数据"+page+"  "+limt);
         LambdaQueryWrapper<Station> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         Page<Station> userPage = new Page<>(page, limt);
         IPage<Station> userIPage;
-      //  System.out.println("user_key="+userKey+" project_key="+project_key);
+      //  myPrintln("user_key="+userKey+" project_key="+project_key);
         userLambdaQueryWrapper.eq(Station::getUser_key, userKey).eq(Station::getProject_key,project_key).like(Station::getAddress, quickSearch).or().eq(Station::getUser_key, userKey).eq(Station::getProject_key,project_key);
 
        /* if (project_name != null && project_name.length() > 0) {
@@ -264,11 +270,11 @@ public class Station_sql {
         try {
             userIPage = StationMapper.selectPage(userPage, userLambdaQueryWrapper);
         }catch (Exception e){
-            System.out.println("输出啊结果="+e.getMessage());
+            myPrintln("输出啊结果="+e.getMessage());
         }
-        //    System.out.println("总页数： "+userIPage.getPages());
-        System.out.println("总记录数： "+userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        //    myPrintln("总页数： "+userIPage.getPages());
+        myPrintln("总记录数： "+userIPage.getTotal());
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         return new PageStation(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
     }
 

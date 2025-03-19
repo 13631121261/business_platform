@@ -83,7 +83,7 @@ public class BraceletControl {
         String lang=customer.getLang();
         String type=request.getParameter("type");
         Bracelet_Sql braceletSql=new Bracelet_Sql();
-        System.out.println("类型="+type);
+        myPrintln("类型="+type);
         List<Bracelet> braceletList=braceletSql.getunAllBracelet(braceletMapper,customer.getUserkey(),customer.getProject_key(),type);
         JSONObject jsonObject = new JSONObject();
         if(lang!=null&&lang.equals("en")){
@@ -103,7 +103,7 @@ public class BraceletControl {
         Customer customer = getCustomer(request);
         String type="5";
         Beacon_Sql beacon_sql=new Beacon_Sql();
-        System.out.println("类型="+type);
+        myPrintln("类型="+type);
         List<Beacon> beaconList=beacon_sql.getAllBeacon(beaconMapper,customer.getUserkey(),customer.getProject_key(),type);
         for(Beacon beacon:beaconList){
             Beacon beacon1=beaconsMap.get(beacon.getMac());
@@ -121,7 +121,7 @@ public class BraceletControl {
             beacon.setOnline(beacon1.getOnline());
             if(beacon.getIsbind()==1&&beacon.getBind_type()==1){
                 if(beacon.getDevice_sn()!=null){
-                    System.out.println(beacon.getDevice_sn());
+                    myPrintln(beacon.getDevice_sn());
                     Devicep devicep=devicePMap.get(beacon.getDevice_sn());
                     if(devicep!=null){
                         beacon.setDevice_name(devicep.getName());
@@ -130,7 +130,7 @@ public class BraceletControl {
             }
             if(beacon.getIsbind()==1&&beacon.getBind_type()==2){
                 if(beacon.getDevice_sn()!=null){
-                    System.out.println(beacon.getDevice_sn());
+                    myPrintln(beacon.getDevice_sn());
                     Person person=personMap.get(beacon.getDevice_sn());
                     if(person!=null){
                         beacon.setDevice_name(person.getName());
@@ -165,14 +165,14 @@ public class BraceletControl {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println("----------file download---" + outfile.getPath());
+            myPrintln("----------file download---" + outfile.getPath());
             try {
                 bis.close();
                 fis.close();
                 outfile.delete();
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("删除文件异常");
+                myPrintln("删除文件异常");
             }
         }
     }
@@ -213,7 +213,7 @@ public class BraceletControl {
     }
     @RequestMapping(value = "userApi/Bracelet/add", method = RequestMethod.POST, produces = "application/json")
     public JSONObject addAOA(HttpServletRequest request, @RequestBody JSONObject json) {
-        System.out.println(json.toString());
+        myPrintln(json.toString());
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
         Bracelet_Sql braceletSql=new Bracelet_Sql();
@@ -237,7 +237,7 @@ public class BraceletControl {
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 

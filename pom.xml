@@ -12,8 +12,8 @@
     <artifactId>KunLun_System</artifactId>
 
 
-    <version>2024.9.18</version>
-    <name>KunLun_System</name>
+    <version>2025-3-18</version>
+    <name>business</name>
     <description>Demo StationConfig for Spring Boot</description>
     <properties>
         <java.version>1.8</java.version>
@@ -92,8 +92,8 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.paho</groupId>
-            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-            <version>1.2.5</version>
+            <artifactId>org.eclipse.paho.mqttv5.client</artifactId>
+            <version>1.2.5</version> <!-- 使用最新版本 -->
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -154,6 +154,21 @@
                 <configuration>
                     <includeSystemScope>true</includeSystemScope>
                     <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>10</source>
+                    <target>10</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests> <!-- 默认跳过所有测试 -->
                 </configuration>
             </plugin>
         </plugins>

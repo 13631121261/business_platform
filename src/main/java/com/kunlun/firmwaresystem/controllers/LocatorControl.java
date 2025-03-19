@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
@@ -54,7 +55,7 @@ public class LocatorControl {
 
     /*@RequestMapping(value = "userApi/map/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
-       // System.out.println(System.currentTimeMillis());
+       // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -67,13 +68,13 @@ public class LocatorControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-      //  System.out.println(System.currentTimeMillis());
+      //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
 
     @RequestMapping(value = "userApi/map/index2", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllMap1(HttpServletRequest request) {
-        // System.out.println(System.currentTimeMillis());
+        // myPrintln(System.currentTimeMillis());
         Customer user1 = getCustomer(request);
         Map_Sql map_sql = new Map_Sql();
         List<com.kunlun.firmwaresystem.entity.Map> mapList = map_sql.getAllMap(mapMapper, user1.getUserkey(),user1.getProject_key());
@@ -82,7 +83,7 @@ public class LocatorControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", mapList.size());
         jsonObject.put("data", mapList);
-        //  System.out.println(System.currentTimeMillis());
+        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }*/
     @RequestMapping(value = "userApi/Locator/index", method = RequestMethod.GET, produces = "application/json")
@@ -108,7 +109,7 @@ public class LocatorControl {
         for(Locator locator:pageLocator.getLocatorList()){
             if(redisUtil.get(redis_key_locator+locator.getAddress())!=null){
                 Locator locator1=(Locator) redisUtil.get(redis_key_locator+locator.getAddress());
-                // System.out.println(locator1);
+                // myPrintln(locator1);
                 locator1.setId(locator.getId());
                 locatorMapper.updateById(locator1);
                 locator.setOnline(locator1.getOnline());
@@ -137,12 +138,12 @@ public class LocatorControl {
         if(id.size()>0){
             List<Locator> locators=locatorMapper.selectBatchIds(id);
             int status = locatorMapper.deleteBatchIds(id);
-            System.out.println("执行删除基站"+locators.size());
+            myPrintln("执行删除基站"+locators.size());
             if(status!=-1){
                 //删除基站缓存
-                System.out.println("执行删除基站9"+locators.size());
+                myPrintln("执行删除基站9"+locators.size());
                 for(Locator locator:locators){
-                    System.out.println("执行删除基站"+locator.getAddress());
+                    myPrintln("执行删除基站"+locator.getAddress());
                     redisUtil.set(redis_key_locator+locator.getAddress(),null);
                 }
                 return JsonConfig.getJsonObj(CODE_OK,null,lang);
@@ -157,7 +158,7 @@ public class LocatorControl {
 
     @RequestMapping(value = "userApi/getAoALocatorByMap", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAoALocatorByMap(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "map_key") String map_key) {
-        // System.out.println(System.currentTimeMillis());
+        // myPrintln(System.currentTimeMillis());
         Customer customer = getCustomer(request);
         Locators_Sql locators_sql=new Locators_Sql();
 
@@ -168,17 +169,17 @@ public class LocatorControl {
             jsonObject.put("msg", "ok");
             jsonObject.put("count", StationList.size());
             jsonObject.put("data", StationList);
-            // System.out.println(System.currentTimeMillis());
+            // myPrintln(System.currentTimeMillis());
             return jsonObject;
         }catch (Exception e){
-            System.out.println(e);
+            myPrintln(e.toString());
             return null;
         }
     }
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);
-        //   System.out.println("customer="+customer);
+        //   myPrintln("customer="+customer);
         return customer;
     }
 }

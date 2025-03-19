@@ -42,9 +42,7 @@ public class DevicePrecord_Sql {
         userLambdaQueryWrapper.like(Devicep_record::getSn, deviceSn);
         userLambdaQueryWrapper.like(Devicep_record::getName, name);
         userIPage = devicePMapper.selectPage(userPage, userLambdaQueryWrapper);
-        System.out.println("总页数： " + userIPage.getPages());
-        System.out.println("总记录数： " + userIPage.getTotal());
-        // userIPage.getRecords().forEach(System.out::println);
+        // userIPage.getRecords().forEach(System.out::myPrintln);
         PageDeviceP_record pageDeviceP = new PageDeviceP_record(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageDeviceP;
     }

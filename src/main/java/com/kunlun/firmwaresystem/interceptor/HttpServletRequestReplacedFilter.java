@@ -21,22 +21,22 @@ public class HttpServletRequestReplacedFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
 
-       // System.out.println(request.getContentType()+request.getClass().getName());
+       // myPrintln(request.getContentType()+request.getClass().getName());
         ServletRequest requestWrapper = null;
         if(request instanceof HttpServletRequest ){
-           // System.out.println("普通数据请求");
+           // myPrintln("普通数据请求");
             requestWrapper = new RequestReaderHttpServletRequestWrapper((HttpServletRequest ) request);
         }
         /*if(request.getContentType().contains("multipart/form-data")) {
-            System.out.println("上传文件数据请求");
+            myPrintln("上传文件数据请求");
             requestWrapper = new RequestReaderHttpServletRequestWrapper((MultipartHttpServletRequest) request);
         }else if(request instanceof HttpServletRequest ){
-            System.out.println("普通数据请求");
+            myPrintln("普通数据请求");
             requestWrapper = new RequestReaderHttpServletRequestWrapper((HttpServletRequest ) request);
         }else{
-            System.out.println("都不是");
+            myPrintln("都不是");
         }*/
-      //  System.out.println("取出数据流"+response);
+      //  myPrintln("取出数据流"+response);
         //获取请求中的流如何，将取出来的字符串，再次转换成流，然后把它放入到新request对象中。
         // 在chain.doFiler方法中传递新的request对象
         if(requestWrapper == null) {
