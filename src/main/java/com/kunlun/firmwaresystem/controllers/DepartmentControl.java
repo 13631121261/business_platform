@@ -62,7 +62,7 @@ public class DepartmentControl {
         Customer customer = getCustomer(request);
             myPrintln("对象为" + customer.getUsername());
             Department_Sql departmentSql = new Department_Sql();
-            List<Department> departments = departmentSql.getAllDepartment(departmentMapper,customer.getUserkey());
+            List<Department> departments = departmentSql.getAllDepartment(departmentMapper,customer.getUserkey(),customer.getProject_key());
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", CODE_OK);
             jsonObject.put("msg", CODE_OK_txt);

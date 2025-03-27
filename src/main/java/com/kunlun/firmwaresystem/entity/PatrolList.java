@@ -17,7 +17,7 @@ public class PatrolList {
     String name;
     String description;
     @TableField(exist = false)
-    List<PatrolInfo> patrolInfos;
+    List<Patrol> patrols;
     String patrol_str;
     long create_time;
     long update_time;
@@ -64,13 +64,13 @@ public class PatrolList {
         this.description = description;
     }
 
-    public List<PatrolInfo> getPatrolInfos() {
-        return patrolInfos;
+    public List<Patrol> getPatrolInfos() {
+        return patrols;
     }
 
-    public void setPatrolInfos(List<PatrolInfo> patrolInfos) {
-        if (patrolInfos != null&& !patrolInfos.isEmpty()) {
-            this.patrolInfos = patrolInfos;
+    public void setPatrolInfos(List<Patrol> patrols) {
+        if (patrols != null&& !patrols.isEmpty()) {
+            this.patrols = patrols;
         }
 
     }
@@ -85,14 +85,14 @@ public class PatrolList {
             try {
                 JSONArray jsonArray = JSON.parseArray(patrol_str);
                 if (jsonArray != null&& !jsonArray.isEmpty()) {
-                    List<PatrolInfo> patrolInfos = new ArrayList<PatrolInfo>();
+                    List<Patrol> patrols = new ArrayList<Patrol>();
                     for (int i = 0; i < jsonArray.size(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        PatrolInfo patrolInfo  = new Gson().fromJson(jsonObject.toString(), new TypeToken<PatrolInfo>() {
+                        Patrol patrol = new Gson().fromJson(jsonObject.toString(), new TypeToken<Patrol>() {
                         }.getType());
-                        patrolInfos.add(patrolInfo);
+                        patrols.add(patrol);
                     }
-                    this.setPatrolInfos(patrolInfos);
+                    this.setPatrolInfos(patrols);
                 }
             }catch (Exception e){
                 myPrintln(e.getMessage());

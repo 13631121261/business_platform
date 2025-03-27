@@ -51,9 +51,10 @@ public class Department_Sql {
         List<Department> list=  departmentMapper.selectList(userLambdaQueryWrapper);
         return list;
     }
-    public List<Department> getAllDepartment(DepartmentMapper departmentMapper,String userkey){
+    public List<Department> getAllDepartment(DepartmentMapper departmentMapper,String userkey,String project_key){
         LambdaQueryWrapper<Department> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         userLambdaQueryWrapper.eq(Department::getUserkey,userkey);
+        userLambdaQueryWrapper.eq(Department::getProject_key,project_key);
         List<Department> list=  departmentMapper.selectList(userLambdaQueryWrapper);
         return list;
     }

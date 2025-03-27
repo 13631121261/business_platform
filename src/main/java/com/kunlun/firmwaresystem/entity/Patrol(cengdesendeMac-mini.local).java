@@ -3,18 +3,22 @@ package com.kunlun.firmwaresystem.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 
 public  class PatrolInfo {
-    long startTime;
-    long endTime;
+    @TableField(exist = false)
+    String[] time_range;
+    String startTime;
+    String endTime;
     int status;
     int area_id;
     String area_name;
-    int minStayMinutes;
+    int staytime;
     @TableField(exist = false)
     String[] enableDays;
     String enableDay;
     String projext_key;
     String user_key;
     String name;
+    long create_time;
+    long update_time;
 
     public void setEnableDay(String enableDay) {
         this.enableDay = enableDay;

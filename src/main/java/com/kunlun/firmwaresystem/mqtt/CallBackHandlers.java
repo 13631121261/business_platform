@@ -157,10 +157,10 @@ public class CallBackHandlers implements Runnable {
                             }
                             if (tag.getBind_type() == 1) {
                                 //myPrintln("开始处理");
-                                hande_device(tag, deviceps, map);
+                                hande_device(tag, deviceps, map,0);
                             }
                             else if (tag.getBind_type() == 2) {
-                                hander_person(tag, station, tag.getMap_key(), map, deviceps);
+                                hander_person(tag, station, map, deviceps,0);
                             }
                             if (!deviceps.isEmpty()) {
                                 //myPrintln("需要推送的1");
@@ -222,7 +222,6 @@ public class CallBackHandlers implements Runnable {
                         if (tag == null) {
                             return;
                         }else {
-
                             if (tag.getIsbind() == 1 && tag.getBind_type()==1) {
                                 Devicep devicep=devicePMap.get(tag.getMap_key());
                                 if (devicep != null) {
@@ -237,9 +236,7 @@ public class CallBackHandlers implements Runnable {
                                         alarm.setCreate_time(pushDevice.getLast_time());
                                         alarm_sql.addAlarm(alarmMapper, alarm);
                                     }
-
                                 }
-
                             }else if (tag.getIsbind() == 1&&tag.getBind_type() == 2) {
                                 Person person=personMap.get(tag.getMap_key());
                                 if (person != null) {
@@ -254,7 +251,6 @@ public class CallBackHandlers implements Runnable {
                                         alarm.setCreate_time(pushDevice.getLast_time());
                                         alarm_sql.addAlarm(alarmMapper, alarm);
                                     }
-
                                 }
                             }
                             tag.setOnline(0);
@@ -279,6 +275,7 @@ public class CallBackHandlers implements Runnable {
                                 Devicep devicep=devicePMap.get(tag.getMap_key());
                                 if (devicep != null) {
                                     devicep.setBt(tag.getBt());
+                                    devicep.setOnline(1);
                                 }
 
                             }
@@ -419,10 +416,10 @@ public class CallBackHandlers implements Runnable {
                             if (tag.getIsbind() == 1 && tag.getBind_key() != null) {
                                 if (tag.getBind_type() == 1) {
                                     //myPrintln("开始处理");
-                                    hande_device(tag, deviceps, map);
+                                    hande_device(tag, deviceps, map,1);
                                 }
                                 else if (tag.getBind_type() == 2) {
-                                    hander_person(tag, station, map_key, map, deviceps);
+                                    hander_person(tag, station, map, deviceps,1);
                                 }
                             }
                         }
@@ -534,7 +531,7 @@ public class CallBackHandlers implements Runnable {
 
     }
 
-    private void hander_person(Tag tag, Station station, String map_key, Map map, ArrayList<Object> deviceps) {
+    private void hander_person(Tag tag, Station station, Map map, ArrayList<Object> deviceps,int type) {
         Person person = personMap.get(tag.getBind_key());
         // myPrintln("缩放" + map.getProportion());
         person.setX(tag.getX());
@@ -545,6 +542,7 @@ public class CallBackHandlers implements Runnable {
             person.setMap_name(map.getName());
         }
 
+        person.setOnline(1);
         person.setLasttime(tag.getLastTime());
         if (station != null) {
             person.setStation_mac(station.getAddress());
@@ -553,7 +551,6 @@ public class CallBackHandlers implements Runnable {
         deviceps.add(person);
         if (person.getMap_key()!=null&&!person.getMap_key().isEmpty()) {
             History history = new History();
-
             history.setMap_key(person.getMap_key());
             history.setSn(person.getIdcard());
             history.setTime(System.currentTimeMillis());
@@ -562,10 +559,8 @@ public class CallBackHandlers implements Runnable {
             history.setY(person.getY());
             history.setProject_key(person.getProject_key());
             history.setName(person.getName());
-
             history_sql.addHistory(historyMapper, history);
         }
-
         String res = (String) redisUtil.get(person_check_online_status_res + tag.getBind_key());
         // myPrintln("步骤2" + key);
         if (res == null || res.equals("0")) {
@@ -576,11 +571,16 @@ public class CallBackHandlers implements Runnable {
         if (map != null) {
             handleFence(tag, map.getProportion());
         }
-        handleSos_AOA(tag);
-        handleBt_AOA(tag);
+
+
+        if (type==1){
+            handleSos_AOA(tag);
+            handleBt_AOA(tag);
+        }
+
     }
 
-    private void hande_device(Tag tag, ArrayList<Object> deviceps, Map map) {
+    private void hande_device(Tag tag, ArrayList<Object> deviceps, Map map,int type) {
         if (devicePMap==null|| devicePMap.isEmpty()) {
             DeviceP_Sql deviceP_sql=new DeviceP_Sql();
             devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
@@ -596,14 +596,14 @@ public class CallBackHandlers implements Runnable {
         devicep.setY(tag.getY());
         devicep.setLasttime(tag.getLastTime());
         devicep.setNear_s_address(tag.getStation_address());
-
+        devicep.setOnline(1);
         station = (Station) redisUtil.get(redis_key_locator + tag.getStation_address());
         // myPrintln(station.toString());
         if (station == null) {
             //从数据库读取
             Station station1=  Station_sql.getStationByMac(StationMapper,tag.getStation_address());
             if (station1!=null){
-                myPrintln("shwai");
+           //     myPrintln("shwai");
                 station=station1;
                 devicep.setNear_s_name(station.getName());
             }
@@ -638,10 +638,12 @@ public class CallBackHandlers implements Runnable {
             alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
         }
         redisUtil.setnoTimeOut(device_check_online_status_res + tag.getBind_key(), "1");
-        handleSos_AOA(tag);
-        handleFence(tag, map.getProportion());
-        handleBt_AOA(tag);
 
+        handleFence(tag, map.getProportion());
+        if (type==1){
+            handleSos_AOA(tag);
+            handleBt_AOA(tag);
+        }
     }
 
     private void BeaconHandle(Tag tag) {

@@ -1703,7 +1703,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
         Department_Sql departmentSql=new Department_Sql();
-        List<Department> departments= departmentSql.getAllDepartment(departmentMapper,customer.getUserkey());
+        List<Department> departments= departmentSql.getAllDepartment(departmentMapper,customer.getUserkey(),customer.getProject_key());
 
         java.util.Map<String,DD> ddMap=new HashMap<>();
         List<Department> departmentList=new ArrayList<>();

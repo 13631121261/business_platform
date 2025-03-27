@@ -134,7 +134,7 @@ public class Station_sql {
         HashMap<String, String> StationMap = new HashMap<>();
         for (Station Station : StationList) {
             //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
-            redisUtil.set(redis_key_locator + Station.getAddress(), Station);
+            redisUtil.setnoTimeOut(redis_key_locator + Station.getAddress(), Station);
             StationMap.put(Station.getAddress(), Station.getAddress());
             redisUtil.set(redis_key_Station_onLine_time + Station.getAddress(), null);
             redisUtil.set(redis_key_Station_revice_count + Station.getAddress(), 0);

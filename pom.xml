@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>andesen</groupId>
-    <artifactId>KunLun_System</artifactId>
+    <artifactId>business</artifactId>
 
 
     <version>2025-3-18</version>
