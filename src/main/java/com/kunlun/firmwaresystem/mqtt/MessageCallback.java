@@ -45,16 +45,16 @@ public class MessageCallback implements MqttCallback {
           //  mqttClient.executorService.submit(new CallBackHandlers(topic, message));
 
             mqttClient.executorService.submit(() -> {
-                try {
+             //   try {
                  //   myPrintln(Thread.currentThread().getName());
                     new CallBackHandlers(topic, message).run();
                     message.clearPayload();
 
                     // 实际处理逻辑
                   //  handleMessage(topic, new String(message.getPayload()));
-                } catch (Exception e) {
-                    myPrintln("处理消息异常: " + e.getMessage());
-                }
+             //   } catch (Exception e) {
+              //      myPrintln("处理消息异常: " + e.getMessage());
+             //   }
 
             });
       //  }
@@ -82,7 +82,7 @@ public class MessageCallback implements MqttCallback {
         myPrintln("连接断开，可以做重连" + mqttDisconnectResponse.getReasonString()   );
         try {
             myPrintln("没有手动冲脸"   );
-               mqttClient.reConnect();
+            //   mqttClient.reConnect();
         } catch (Exception e) {
             myPrintln("重连失败---"+e.getMessage());
             throw new RuntimeException(e);

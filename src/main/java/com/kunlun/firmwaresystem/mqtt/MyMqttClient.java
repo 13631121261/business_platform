@@ -60,6 +60,7 @@ public class MyMqttClient {
 
             myPrintln("地址=tcp://"+host+":"+port);
             client = new MqttClient("tcp://"+host+":"+port, clientId, persistence);
+
             myPrintln("地址="+  client.getServerURI());
             myPrintln("ID="+  clientId);
         } catch (MqttException me) {

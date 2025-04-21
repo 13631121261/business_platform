@@ -6,7 +6,7 @@ import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 
 public class Test {
     public static void main(String[] arg0) {
-        String dd="-9635241-23-9635241-27";
+        String dd = "-9635241-23-9635241-27";
         String[] ids = dd.split("-9635241-");
         for (String id : ids) {
             myPrintln(id);
@@ -32,54 +32,54 @@ public class Test {
                 }
             }
         }*/
-        String msg="AAFE00EC010203040506070809120304050607080000";
-        String url="AAFE10EC01010203040506070809120304050607080000";
-     String tlm_no="AAFE2000123456781122334455667788";
-     String tlm_on="AAFE200112345678112233445566778811112222";
-        String eid="AAFE30EC1234567811223344";
-    String a=msg.substring(8,28);
-        String b=msg.substring(28,40);
-        double nn=Math.pow(2, -1)+Math.pow(2, -2)+Math.pow(2, -3)+Math.pow(2, -4)+Math.pow(2, -5)+Math.pow(2, -6)+Math.pow(2, -7)+Math.pow(2, -8);
+        String msg = "AAFE00EC010203040506070809120304050607080000";
+        String url = "AAFE10EC01010203040506070809120304050607080000";
+        String tlm_no = "AAFE2000123456781122334455667788";
+        String tlm_on = "AAFE200112345678112233445566778811112222";
+        String eid = "AAFE30EC1234567811223344";
+        String a = msg.substring(8, 28);
+        String b = msg.substring(28, 40);
+        double nn = Math.pow(2, -1) + Math.pow(2, -2) + Math.pow(2, -3) + Math.pow(2, -4) + Math.pow(2, -5) + Math.pow(2, -6) + Math.pow(2, -7) + Math.pow(2, -8);
 
-    byte[] data=msg.getBytes();
-      myPrintln(a);
+        byte[] data = msg.getBytes();
+        myPrintln(a);
         myPrintln(b);
 
       /*  31
                 0.25*/
-        double aa=0.0976566;
-        char[] bit="00000000".toCharArray();
-        if(aa-0.5>=0){
-            bit[0]='1';
-            aa=aa-0.5;
+        double aa = 0.0976566;
+        char[] bit = "00000000".toCharArray();
+        if (aa - 0.5 >= 0) {
+            bit[0] = '1';
+            aa = aa - 0.5;
         }
-        if(aa-0.25>=0){
-            bit[1]='1';
-            aa=aa-0.25;
+        if (aa - 0.25 >= 0) {
+            bit[1] = '1';
+            aa = aa - 0.25;
         }
-        if(aa-0.125>=0){
-            bit[2]='1';
-            aa=aa-0.125;
+        if (aa - 0.125 >= 0) {
+            bit[2] = '1';
+            aa = aa - 0.125;
         }
-        if(aa-0.0625>=0){
-            bit[3]='1';
-            aa=aa-0.0625;
+        if (aa - 0.0625 >= 0) {
+            bit[3] = '1';
+            aa = aa - 0.0625;
         }
-        if(aa-0.03125>=0){
-            bit[4]='1';
-            aa=aa-0.03125;
+        if (aa - 0.03125 >= 0) {
+            bit[4] = '1';
+            aa = aa - 0.03125;
         }
-        if(aa-0.015625>=0){
-            bit[5]='1';
-            aa=aa-0.015625;
+        if (aa - 0.015625 >= 0) {
+            bit[5] = '1';
+            aa = aa - 0.015625;
         }
-        if(aa-0.0078125>=0){
-            bit[6]='1';
-            aa=aa-0.0078125;
+        if (aa - 0.0078125 >= 0) {
+            bit[6] = '1';
+            aa = aa - 0.0078125;
         }
-        if(aa-0.00390625>=0){
-            bit[7]='1';
-            aa=aa-0.00390625;
+        if (aa - 0.00390625 >= 0) {
+            bit[7] = '1';
+            aa = aa - 0.00390625;
         }
       /*  if(aa-0.03125>=0){
             bit[4]='1';
@@ -103,17 +103,23 @@ public class Test {
         030705E4BDA0E5A5BDE59097EFBC9FE5ADA9
         030706E4BDA0E5A5BDE59097EFBC9FE5ADA9
         030707E4BDA0E5A5BDE59097EFBC9FE5ADA9*/
-        byte v=(byte)0xC8;
-      //  v=(byte)(v|(byte)0x01);
+        byte v = (byte) 0xC8;
+        //  v=(byte)(v|(byte)0x01);
         myPrintln(String.valueOf(v));
+        String patrol_list_id = "-7";
+        patrol_list_id = patrol_list_id.replaceAll("--", "");
+        if (patrol_list_id.startsWith("-")) {
+            patrol_list_id = patrol_list_id.substring(1);
+        }
+        System.out.println("patrol_list_id:" + patrol_list_id);
+        String[] idss = patrol_list_id.split("-");
+        System.out.println(idss.length);
+        //zeng929620555
+
+        //0.09765625
+        //0x1F19
+
+
     }
-    //zeng929620555
-
-    //0.09765625
-    //0x1F19
-
-
-
-
 
 }

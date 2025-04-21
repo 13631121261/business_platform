@@ -32,15 +32,15 @@ public class Devicep {
     String[] tagfs_id;
     @TableField(exist = false)
     List<Tagf> tagfs;
-    @TableField(exist = false)
+
     int online=0;
     int fence_id;
     int fence_group_id;
     @TableField(exist = false)
     String f_g_name;
-    @TableField(exist = false)
+
     String map_key;
-    @TableField(exist = false)
+
     String map_name;
     @TableField(exist = false)
     String type;
@@ -50,9 +50,9 @@ public class Devicep {
     int sos;
     @TableField(exist = false)
     int run;
-    @TableField(exist = false)
+
     String near_s_address;
-    @TableField(exist = false)
+
     String near_s_name;
 
     public void setNear_s_address(String near_s_address) {

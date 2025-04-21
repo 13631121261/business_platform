@@ -61,6 +61,7 @@ public class PersonControl {
 
         for(Person person:personList.getPersonList()){
             try {
+                person.setPatrol_list_ids(person.getPatrol_list_id());
                 Person person1 = personMap.get(person.getIdcard());
                 person.setStation_name(person1.getStation_name());
                 person.setStation_mac(person1.getStation_mac());
@@ -117,6 +118,7 @@ public class PersonControl {
         }else{
             person.setDepartment_id(0);
         }
+        person.setPatrol_list_id(person.getPatrol_list_ids());
         if(person.getBind_mac()!=null&&person.getBind_mac().length()>0){
             person.setIsbind(1);
             Tag tag = tagsMap.get(person.getBind_mac());
@@ -140,10 +142,12 @@ public class PersonControl {
         try {
             Customer customer = getCustomer(request);
             String lang=customer.getLang();
-            myPrintln("111");
+            myPrintln("111"+json.toString());
             Person_Sql person_sql = new Person_Sql();
             Person person = new Gson().fromJson(json.toString(), new TypeToken<Person>() {
             }.getType());
+            myPrintln(person.toString());
+            person.setPatrol_list_id(person.getPatrol_list_ids());
             person.setUser_key(customer.getUserkey());
             person.setCustomer_key(customer.getCustomerkey());
             person.setProject_key(customer.getProject_key());
@@ -177,7 +181,7 @@ public class PersonControl {
                // myPrintln("4444");
                 person.setIsbind(1);
                 List<Tag> tags = tag_sql.getTagByMac(tagMapper, person.getUser_key(), person.getProject_key(), person.getBind_mac());
-                myPrintln("555"+person.getBind_mac());
+
                 if (tags == null || tags.size() != 1) {
                     return JsonConfig.getJsonObj(CODE_SQL_ERROR, null,lang);
                 }
@@ -187,7 +191,7 @@ public class PersonControl {
                 tag_sql.update(tagMapper, tag1);
                 tagsMap.put(tag1.getMac(), tag1);
             }
-            myPrintln("666");
+
             if (person.getBind_mac().isEmpty() || person.getBind_mac() == null || person.getBind_mac().equals("不绑定标签")|| person.getBind_mac().equals("UnBind")) {
                 person.setIsbind(0);
                 person.setBind_mac("");
@@ -284,6 +288,7 @@ public class PersonControl {
         String lang=customer.getLang();
         Person_Sql person_sql=new Person_Sql();
        Person person=person_sql.getPersonById(personMapper,id);
+       person.setPatrol_list_ids(person.getPatrol_list_id());
         if(person!=null){
             return JsonConfig.getJsonObj(CODE_OK,person,lang);
         }else{

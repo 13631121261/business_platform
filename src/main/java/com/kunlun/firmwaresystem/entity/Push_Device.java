@@ -13,6 +13,7 @@ public class Push_Device {
     String push_type;
     String device_type;
     long last_time;
+    long time=0;
 
     public void setMap_key(String map_key) {
         this.map_key = map_key;
@@ -92,6 +93,14 @@ public class Push_Device {
 
     public void setDevice_type(String device_type) {
         this.device_type = device_type;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public long getTime() {
+        return time;
     }
 
     @Override

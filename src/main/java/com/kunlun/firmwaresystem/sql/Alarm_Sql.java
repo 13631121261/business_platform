@@ -17,7 +17,8 @@ import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 
 public class Alarm_Sql {
     public boolean addAlarm(AlarmMapper alarmMapper, Alarm alarm) {
-        alarmMapper.insert(alarm);
+        int status=alarmMapper.insert(alarm);
+        myPrintln(status+"添加记录"+alarm.toString());
             return true;
     }
     public void deleteBy15Day(AlarmMapper alarmMapper, long time){
@@ -32,19 +33,15 @@ public class Alarm_Sql {
         LambdaQueryWrapper<Alarm> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         Page<Alarm> userPage = new Page<>(page, limt);
         IPage<Alarm> userIPage;
-
         if(alarm_type!=null&&!alarm_type.equals("sos_all")){
-          //  myPrintln("这里执行66666");
             userLambdaQueryWrapper.like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId)
                              .or().like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId);
         }else{
-            myPrintln("这里执行");
+
             userLambdaQueryWrapper.like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId)
             .or().like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId);
         }
-      /*  userLambdaQueryWrapper.eq(Alarm::getProject_key, project_key).like(Alarm::getAlarm_object, object).like(Alarm::getAlarm_type, alarm_type).like(Alarm::getSn, name)
-                .or().eq(Alarm::getProject_key, project_key).like(Alarm::getAlarm_object, object).like(Alarm::getAlarm_type, alarm_type).like(Alarm::getName, name);
-         */ userIPage = alarmMapper.selectPage(userPage, userLambdaQueryWrapper);
+         userIPage = alarmMapper.selectPage(userPage, userLambdaQueryWrapper);
         PageAlarm pageAlarm = new PageAlarm(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageAlarm;
     }

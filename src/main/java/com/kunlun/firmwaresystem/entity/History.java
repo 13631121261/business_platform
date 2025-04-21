@@ -1,5 +1,8 @@
 package com.kunlun.firmwaresystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class History {
     long id;
     double x;

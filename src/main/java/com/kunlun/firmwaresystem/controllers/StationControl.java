@@ -126,7 +126,10 @@ public class StationControl {
         String lang=customer.getLang();
         Station_sql Station_sql=new Station_sql();
         Station Station= Station_sql.getStationById(StationMapper,Integer.parseInt(id));
+
         if(Station!=null){
+            Station_sql stationSql=new Station_sql();
+            station_maps =stationSql.getAllStation(redisUtil,stationMapper);
             return JsonConfig.getJsonObj(CODE_OK,Station,lang);
         }else{
             return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
@@ -146,6 +149,8 @@ public class StationControl {
        StationType stationType= stationTypeMapper.selectById(Station.getType_id());
         Station.setType_name(stationType.getName());
         StationMapper.updateById(Station);
+        Station_sql stationSql=new Station_sql();
+        station_maps =stationSql.getAllStation(redisUtil,stationMapper);
         return JsonConfig.getJsonObj(CODE_OK, Station, lang);
     }
 

@@ -33,7 +33,7 @@ public class Tag {
     String user_key;
     @TableField(exist = false)
     String Station_address;
-    @TableField(exist = false)
+
     int online;
 
     long lastTime;

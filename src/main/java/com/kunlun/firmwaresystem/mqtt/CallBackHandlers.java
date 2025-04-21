@@ -10,6 +10,7 @@ import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.Map;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.entity.device.Group;
+import com.kunlun.firmwaresystem.mappers.Real_PointMapper;
 import com.kunlun.firmwaresystem.sql.*;
 import com.kunlun.firmwaresystem.util.StringUtil;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -52,7 +53,7 @@ public class CallBackHandlers implements Runnable {
         // subscribe后得到的消息会执行到这里面
 
         if(topic.equals("location_engine")){
-            myPrintln("log=订阅收到消息="+new String(message.getPayload()));
+        //    myPrintln("log=订阅收到消息="+new String(message.getPayload()));
             if (message.getPayload()==null || message.getPayload().length==0){
                 return;
             }
@@ -70,18 +71,18 @@ public class CallBackHandlers implements Runnable {
 
             switch (pushDevice.getDevice_type()){
                 case "gateway":
-                    myPrintln("读取"+pushDevice.getAddress());
+                   // myPrintln("读取"+pushDevice.getAddress());
                     station = (Station) redisUtil.get(redis_key_locator + pushDevice.getAddress());
 
                     if (station == null) {
                         //从数据库读取
-                        myPrintln("从数据库读取");
+                      //  myPrintln("从数据库读取");
                         Station station1= Station_sql.getStationByMac(StationMapper,pushDevice.getAddress());
                         if (station1!=null){
                             station=station1;
                         }
                         else{
-                            myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
+                          //  myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
                             return;
                         }
                     }
@@ -95,6 +96,7 @@ public class CallBackHandlers implements Runnable {
                             map= map_sql.getMapByMapkey(mapMapper,station.getMap_key());
                             if (map != null) {
                                 station.setMap_name(map.getName());
+                                map.setData("");
                                 redisUtil.setnoTimeOut(redis_id_map +station.getMap_key(),map);
                             }else{
                                 myPrintln("地图是空的"+station.getMap_key());
@@ -108,32 +110,36 @@ public class CallBackHandlers implements Runnable {
                         station.setX(pushDevice.getX());
                         station.setY(pushDevice.getY());
                         station.setOnline(1);
+                        myPrintln("设置基站坐标"+station.getAddress()+"   X="+station.getX()+"   Y="+station.getY());
                         //此平台原来是离线，有推送信息
 
                     }
                     else if (pushDevice.getPush_type().equals("online")){
-                        station.setOnline(1);
-                      //  if (station.getOnline()==0){
+                        station.setLast_time(pushDevice.getLast_time());
+                        if (station.getOnline()==0){
                             Alarm_Sql alarm_sql = new Alarm_Sql();
                             alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
-                        //}
+                        }
+                        station.setOnline(1);
                     }
                     else if (pushDevice.getPush_type().equals("offline")){
-                        station.setOnline(0);
-                       // if (station.getOnline()==1){
+                        station.setLast_time(pushDevice.getLast_time());
+                        myPrintln("收到离线"+json_str);
+                       if (station.getOnline()==1){
                             Alarm_Sql alarm_sql = new Alarm_Sql();
-                            alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
-                       // }
+                            alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), System.currentTimeMillis()/1000));
+                        }
+                       station.setOnline(0);
                     }
                     redisUtil.setnoTimeOut(redis_key_locator + pushDevice.getAddress(),station);
-                    Station_sql.updateStation(StationMapper, station);
+                   // Station_sql.updateStation(StationMapper, station);
 
                     break;
                 case "beacon":
                     if(pushDevice.getPush_type().equals("location")){
                         tag = tagsMap.get(pushDevice.getAddress());
                         if (tag == null) {
-                            return;
+                            break;
                         }else{
                             tag.setX(pushDevice.getX());
                             tag.setY(pushDevice.getY());
@@ -149,6 +155,7 @@ public class CallBackHandlers implements Runnable {
                                 Map_Sql map_sql = new Map_Sql();
                                 map= map_sql.getMapByMapkey(mapMapper,tag.getMap_key());
                                 if (map != null) {
+                                    map.setData("");
                                     redisUtil.setnoTimeOut(redis_id_map +tag.getMap_key(),map);
                                 }else{
                                     myPrintln("地图是空的"+tag.getMap_key());
@@ -160,7 +167,7 @@ public class CallBackHandlers implements Runnable {
                                 hande_device(tag, deviceps, map,0);
                             }
                             else if (tag.getBind_type() == 2) {
-                                hander_person(tag, station, map, deviceps,0);
+                                hander_person(tag,null, map, deviceps,0);
                             }
                             if (!deviceps.isEmpty()) {
                                 //myPrintln("需要推送的1");
@@ -180,10 +187,11 @@ public class CallBackHandlers implements Runnable {
                             }else {
 
                                 if (tag.getIsbind() == 1 && tag.getBind_type()==1) {
-                                    Devicep devicep=devicePMap.get(tag.getMap_key());
+                                    Devicep devicep=devicePMap.get(tag.getBind_key());
                                     if (devicep != null) {
                                         devicep.setOnline(1);
                                         if( tag.getOnline()!=1) {
+                                            myPrintln("进入重复"+tag.getMac());
                                             alarm.setAlarm_object(Alarm_object.device);
                                             alarm.setAlarm_type(Alarm_Type.sos_online);
                                             alarm.setName(devicep.getName());
@@ -193,9 +201,10 @@ public class CallBackHandlers implements Runnable {
                                             alarm.setCreate_time(pushDevice.getLast_time());
                                             alarm_sql.addAlarm(alarmMapper, alarm);
                                         }
+
                                     }
                                 }else if (tag.getIsbind() == 1&&tag.getBind_type() == 2) {
-                                    Person person=personMap.get(tag.getMap_key());
+                                    Person person=personMap.get(tag.getBind_key());
                                     if (person != null) {
                                         person.setOnline(1);
                                         if( tag.getOnline()!=1) {
@@ -223,7 +232,8 @@ public class CallBackHandlers implements Runnable {
                             return;
                         }else {
                             if (tag.getIsbind() == 1 && tag.getBind_type()==1) {
-                                Devicep devicep=devicePMap.get(tag.getMap_key());
+                                myPrintln("进入这里 111"+tag.toString());
+                                Devicep devicep=devicePMap.get(tag.getBind_key());
                                 if (devicep != null) {
                                     devicep.setOnline(0);
                                     if ( tag.getOnline()!=0) {
@@ -233,12 +243,14 @@ public class CallBackHandlers implements Runnable {
                                         alarm.setSn(devicep.getSn());
                                         alarm.setMap_key(devicep.getMap_key());
                                         alarm.setProject_key(devicep.getProject_key());
-                                        alarm.setCreate_time(pushDevice.getLast_time());
+                                        alarm.setCreate_time(System.currentTimeMillis()/1000);
                                         alarm_sql.addAlarm(alarmMapper, alarm);
+                                    }else{
+                                        myPrintln("实际不可能的，在线"+tag.getOnline());
                                     }
                                 }
                             }else if (tag.getIsbind() == 1&&tag.getBind_type() == 2) {
-                                Person person=personMap.get(tag.getMap_key());
+                                Person person=personMap.get(tag.getBind_key());
                                 if (person != null) {
                                     person.setOnline(0);
                                     if ( tag.getOnline()!=0) {
@@ -248,7 +260,7 @@ public class CallBackHandlers implements Runnable {
                                         alarm.setSn(person.getIdcard());
                                         alarm.setMap_key(person.getMap_key());
                                         alarm.setProject_key(person.getProject_key());
-                                        alarm.setCreate_time(pushDevice.getLast_time());
+                                        alarm.setCreate_time(System.currentTimeMillis()/1000);
                                         alarm_sql.addAlarm(alarmMapper, alarm);
                                     }
                                 }
@@ -272,10 +284,10 @@ public class CallBackHandlers implements Runnable {
                             }
 
                             if (tag.getIsbind() == 1 && tag.getBind_type()==1) {
-                                Devicep devicep=devicePMap.get(tag.getMap_key());
+                                Devicep devicep=devicePMap.get(tag.getBind_key());
                                 if (devicep != null) {
                                     devicep.setBt(tag.getBt());
-                                    devicep.setOnline(1);
+                                    //devicep.setOnline(1);
                                 }
 
                             }
@@ -324,14 +336,13 @@ public class CallBackHandlers implements Runnable {
                     ArrayList<Object> deviceps = new ArrayList<>();
                     ArrayList<Object> tags = new ArrayList<>();
                     // myPrintln("步骤1");
-
                     for (String key : macs) {
                         // myPrintln(key);
                         if (tagsMap.get(key) != null) {
                             Station station = null;
                              tag = tagsMap.get(key);
                             if (tag == null) {
-                                return;
+                                continue;
                             }
                             JSONObject a = beacons.getJSONObject(key);
                            //     myPrintln("信标" + a);
@@ -345,6 +356,7 @@ public class CallBackHandlers implements Runnable {
                                 tag.setLastTime(a.getLong("updatedAt") / 1000);
                                 tag.setRssi(a.getIntValue("rssi"));
                                 tag.setStation_address(a.getString("nearestGateway"));
+                                myPrintln("基站 MAC="+tag.getStation_address());
                                 station = (Station) redisUtil.get(redis_key_locator + tag.getStation_address());
                                 if (station == null) {
                                     //从数据库读取
@@ -353,8 +365,8 @@ public class CallBackHandlers implements Runnable {
                                         station=station1;
                                     }
                                     else{
-                                     //   myPrintln("不存在于系统的AOA基站"+tag.getStation_address());
-                                        return;
+                                        myPrintln("不存在于系统的AOA基站"+tag.getStation_address());
+                                        continue;
                                     }
                                 }
                                 //myPrintln("基站="+check+beacon.getStation_address());
@@ -383,6 +395,7 @@ public class CallBackHandlers implements Runnable {
                                         DecimalFormat decimalFormat = new DecimalFormat("#.00");
                                         String bts = decimalFormat.format(bt);
                                         tag.setBt(Double.parseDouble(bts));
+                                        myPrintln("AOA 的电量="+tag.getMac()+"==="+bt );
                                     }
 
                                 }
@@ -394,6 +407,7 @@ public class CallBackHandlers implements Runnable {
                             if (map != null) {
                                 tag.setY(Double.parseDouble(decimalFormat.format(map.getHeight() - Double.parseDouble(decimalFormat.format(a.getDouble("y"))))));
                                 tag.setMap_key(map.getMap_key());
+                                map_key=map.getMap_key();
 
                             } else {
                                 myPrintln("地图没有缓存");
@@ -401,6 +415,7 @@ public class CallBackHandlers implements Runnable {
                                 List<Map>  maps= map_sql.getMapBymapId(mapMapper,station.getUser_key(),station.getProject_key(),a.getString("mapId"));
                                 if (maps != null&& !maps.isEmpty()) {
                                     map = maps.get(0);
+                                    map.setData("");
                                     redisUtil.setnoTimeOut(redis_id_map + a.getString("mapId"),map);
                                 }else{
                                     tag.setMap_key("");
@@ -419,94 +434,104 @@ public class CallBackHandlers implements Runnable {
                                     hande_device(tag, deviceps, map,1);
                                 }
                                 else if (tag.getBind_type() == 2) {
+                                 //   myPrintln("开始处理"+station);
                                     hander_person(tag, station, map, deviceps,1);
                                 }
                             }
                         }
                     }
                     if (!deviceps.isEmpty()) {
-                        //myPrintln("需要推送的1");
+                        myPrintln("AOA需要推送的1");
                         sendTagPush(deviceps, map_key);
                         sendRelayPush(deviceps, map_key);
                     } else {
                         //    myPrintln("没有需要推送的"+deviceps);
                     }
                 } else if (jsonObject.getString("type").equals("locators")) {
+                   // myPrintln("66666"+jsonObject);
                     JSONObject locators = jsonObject.getJSONObject("data");
                     Set<String> ips = locators.keySet();
 
                     //  myPrintln("步骤1");
                     for (String ip : ips) {
-                        // myPrintln("IP ="+ip);
-                        JSONObject a = locators.getJSONObject(ip);
-                        if (a != null) {
-                            int tag = 0;
-                            String address = a.getString("mac").replaceAll(":", "");
-                            myPrintln(address);
-                            station = (Station) redisUtil.get(redis_key_locator + address);
-                           // myPrintln(station.toString());
-                            if (station == null) {
-                                //从数据库读取
-                               Station station1=  Station_sql.getStationByMac(StationMapper,address);
-                                if (station1!=null){
-                                    myPrintln("shwai");
-                                    station=station1;
-                                }
-                                else{
-                                   // myPrintln("不存在于系统的AOA基站，不添加，直接返回");
-                                    return;
-                                }
+                     //    myPrintln("IP ="+ip);
+                         try {
+                             JSONObject a = locators.getJSONObject(ip);
+                             if (a != null) {
+                                 int tag = 0;
+                                 String address = a.getString("mac").replaceAll(":", "");
+                               //  myPrintln(address);
+                                 try {
+                                     station = (Station) redisUtil.get(redis_key_locator + address);
 
-                                tag = 1;
-                            }
-                            JSONObject info = a.getJSONObject("info");
+                                 } catch (Exception e) {
+                                    // myPrintln("777" + e.getMessage());
+                                 }
+                                 if (station == null) {
+                                     //从数据库读取
+                                     Station station1 = Station_sql.getStationByMac(StationMapper, address);
+                                     if (station1 != null) {
+                                         myPrintln("shwai");
+                                         station = station1;
+                                     } else {
+                                         // myPrintln("不存在于系统的AOA基站，不添加，直接返回");
+                                         continue;
+                                     }
 
-                            station.setX(Double.parseDouble(decimalFormat.format(info.getDouble("x"))));
-                            station.setY(Double.parseDouble(decimalFormat.format(info.getDouble("y"))));
-                            station.setZ(info.getDouble("z"));
-                            myPrintln("mingzi"+station.getName());
-                            // myPrintln(check);
+                                     tag = 1;
+                                 }
+                                 JSONObject info = a.getJSONObject("info");
 
-                            Map map = (Map) redisUtil.get(redis_id_map + info.getString("mapId"));
-                            if (map != null) {
-                                station.setMap_key(map.getMap_key());
-                                station.setMap_name(map.getName());
-                                station.setY(Double.parseDouble(decimalFormat.format(map.getHeight() - station.getY())));
-                            } else {
-                                myPrintln("地图没有缓存");
-                                Map_Sql map_sql = new Map_Sql();
-                               List<Map>  maps= map_sql.getMapBymapId(mapMapper,station.getUser_key(),station.getProject_key(),info.getString("mapId"));
-                               if (maps != null&& !maps.isEmpty()) {
-                                   map = maps.get(0);
-                                   station.setMap_key(map.getMap_key());
-                                   station.setMap_name(map.getName());
-                                   station.setY(Double.parseDouble(decimalFormat.format(map.getHeight() - station.getY())));
-                                   redisUtil.setnoTimeOut(redis_id_map + info.getString("mapId"),map);
-                               }else{
-                                   myPrintln("此基站未有绑定地图,不去修改他的位置Y坐标");
-                               }
-                               //此基站未有绑定地图,不自动增加
+                                 station.setX(Double.parseDouble(decimalFormat.format(info.getDouble("x"))));
+                                 station.setY(Double.parseDouble(decimalFormat.format(info.getDouble("y"))));
+                                 station.setZ(info.getDouble("z"));
+                                 myPrintln("mingzi" + station.getName());
+                                 // myPrintln(check);
 
-                             //   continue;
-                            }
-                            if(station.getName()!=null&&station.getName().contains("null")){
-                                station.setName(info.getString("name"));
-                            }
-                            if (station.getOnline() != 1 && a.getBoolean("online")) {
-                                Alarm_Sql alarm_sql = new Alarm_Sql();
-                                alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
-                            }
-                            if (station.getOnline() == 1 && !a.getBoolean("online")) {
-                                Alarm_Sql alarm_sql = new Alarm_Sql();
-                                alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
-                            }
-                            station.setOnline(a.getBoolean("online") ? 1 : 0);
-                            station.setLast_time(a.getLong("updatedAt") / 1000);
-                            if (tag == 1) {
-                                Station_sql.updateStation(StationMapper, station);
-                            }
-                            redisUtil.setnoTimeOut(redis_key_locator + address, station);
-                        }
+                                 Map map = (Map) redisUtil.get(redis_id_map + info.getString("mapId"));
+                                 if (map != null) {
+                                     station.setMap_key(map.getMap_key());
+                                     station.setMap_name(map.getName());
+                                     station.setY(Double.parseDouble(decimalFormat.format(map.getHeight() - station.getY())));
+                                 } else {
+                                     myPrintln("地图没有缓存");
+                                     Map_Sql map_sql = new Map_Sql();
+                                     List<Map> maps = map_sql.getMapBymapId(mapMapper, station.getUser_key(), station.getProject_key(), info.getString("mapId"));
+                                     if (maps != null && !maps.isEmpty()) {
+                                         map = maps.get(0);
+                                         station.setMap_key(map.getMap_key());
+                                         station.setMap_name(map.getName());
+                                         station.setY(Double.parseDouble(decimalFormat.format(map.getHeight() - station.getY())));
+                                         map.setData("");
+                                         redisUtil.setnoTimeOut(redis_id_map + info.getString("mapId"), map);
+                                     } else {
+                                         myPrintln("此基站未有绑定地图,不去修改他的位置Y坐标");
+                                     }
+                                     //此基站未有绑定地图,不自动增加
+
+                                     //   continue;
+                                 }
+                                 if (station.getName() != null && station.getName().contains("null")) {
+                                     station.setName(info.getString("name"));
+                                 }
+                                 if (station.getOnline() != 1 && a.getBoolean("online")) {
+                                     Alarm_Sql alarm_sql = new Alarm_Sql();
+                                     alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
+                                 }
+                                 if (station.getOnline() == 1 && !a.getBoolean("online")) {
+                                     Alarm_Sql alarm_sql = new Alarm_Sql();
+                                     alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
+                                 }
+                                 station.setOnline(a.getBoolean("online") ? 1 : 0);
+                                 station.setLast_time(a.getLong("updatedAt") / 1000);
+                                 if (tag == 1) {
+                                     Station_sql.updateStation(StationMapper, station);
+                                 }
+                                 redisUtil.setnoTimeOut(redis_key_locator + address, station);
+                             }
+                         }catch (Exception e) {
+                             myPrintln("888"+e.getMessage());
+                         }
                     }
                 }
             } catch (DataFormatException e) {
@@ -516,24 +541,15 @@ public class CallBackHandlers implements Runnable {
             }
             return;
         }
-        // myPrintln("接收时间="+dfs.format(new Date()));
-        String data = new String(message.getPayload());
-        //   myPrintln("接收消息Qos:" + data);
-        time = System.currentTimeMillis() / 1000;// new Date()为获取当前系统时间
-        if (data.isEmpty() || !data.contains("pkt_type")) {
-            return;
-        }
 
-        JSONObject jsonObject = null;
-        String pkt_type = null;
-        String StationAddress = null;
-        Object object = null;
+
 
     }
 
-    private void hander_person(Tag tag, Station station, Map map, ArrayList<Object> deviceps,int type) {
+    private void hander_person(Tag tag,Station station, Map map, ArrayList<Object> deviceps,int type) {
+
         Person person = personMap.get(tag.getBind_key());
-        // myPrintln("缩放" + map.getProportion());
+
         person.setX(tag.getX());
         person.setY(tag.getY());
         person.setOnline(1);
@@ -542,14 +558,30 @@ public class CallBackHandlers implements Runnable {
             person.setMap_name(map.getName());
         }
 
+        person.setStation_mac(tag.getStation_address());
+
         person.setOnline(1);
         person.setLasttime(tag.getLastTime());
-        if (station != null) {
-            person.setStation_mac(station.getAddress());
+        if (station==null) {
+            station = (Station) redisUtil.get(redis_key_locator + tag.getStation_address());
+        }
+        // myPrintln(station.toString());
+        if (station == null) {
+            //从数据库读取
+            Station station1=  Station_sql.getStationByMac(StationMapper,tag.getStation_address());
+            if (station1!=null){
+                //     myPrintln("shwai");
+                station=station1;
+                person.setStation_name(station.getName());
+            }
+
+        }else{
             person.setStation_name(station.getName());
         }
+
+
         deviceps.add(person);
-        if (person.getMap_key()!=null&&!person.getMap_key().isEmpty()) {
+        if (person.getMap_key() != null && !person.getMap_key().isEmpty()) {
             History history = new History();
             history.setMap_key(person.getMap_key());
             history.setSn(person.getIdcard());
@@ -561,24 +593,259 @@ public class CallBackHandlers implements Runnable {
             history.setName(person.getName());
             history_sql.addHistory(historyMapper, history);
         }
-        String res = (String) redisUtil.get(person_check_online_status_res + tag.getBind_key());
-        // myPrintln("步骤2" + key);
-        if (res == null || res.equals("0")) {
-            Alarm_Sql alarm_sql = new Alarm_Sql();
-            alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.person, tag.getMap_key(), 0, "", tag.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key(), person.getLasttime()));
-        }
-        redisUtil.setnoTimeOut(person_check_online_status_res + tag.getBind_key(), "1");
+
         if (map != null) {
             handleFence(tag, map.getProportion());
         }
 
+        String patrol_id = person.getPatrol_list_id();
+        //初始化，需要获取数据库信息，有绑定路线但是没有路线详情
+        if (patrol_id != null && person.getPatrol_lists() == null) {
+            Patrol_List_Sql patrol_sql = new Patrol_List_Sql();
+            Area_Sql areaSql = new Area_Sql();
+            person.setPatrol_list_ids(patrol_id);
+            //一个人会有多个路线
+            if (person.getPatrol_list_ids() != null && person.getPatrol_list_ids().length > 0) {
+                ArrayList<Patrol_list> patrol_lists = new ArrayList<>();
+                for (int i = 0; i < person.getPatrol_list_ids().length; i++) {
+                    //获得每一条路线。
+                    myPrintln("获得每一条路线。"+person.getPatrol_list_ids()[i]);
+                    if (!person.getPatrol_list_ids()[i].isEmpty()) {
+                        //获得每一条路线。
+                        Patrol_list patrol_list = patrol_sql.getPatrolById(patrolListMapper, Integer.parseInt(person.getPatrol_list_ids()[i]));
+                        if (patrol_list != null) {
+                            //每个路线对应的每个点位
+                            if (patrol_list.getPatrol_list() != null) {
+                                String[] lists = patrol_list.getPatrol_list().split("-");
+                                ArrayList<Patrol> patrolArrayList = new ArrayList<>();
+                                Patrol_Sql patrolSql = new Patrol_Sql();
+                                for (int j = 0; j < lists.length; j++) {
+                                    try {
+                                        if (!lists[j].isEmpty()) {
+                                            int id = Integer.parseInt(lists[j]);
+                                            //每个路线对应的每个点位
+                                            Patrol patrol = patrolSql.getPatrolById(patrolMapper, id);
+                                            if (patrol != null) {
+                                                if (patrol.getEnable_day() != null) {
+                                                    patrol.setEnable_days(patrol.getEnable_day());
+                                                }
+                                                patrol.setTime_range(patrol.getStartTime(), patrol.getEndTime());
+                                                if (patrol_list.getMust_list().contains(lists[j])) {
+                                                    patrol.setRequired(true);
+                                                } else {
+                                                    patrol.setRequired(false);
+                                                }
+                                                int area_id = patrol.getArea_id();
+                                                if (area_id != 0) {
+                                                    Area area = areaMapper.selectById(area_id);
+                                                    if (area != null) {
+                                                        myPrintln("区域点位="+area.getName());
+                                                        patrol.setPoints(area.getPoint());
+                                                    } else {
+                                                        myPrintln("总有异常发生，不应该存在巡更点位获取不到对应区域点位的情况");
+                                                        return;
 
-        if (type==1){
+                                                    }
+                                                }
+                                                patrolArrayList.add(patrol);
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        myPrintln(e.toString());
+                                    }
+                                }
+                                patrol_list.setPatrol_list_detail(patrolArrayList);
+                            }
+                            patrol_lists.add(patrol_list);
+                        }
+                    }
+                    //
+                }
+                person.setPatrol_lists(patrol_lists);
+            }
+        } else if (person.getPatrol_lists() != null) {
+            for (Patrol_list patrol_list : person.getPatrol_lists()) {
+               // myPrintln("每条路线="+patrol_list.getName());
+                for (Patrol patrol : patrol_list.getPatrol_list_detail()) {
+                  //  myPrintln("每条点位="+patrol.getName());
+                    String points = patrol.getPoints();
+                    if (points != null && !points.isEmpty()) {
+                      //  myPrintln("细分="+points);
+                        String[] xys = points.split(" ");
+                        String[][] xy = new String[xys.length][2];
+                        int i = 0;
+                        for (String point : xys) {
+
+                            xy[i] = point.split(",");
+                            i++;
+                        }
+                        try {
+                            int result = checkPointLocation(person.getX()*patrol.getProportion(), person.getY()*patrol.getProportion(), xy, 3.0);
+                           // myPrintln("结果="+result);
+                            if(result<=1){
+                              //  myPrintln("尝试插入数据");
+                                try {
+                                    Real_Point real_point = new Real_Point();
+                                    real_point.setIdcard(person.getIdcard());
+                                    real_point.setCreate_time(System.currentTimeMillis() / 1000);
+                                    real_point.setPartol_id(patrol.getId());
+                                    realPointMapper.insert(real_point);
+                                  //  myPrintln("插入数据完成");
+                                }catch (Exception e){
+                                    myPrintln(e.toString());
+                                }
+                            }
+
+
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("输入错误: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+        }
+
+
+//0表示该标签是非 AOA 标签，只有 AOA 标签才会继续执行
+        if (type == 1) {
             handleSos_AOA(tag);
             handleBt_AOA(tag);
         }
 
+
     }
+    public static int checkPointLocation(double x, double y, String[][] polygonVertices, double maxDistance) {
+        // 1. 转换输入数据
+        //myPrintln("开始计算 x="+x+" y="+y);
+        List<Point> polygon = parsePolygon(polygonVertices);
+       // myPrintln("开始计算 22");
+        // 2. 验证多边形有效性
+        if (polygon.size() < 3) {
+            myPrintln("多边形需要至少3个顶点");
+        }
+        //myPrintln("开始计算 33");
+        // 3. 创建检测点
+        Point p = new Point(x, y);
+
+        // 4. 判断位置状态
+        if (isPointInPolygon(p, polygon)) {
+            return 0;
+        }
+       // myPrintln("开始计算 44");
+        double minDist = calculateMinDistanceToEdges(p, polygon);
+        ///myPrintln("开始计算 55="+minDist);
+        return (minDist <= maxDistance) ? 1: 2;
+    }
+
+    private static List<Point> parsePolygon(String[][] vertices) {
+        List<Point> polygon = new ArrayList<>();
+      //  myPrintln(vertices.length + "");
+        int i = 0;
+        for (String[] vertex : vertices) {
+       //     myPrintln( "I="+i++);
+            if (vertex.length != 2) {
+           //    myPrintln("顶点数据格式应为[经度,纬度]");
+
+            }
+            else {
+               // myPrintln( "进行"+vertex[0]+","+vertex[1]);
+                try {
+                    double x = Double.parseDouble(vertex[0]);
+                    double y = Double.parseDouble(vertex[1]);
+                    polygon.add(new Point(x, y));
+               //     myPrintln("polygon=" + polygon.size());
+                } catch (NumberFormatException e) {
+                    myPrintln("无效的坐标格式: [" + vertex[0] + "," + vertex[1] + "]");
+
+                }
+            }
+        }
+       // myPrintln( "444444");
+        return polygon;
+    }
+
+    private static boolean isPointInPolygon(Point p, List<Point> polygon) {
+        double x = p.x;
+        double y = p.y;
+        boolean inside = false;
+        int n = polygon.size();
+
+        for (int i = 0; i < n; i++) {
+            Point a = polygon.get(i);
+            Point b = polygon.get((i + 1) % n);
+            double xi = a.x, yi = a.y;
+            double xj = b.x, yj = b.y;
+
+            // 检查点是否在边的纵向范围内
+            if ((yi < y && yj >= y) || (yj < y && yi >= y)) {
+                // 计算射线与边的交点x坐标
+                double t = (y - yi) / (yj - yi + 1e-20); // 避免除零
+                double xIntersect = xi + t * (xj - xi);
+
+                if (xIntersect <= x) {
+                    inside = !inside;
+                }
+            }
+        }
+        return inside;
+    }
+
+
+    private static double calculateMinDistanceToEdges(Point p, List<Point> polygon) {
+        double minDist = Double.MAX_VALUE;
+        int n = polygon.size();
+
+        for (int i = 0; i < n; i++) {
+            Point a = polygon.get(i);
+            Point b = polygon.get((i + 1) % n);
+            double dist = pointToSegmentDistance(p, a, b);
+            if (dist < minDist) {
+                minDist = dist;
+            }
+        }
+        return minDist;
+    }
+
+
+    private static double pointToSegmentDistance(Point p, Point a, Point b) {
+        double px = p.x, py = p.y;
+        double ax = a.x, ay = a.y;
+        double bx = b.x, by = b.y;
+
+        // 向量AB和AP
+        double abx = bx - ax;
+        double aby = by - ay;
+        double apx = px - ax;
+        double apy = py - ay;
+
+        // 计算投影参数t
+        double t = (apx * abx + apy * aby) / (abx * abx + aby * aby + 1e-20);
+        t = Math.max(0, Math.min(1, t)); // 限制在线段范围内
+
+        // 垂足坐标
+        double nearestX = ax + t * abx;
+        double nearestY = ay + t * aby;
+
+        // 欧氏距离
+        double dx = px - nearestX;
+        double dy = py - nearestY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+
+    private static class Point {
+        public final double x;
+        public final double y;
+
+        public Point(double x, double y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+
+
+
 
     private void hande_device(Tag tag, ArrayList<Object> deviceps, Map map,int type) {
         if (devicePMap==null|| devicePMap.isEmpty()) {
@@ -631,13 +898,7 @@ public class CallBackHandlers implements Runnable {
             history_sql.addHistory(historyMapper, history);
         }
 
-        //    myPrintln("步骤2" + key);
-        String res = (String) redisUtil.get(device_check_online_status_res + tag.getBind_key());
-        if (res == null || res.equals("0")) {
-            Alarm_Sql alarm_sql = new Alarm_Sql();
-            alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
-        }
-        redisUtil.setnoTimeOut(device_check_online_status_res + tag.getBind_key(), "1");
+
 
         handleFence(tag, map.getProportion());
         if (type==1){
@@ -958,7 +1219,7 @@ public class CallBackHandlers implements Runnable {
                         redisUtil.set(fence_check_object+fence.getId() + tag.getBind_key(), count);
                         if (count >= fence.getTrigger1() && (res == null || !res.equals("1"))) {
                             redisUtil.setTimeOut(fence_check_object_res+fence.getId() + tag.getBind_key(), "1",fence.getTime_out());
-                            myPrintln(new Date()+"222-"+ tag.getBind_key() + "触发围栏报警");
+                          //  myPrintln(new Date()+"222-"+ tag.getBind_key() + "触发围栏报警");
                             return true;
                         }
                     } else {

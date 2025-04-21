@@ -47,20 +47,14 @@ public class Patrol_Sql {
     }
 
 
-    public   Map<Integer,Area> getAllArea(AreaMapper areaMapper) {
-        QueryWrapper<Area> queryWrapper = Wrappers.query();
 
-        List<Area> areas= areaMapper.selectList(queryWrapper);
-        Map<Integer,Area> areaHashMap=new HashMap<>();
-        for(Area area:areas){
-            areaHashMap.put(area.getId(),area);
-        }
-        return areaHashMap;
-    }
-    public    List<Patrol> getAll(PatrolMapper patrolMapper,String user_key,String project_key) {
+    public    List<Patrol> getAll(PatrolMapper patrolMapper,String user_key,String project_key,String search) {
         QueryWrapper<Patrol> queryWrapper = Wrappers.query();
         queryWrapper.eq("project_key",project_key);
-        queryWrapper.eq("userkey",user_key);
+        queryWrapper.eq("user_key",user_key);
+        if(search!=null&& !search.isEmpty()){
+            queryWrapper.like("name",search);
+        }
         List<Patrol> areas= patrolMapper.selectList(queryWrapper);
         return areas;
     }

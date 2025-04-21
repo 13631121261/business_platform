@@ -163,9 +163,9 @@ public class TagControl {
                 break;
         }
         boolean status= tag_sql.addTag(tagMapper, tag);
-        tagsMap=tag_sql.getAllTag(tagMapper);
-        if(status){
 
+        if(status){
+            tagsMap.put(tag.getMac(),tag);
             return JsonConfig.getJsonObj(CODE_OK,null,lang);
         }
           else{

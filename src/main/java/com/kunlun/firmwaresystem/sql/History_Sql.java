@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+
 public class History_Sql {
     public boolean addHistory(HistoryMapper historyMapper, History history) {
             historyMapper.insert(history);
@@ -31,15 +33,14 @@ public class History_Sql {
 
         QueryWrapper<History> queryWrapper = Wrappers.query();
 
-        queryWrapper.eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("sn",sn)
-                .or().eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("name",sn)
-.or().eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("name",sn);
-        List<History> histories= historyMapper.selectList(queryWrapper);
+        queryWrapper.eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("sn",sn).ne("map_key", "").isNotNull("map_key")
+                    .or().eq("project_key",project_key).eq("type",type).ge("time",start_time).le("time",stop_time).like("name",sn).ne("map_key", "").isNotNull("map_key");
+       List<History> histories= historyMapper.selectList(queryWrapper);
         return histories;
     }
     public void deleteBy15Day(HistoryMapper historyMapper,long time){
         QueryWrapper<History> queryWrapper = Wrappers.query();
-        queryWrapper. le("time",time/1000);
+        queryWrapper.le("time",time);
         historyMapper.delete(queryWrapper);
 
     }

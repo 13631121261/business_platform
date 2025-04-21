@@ -146,4 +146,23 @@ public class Alarm {
     public void setProject_key(String project_key) {
         this.project_key = project_key;
     }
+
+    @Override
+    public String toString() {
+        return "Alarm{" +
+                "id=" + id +
+                ", alarm_type=" + alarm_type +
+                ", alarm_object=" + alarm_object +
+                ", create_time=" + create_time +
+                ", map_key='" + map_key + '\'' +
+                ", fence_id=" + fence_id +
+                ", fence_name='" + fence_name + '\'' +
+                ", bt=" + bt +
+                ", area_id=" + area_id +
+                ", area_name='" + area_name + '\'' +
+                ", name='" + name + '\'' +
+                ", sn='" + sn + '\'' +
+                ", project_key='" + project_key + '\'' +
+                '}';
+    }
 }

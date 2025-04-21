@@ -74,8 +74,8 @@ public class MyWebSocketTag extends WebSocketServer {
     public void onStart() {      myPrintln("正常启动");
     }
     public void sendData(String map_key, String msg) {
-       myPrintln("触发发送"+map_key);
-        myPrintln("触发发送"+msg);
+       //myPrintln("触发发送"+map_key);
+       // myPrintln("触发发送"+msg);
         for(String key:keys){
             if(key.contains(map_key)){
                 WebSocket webSocket = connectlist.get(key);

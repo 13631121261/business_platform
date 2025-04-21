@@ -3,7 +3,9 @@ package com.kunlun.firmwaresystem.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class Person {
     int id;
@@ -28,12 +30,12 @@ public class Person {
     String user_key;
     String project_key;
     String idcard;
-    @TableField(exist = false)
+
     int online;
 
-    @TableField(exist = false)
+
     String  Station_mac;
-    @TableField(exist = false)
+
     String Station_name;
 
     String customer_key;
@@ -45,8 +47,66 @@ public class Person {
     String b_area_name;
     @TableField(exist = false)
     String map_name;
-    @TableField(exist = false)
+
     String map_key;
+
+    String patrol_list_id;
+    @TableField(exist = false)
+    String[] patrol_list_ids;
+    @TableField(exist = false)
+    List<Patrol_list>patrol_lists;
+
+    public void setPatrol_lists(List<Patrol_list> patrol_lists) {
+        this.patrol_lists = patrol_lists;
+    }
+
+    public List<Patrol_list> getPatrol_lists() {
+        return patrol_lists;
+    }
+
+    public void setPatrol_list_id(String[] patrol_list_ids){
+        if (patrol_list_ids != null){
+            String ids="";
+            for (int i=0;i<patrol_list_ids.length;i++){
+                ids=ids+"-"+patrol_list_ids[i];
+            }
+            this.patrol_list_id = ids;
+        }
+    }
+
+    public void setPatrol_list_ids(String patrol_list_id) {
+        if (patrol_list_id != null){
+                patrol_list_id= patrol_list_id.replaceAll("--","");
+                if (patrol_list_id.startsWith("-"))
+                {
+                    patrol_list_id = patrol_list_id.substring(1);
+                }
+                String[] ids=patrol_list_id.split("-");
+                if (ids.length>=1){
+                    this.patrol_list_ids = ids;
+                }
+
+
+        }
+
+    }
+
+    public String[] getPatrol_list_ids() {
+        return patrol_list_ids;
+    }
+
+    public void setPatrol_list_ids(String[] patrol_list_ids) {
+        this.patrol_list_ids = patrol_list_ids;
+    }
+
+    public String getPatrol_list_id() {
+        return patrol_list_id;
+    }
+
+    public void setPatrol_list_id(String patrol_list_id) {
+        this.patrol_list_id = patrol_list_id;
+    }
+
     public Person()
     {
 
@@ -340,6 +400,7 @@ public class Person {
                 ", photo='" + photo + '\'' +
                 ", department_id=" + department_id +
                 ", fence_id=" + fence_id +
+                ", fence_name='" + fence_name + '\'' +
                 ", department_name='" + department_name + '\'' +
                 ", create_time=" + create_time +
                 ", lasttime=" + lasttime +
@@ -361,6 +422,10 @@ public class Person {
                 ", b_area_id=" + b_area_id +
                 ", b_area_name='" + b_area_name + '\'' +
                 ", map_name='" + map_name + '\'' +
+                ", map_key='" + map_key + '\'' +
+                ", patrol_list_id='" + patrol_list_id + '\'' +
+                ", patrol_list_ids=" + Arrays.toString(patrol_list_ids) +
                 '}';
-    }
+
+}
 }

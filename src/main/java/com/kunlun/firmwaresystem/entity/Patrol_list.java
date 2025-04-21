@@ -12,24 +12,43 @@ import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 
-public class PatrolList {
+public class Patrol_list {
     int id;
     String name;
-    String description;
+    String describes;
     @TableField(exist = false)
-    List<Patrol> patrols;
-    String patrol_str;
+    List<Patrol> patrol_list_detail;
+    String patrol_list;
     long create_time;
     long update_time;
-    String user_key;
+    String patrol_type;
     String project_key;
+    String must_list;
+    @TableField(exist = false)
+    int person_count;
 
-    public String getUser_key() {
-        return user_key;
+    public void setPerson_count(int person_count) {
+        this.person_count = person_count;
     }
 
-    public void setUser_key(String user_key) {
-        this.user_key = user_key;
+    public int getPerson_count() {
+        return person_count;
+    }
+
+    public void setMust_list(String must_list) {
+        this.must_list = must_list;
+    }
+
+    public void setPatrol_type(String patrol_type) {
+        this.patrol_type = patrol_type;
+    }
+
+    public String getMust_list() {
+        return must_list;
+    }
+
+    public String getPatrol_type() {
+        return patrol_type;
     }
 
     public String getProject_key() {
@@ -56,32 +75,33 @@ public class PatrolList {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public void setDescribes(String describes) {
+        this.describes = describes;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public String getDescribes() {
+        return describes;
     }
 
-    public List<Patrol> getPatrolInfos() {
-        return patrols;
+    public List<Patrol> getPatrol_list_detail() {
+        return patrol_list_detail;
     }
 
-    public void setPatrolInfos(List<Patrol> patrols) {
+    public void setPatrol_list_detail(List<Patrol> patrols) {
         if (patrols != null&& !patrols.isEmpty()) {
-            this.patrols = patrols;
+            this.patrol_list_detail = patrols;
         }
 
     }
 
-    public String getPatrol_str() {
-        return patrol_str;
+    public String getPatrol_list() {
+        return patrol_list;
     }
 
-    public void setPatrol_str(String patrol_str) {
-        this.patrol_str = patrol_str;
-        if (patrol_str != null && !patrol_str.isEmpty()) {
+    public void setPatrol_list(String patrol_str) {
+        this.patrol_list = patrol_str;
+        myPrintln("路线="+patrol_str);
+        /*if (patrol_str != null && !patrol_str.isEmpty()) {
             try {
                 JSONArray jsonArray = JSON.parseArray(patrol_str);
                 if (jsonArray != null&& !jsonArray.isEmpty()) {
@@ -92,13 +112,13 @@ public class PatrolList {
                         }.getType());
                         patrols.add(patrol);
                     }
-                    this.setPatrolInfos(patrols);
+                    this.setPatrol_list_detail(patrols);
                 }
             }catch (Exception e){
                 myPrintln(e.getMessage());
             }
 
-        }
+        }*/
     }
 
     public long getCreate_time() {
@@ -117,5 +137,19 @@ public class PatrolList {
         this.update_time = update_time;
     }
 
-
+    @Override
+    public String toString() {
+        return "Patrol_list{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", describes='" + describes + '\'' +
+                ", patrol_list_detail=" + patrol_list_detail +
+                ", patrol_list='" + patrol_list + '\'' +
+                ", create_time=" + create_time +
+                ", update_time=" + update_time +
+                ", patrol_type='" + patrol_type + '\'' +
+                ", project_key='" + project_key + '\'' +
+                ", must_list='" + must_list + '\'' +
+                '}';
+    }
 }

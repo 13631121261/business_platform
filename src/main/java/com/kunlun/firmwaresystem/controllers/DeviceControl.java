@@ -298,7 +298,12 @@ public class DeviceControl {
         String map_key=request.getParameter("map_key");
         myPrintln("地图kep="+map_key);
         List<Devicep> devicepList=new ArrayList<>();
-     
+        for(String key:devicePMap.keySet()){
+            Devicep devicep=devicePMap.get(key);
+            if (devicep.getMap_key()!=null&&devicep.getMap_key().equals(map_key)) {
+                devicepList.add(devicep);
+            }
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", CODE_OK);
         jsonObject.put("msg", CODE_OK_txt);
@@ -337,8 +342,10 @@ public class DeviceControl {
                 String old_mac = devicep.getBind_mac();
                 //mac不变，说明没有变更绑定。不需要操作
                 if (old_mac.equals(mac)) {
-                    // deviceP_sql.update(devicePMapper,devicep);
                     bind_fence(fence_type,f_g_id,devicep);
+                    tagsMap=tag_sql.getAllTag(tagMapper);
+                    devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
+
                     return JsonConfig.getJsonObj(CODE_OK, "", customer.getLang());
                 }
             }
@@ -347,6 +354,8 @@ public class DeviceControl {
             if ((mac.equals("不绑定标签") || mac.equals("UnBind")) &&devicep.getBind_mac()!=null&& devicep.getBind_mac().isEmpty()) {
                 //deviceP_sql.update(devicePMapper,devicep);
                 bind_fence(fence_type,f_g_id,devicep);
+                tagsMap=tag_sql.getAllTag(tagMapper);
+                devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
                 return JsonConfig.getJsonObj(CODE_OK, "", customer.getLang());
             }
         }catch (Exception e){
@@ -366,6 +375,7 @@ public class DeviceControl {
                     tag1.setBind_type(0);
                     tag_sql.update(tagMapper, tag1);
                     tagsMap=tag_sql.getAllTag(tagMapper);
+                    devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
                 }
             }
             if(!mac.equals("不绑定标签")&&!mac.equals("UnBind")){
@@ -386,17 +396,24 @@ public class DeviceControl {
                     //更新资产
                     devicep.setBind_mac(tag.getMac());
                     deviceP_sql.update(devicePMapper,devicep);
+                    tagsMap=tag_sql.getAllTag(tagMapper);
+                    devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
                 }
                 } catch (Exception e) {
                     myPrintln("5456"+e.getMessage());;
                 }
              }else{
                     devicep.setBind_mac("");
+
                     deviceP_sql.update(devicePMapper,devicep);
+                    tagsMap=tag_sql.getAllTag(tagMapper);
+                    devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
                 }
 
             //处理单个围栏
              bind_fence(fence_type,f_g_id,devicep);
+            tagsMap=tag_sql.getAllTag(tagMapper);
+            devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", CODE_OK);
             jsonObject.put("msg", CODE_OK_txt);
@@ -412,10 +429,8 @@ public class DeviceControl {
              //   }
             }
             else if (fence_type.equals("2")){
-
                 devicep.setFence_group_id(f_g_id);
                 devicep.setFence_id(-1);
-
             }
         }
         devicePMapper.updateById(devicep);

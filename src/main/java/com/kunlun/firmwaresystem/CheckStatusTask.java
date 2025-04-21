@@ -42,16 +42,19 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
          //   checkBeacon();
             checkPerson();
             checkDevice();
-            System.out.println("30秒清空一次数据");
+            System.out.println("30秒清空一次数据"+time);
             deleteCache();
             if(time%3==0){
                 //for(String key:myMqttClientMap.keySet()){
                   // MyMqttClient client= myMqttClientMap.get(key);
                    //if (client != null) {
+                System.out.println("66666"+mqttClient.getStatus());
                        if (!mqttClient.getStatus()){
+                           myPrintln("真实重连 MQTT  定时检测");
                            new Thread(new Runnable() {
                                @Override
                                public void run() {
+                                   myPrintln("真实重连 MQTT  定时检测");
                                    mqttClient.start();
                                }
                            }).start();
