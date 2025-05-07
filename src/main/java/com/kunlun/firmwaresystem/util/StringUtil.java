@@ -225,8 +225,8 @@ public class StringUtil {
         id++;
         jsonObject1.put("id", id);
         jsonObject1.put("time", sdf.format(new Date()));
-       // myPrintln("原始" + jsonObject1);
-        myPrintln("原始" + map_key);
+        myPrintln("原始" + jsonObject1);
+      //  myPrintln("原始" + map_key);
         RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),map_key);
        directExchangeProducer.send(rabbitMessage1.toString(), sendtoMap);
     }

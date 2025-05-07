@@ -13,10 +13,12 @@ public class Alarm {
     String name;
     String sn;
     String project_key;
+    String station_name;
+    String station_address;
     public Alarm(){
 
     }
-    public Alarm( Alarm_Type alarm_type,
+    public Alarm(String station_address, String  station_name,Alarm_Type alarm_type,
                   Alarm_object alarm_object,
 
             String map_key,
@@ -28,6 +30,7 @@ public class Alarm {
             String name,
             String sn,
             String project_key,long time){
+        this.station_address = station_address;
     this.alarm_object=alarm_object;
     this.alarm_type=alarm_type;
     this.area_id=area_id;
@@ -37,6 +40,7 @@ public class Alarm {
     this.fence_name=fence_name;
     this.bt=bt;
     this.map_key=map_key;
+    this.station_name=station_name;
     if(time<=0){
         time=System.currentTimeMillis()/1000;
     }
@@ -44,6 +48,15 @@ public class Alarm {
     this.name=name;
     this.project_key=project_key;
     }
+
+    public void setStation_address(String station_address) {
+        this.station_address = station_address;
+    }
+
+    public String getStation_address() {
+        return station_address;
+    }
+
     public int getId() {
         return id;
     }
@@ -145,6 +158,14 @@ public class Alarm {
 
     public void setProject_key(String project_key) {
         this.project_key = project_key;
+    }
+
+    public void setStation_name(String station_name) {
+        this.station_name = station_name;
+    }
+
+    public String getStation_name() {
+        return station_name;
     }
 
     @Override

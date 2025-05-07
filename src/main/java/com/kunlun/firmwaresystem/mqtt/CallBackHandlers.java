@@ -71,18 +71,18 @@ public class CallBackHandlers implements Runnable {
 
             switch (pushDevice.getDevice_type()){
                 case "gateway":
-                   // myPrintln("读取"+pushDevice.getAddress());
+                 //   myPrintln("读取"+pushDevice.getAddress());
                     station = (Station) redisUtil.get(redis_key_locator + pushDevice.getAddress());
 
                     if (station == null) {
-                        //从数据库读取
-                      //  myPrintln("从数据库读取");
+                       // 从数据库读取
+                        myPrintln("从数据库读取");
                         Station station1= Station_sql.getStationByMac(StationMapper,pushDevice.getAddress());
                         if (station1!=null){
                             station=station1;
                         }
                         else{
-                          //  myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
+                            myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
                             return;
                         }
                     }
@@ -118,7 +118,7 @@ public class CallBackHandlers implements Runnable {
                         station.setLast_time(pushDevice.getLast_time());
                         if (station.getOnline()==0){
                             Alarm_Sql alarm_sql = new Alarm_Sql();
-                            alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
+                            alarm_sql.addAlarm(alarmMapper, new Alarm(station.getAddress(), station.getName(), Alarm_Type.sos_online, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
                         }
                         station.setOnline(1);
                     }
@@ -127,7 +127,7 @@ public class CallBackHandlers implements Runnable {
                         myPrintln("收到离线"+json_str);
                        if (station.getOnline()==1){
                             Alarm_Sql alarm_sql = new Alarm_Sql();
-                            alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), System.currentTimeMillis()/1000));
+                            alarm_sql.addAlarm(alarmMapper, new Alarm(station.getAddress(), station.getName(), Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), System.currentTimeMillis()/1000));
                         }
                        station.setOnline(0);
                     }
@@ -136,6 +136,7 @@ public class CallBackHandlers implements Runnable {
 
                     break;
                 case "beacon":
+                case "kunlun_card":
                     if(pushDevice.getPush_type().equals("location")){
                         tag = tagsMap.get(pushDevice.getAddress());
                         if (tag == null) {
@@ -170,13 +171,11 @@ public class CallBackHandlers implements Runnable {
                                 hander_person(tag,null, map, deviceps,0);
                             }
                             if (!deviceps.isEmpty()) {
-                                //myPrintln("需要推送的1");
+
                                 sendTagPush(deviceps, tag.getMap_key());
                                 sendRelayPush(deviceps, tag.getMap_key());
                             }
                         }
-
-
                     }
                     else if(pushDevice.getPush_type().equals("online")){
                             Alarm_Sql alarm_sql = new Alarm_Sql();
@@ -185,14 +184,35 @@ public class CallBackHandlers implements Runnable {
                             if (tag == null) {
                                 return;
                             }else {
-
                                 if (tag.getIsbind() == 1 && tag.getBind_type()==1) {
                                     Devicep devicep=devicePMap.get(tag.getBind_key());
+
                                     if (devicep != null) {
+                                        if (!pushDevice.getGateway_address().isEmpty())
+                                        {
+                                            devicep.setNear_s_address(pushDevice.getGateway_address());
+                                            station = (Station) redisUtil.get(redis_key_locator + pushDevice.getGateway_address());
+
+                                            if (station == null) {
+                                                // 从数据库读取
+                                                myPrintln("从数据库读取");
+                                                Station station1= Station_sql.getStationByMac(StationMapper,pushDevice.getGateway_address());
+                                                if (station1!=null){
+                                                    station=station1;
+                                                }
+                                                else{
+                                                    myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
+                                                    return;
+                                                }
+                                            }
+                                            devicep.setNear_s_name(station.getName());
+                                        }
                                         devicep.setOnline(1);
                                         if( tag.getOnline()!=1) {
                                             myPrintln("进入重复"+tag.getMac());
                                             alarm.setAlarm_object(Alarm_object.device);
+                                            alarm.setStation_name(devicep.getNear_s_name());
+                                            alarm.setStation_address(devicep.getNear_s_address());
                                             alarm.setAlarm_type(Alarm_Type.sos_online);
                                             alarm.setName(devicep.getName());
                                             alarm.setSn(devicep.getSn());
@@ -210,6 +230,8 @@ public class CallBackHandlers implements Runnable {
                                         if( tag.getOnline()!=1) {
                                             alarm.setAlarm_object(Alarm_object.person);
                                             alarm.setAlarm_type(Alarm_Type.sos_online);
+                                            alarm.setStation_address(person.getStation_mac());
+                                            alarm.setStation_name(person.getStation_name());
                                             alarm.setName(person.getName());
                                             alarm.setSn(person.getIdcard());
                                             alarm.setMap_key(person.getMap_key());
@@ -236,10 +258,14 @@ public class CallBackHandlers implements Runnable {
                                 Devicep devicep=devicePMap.get(tag.getBind_key());
                                 if (devicep != null) {
                                     devicep.setOnline(0);
+                                    devicep.setSos(-1);
+                                    devicep.setRun(-1);
                                     if ( tag.getOnline()!=0) {
                                         alarm.setAlarm_object(Alarm_object.device);
                                         alarm.setAlarm_type(Alarm_Type.sos_offline);
                                         alarm.setName(devicep.getName());
+                                        alarm.setStation_address(devicep.getNear_s_address());
+                                        alarm.setStation_name(devicep.getNear_s_name());
                                         alarm.setSn(devicep.getSn());
                                         alarm.setMap_key(devicep.getMap_key());
                                         alarm.setProject_key(devicep.getProject_key());
@@ -253,11 +279,14 @@ public class CallBackHandlers implements Runnable {
                                 Person person=personMap.get(tag.getBind_key());
                                 if (person != null) {
                                     person.setOnline(0);
+
                                     if ( tag.getOnline()!=0) {
                                         alarm.setAlarm_object(Alarm_object.person);
                                         alarm.setAlarm_type(Alarm_Type.sos_offline);
                                         alarm.setName(person.getName());
                                         alarm.setSn(person.getIdcard());
+                                        alarm.setStation_address(person.getStation_mac());
+                                        alarm.setStation_name(person.getStation_name());
                                         alarm.setMap_key(person.getMap_key());
                                         alarm.setProject_key(person.getProject_key());
                                         alarm.setCreate_time(System.currentTimeMillis()/1000);
@@ -318,12 +347,12 @@ public class CallBackHandlers implements Runnable {
 
             try {
                // count++;
-              //  myPrintln("计数=" + count );
+
 
                 String map_key = "";
                 String jsonstr = StringUtil.unzip(message.getPayload());
                 message.clearPayload();
-
+              //  myPrintln("计数=" + jsonstr );
                // myPrintln(jsonstr);
                 JSONObject jsonObject = JSONObject.parseObject(jsonstr);
               //  myPrintln(Thread.currentThread().getName());
@@ -337,6 +366,7 @@ public class CallBackHandlers implements Runnable {
                     ArrayList<Object> tags = new ArrayList<>();
                     // myPrintln("步骤1");
                     for (String key : macs) {
+
                         // myPrintln(key);
                         if (tagsMap.get(key) != null) {
                             Station station = null;
@@ -345,7 +375,8 @@ public class CallBackHandlers implements Runnable {
                                 continue;
                             }
                             JSONObject a = beacons.getJSONObject(key);
-                           //     myPrintln("信标" + a);
+
+                           //
                             {
 
                                 //  beacon.setX();
@@ -356,7 +387,7 @@ public class CallBackHandlers implements Runnable {
                                 tag.setLastTime(a.getLong("updatedAt") / 1000);
                                 tag.setRssi(a.getIntValue("rssi"));
                                 tag.setStation_address(a.getString("nearestGateway"));
-                                myPrintln("基站 MAC="+tag.getStation_address());
+                              //  myPrintln("基站 MAC="+tag.getStation_address());
                                 station = (Station) redisUtil.get(redis_key_locator + tag.getStation_address());
                                 if (station == null) {
                                     //从数据库读取
@@ -395,7 +426,7 @@ public class CallBackHandlers implements Runnable {
                                         DecimalFormat decimalFormat = new DecimalFormat("#.00");
                                         String bts = decimalFormat.format(bt);
                                         tag.setBt(Double.parseDouble(bts));
-                                        myPrintln("AOA 的电量="+tag.getMac()+"==="+bt );
+                                      //  myPrintln("AOA 的电量="+tag.getMac()+"==="+bt );
                                     }
 
                                 }
@@ -441,7 +472,7 @@ public class CallBackHandlers implements Runnable {
                         }
                     }
                     if (!deviceps.isEmpty()) {
-                        myPrintln("AOA需要推送的1");
+                      //  myPrintln("AOA需要推送的1");
                         sendTagPush(deviceps, map_key);
                         sendRelayPush(deviceps, map_key);
                     } else {
@@ -516,11 +547,11 @@ public class CallBackHandlers implements Runnable {
                                  }
                                  if (station.getOnline() != 1 && a.getBoolean("online")) {
                                      Alarm_Sql alarm_sql = new Alarm_Sql();
-                                     alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_online, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
+                                     alarm_sql.addAlarm(alarmMapper, new Alarm(station.getAddress(),station.getName(), Alarm_Type.sos_online, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
                                  }
                                  if (station.getOnline() == 1 && !a.getBoolean("online")) {
                                      Alarm_Sql alarm_sql = new Alarm_Sql();
-                                     alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
+                                     alarm_sql.addAlarm(alarmMapper, new Alarm(station.getAddress(), station.getName(), Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), station.getLast_time()));
                                  }
                                  station.setOnline(a.getBoolean("online") ? 1 : 0);
                                  station.setLast_time(a.getLong("updatedAt") / 1000);
@@ -544,6 +575,7 @@ public class CallBackHandlers implements Runnable {
 
 
 
+
     }
 
     private void hander_person(Tag tag,Station station, Map map, ArrayList<Object> deviceps,int type) {
@@ -562,6 +594,7 @@ public class CallBackHandlers implements Runnable {
 
         person.setOnline(1);
         person.setLasttime(tag.getLastTime());
+        myPrintln("最后时间="+person.getLasttime());
         if (station==null) {
             station = (Station) redisUtil.get(redis_key_locator + tag.getStation_address());
         }
@@ -946,7 +979,7 @@ public class CallBackHandlers implements Runnable {
                     redisUtil.setnoTimeOut(device_check_sos_status_res + tag.getBind_key(),"1");
                     Alarm_Sql alarm_sql = new Alarm_Sql();
                     Devicep devicep=devicePMap.get(tag.getBind_key());
-                    alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_key, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(),devicep.getLasttime()));
+                    alarm_sql.addAlarm(alarmMapper, new Alarm(devicep.getNear_s_address(), devicep.getNear_s_name(), Alarm_Type.sos_key, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(),devicep.getLasttime()));
 
                 }else if(tag.getSos()==0){
                     redisUtil.setnoTimeOut(device_check_sos_status_res + tag.getBind_key(),"0");
@@ -958,7 +991,7 @@ public class CallBackHandlers implements Runnable {
                     Person person=personMap.get(tag.getBind_key());
                     redisUtil.setnoTimeOut(person_check_sos_status_res + tag.getBind_key(),"1");
                     Alarm_Sql alarm_sql = new Alarm_Sql();
-                    alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_key, Alarm_object.person, tag.getMap_key(), 0, "", tag.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key(),person.getLasttime()));
+                    alarm_sql.addAlarm(alarmMapper, new Alarm(person.getStation_mac(), person.getStation_name(), Alarm_Type.sos_key, Alarm_object.person, tag.getMap_key(), 0, "", tag.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key(),person.getLasttime()));
 
                 }else if(tag.getSos()==0){
                     redisUtil.setnoTimeOut(person_check_sos_status_res + tag.getBind_key(),"0");
@@ -974,7 +1007,7 @@ public class CallBackHandlers implements Runnable {
                     redisUtil.setnoTimeOut(device_check_bt_status_res + tag.getBind_key(),"1");
                     Alarm_Sql alarm_sql = new Alarm_Sql();
                     Devicep devicep=devicePMap.get(tag.getBind_key());
-                    alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_bt, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(),devicep.getLasttime()));
+                    alarm_sql.addAlarm(alarmMapper, new Alarm(devicep.getNear_s_address(), devicep.getNear_s_name(), Alarm_Type.sos_bt, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(),devicep.getLasttime()));
                 }else if(tag.getBt()>2.5){
                     redisUtil.setnoTimeOut(device_check_bt_status_res + tag.getBind_key(),"0");
                 }
@@ -987,7 +1020,7 @@ public class CallBackHandlers implements Runnable {
                     redisUtil.setnoTimeOut(person_check_bt_status_res + tag.getBind_key(),"1");
                     Alarm_Sql alarm_sql = new Alarm_Sql();
                     Person person=personMap.get(tag.getBind_key());
-                    alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_bt, Alarm_object.person, tag.getMap_key(), 0, "", tag.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key(),person.getLasttime()));
+                    alarm_sql.addAlarm(alarmMapper, new Alarm(person.getStation_mac(), person.getStation_name(), Alarm_Type.sos_bt, Alarm_object.person, tag.getMap_key(), 0, "", tag.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key(),person.getLasttime()));
                     //  alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_bt, Alarm_object.device, beacon.getMap_key(), 0, "", beacon.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key()));
                 }else if(tag.getBt()>2.5){
                     // myPrintln("保存记录66"+res);
@@ -1005,7 +1038,7 @@ public class CallBackHandlers implements Runnable {
                     redisUtil.setnoTimeOut(device_check_run_status_res + tag.getBind_key(),"1");
                     Alarm_Sql alarm_sql = new Alarm_Sql();
                     Devicep devicep=devicePMap.get(tag.getBind_key());
-                    alarm_sql.addAlarm(alarmMapper, new Alarm(Alarm_Type.sos_run, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(),devicep.getLasttime()));
+                    alarm_sql.addAlarm(alarmMapper, new Alarm(devicep.getNear_s_address(), devicep.getNear_s_name(),  Alarm_Type.sos_run, Alarm_object.device, tag.getMap_key(), 0, "", tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(),devicep.getLasttime()));
                 }else if(tag.getRun()==0){
                     redisUtil.setnoTimeOut(device_check_run_status_res + tag.getBind_key(),"0");
                 }
@@ -1049,7 +1082,7 @@ public class CallBackHandlers implements Runnable {
                        // myPrintln("处理围栏"+status);
                         if (status) {
                             Alarm_Sql alarm_sql = new Alarm_Sql();
-                            alarm_sql.addAlarm(alarmMapper, new Alarm(fence.getFence_type()==FenceType.OUT?Alarm_Type.fence_on_sos:Alarm_Type.fence_out_sos, Alarm_object.device, tag.getMap_key(), fence.getId(), fence.getName(), tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
+                            alarm_sql.addAlarm(alarmMapper, new Alarm(devicep.getNear_s_address(), devicep.getNear_s_name(), fence.getFence_type()==FenceType.OUT?Alarm_Type.fence_on_sos:Alarm_Type.fence_out_sos, Alarm_object.device, tag.getMap_key(), fence.getId(), fence.getName(), tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
                             StringUtil.sendFenceSosDevice(devicep);
                         }
                     }
@@ -1070,7 +1103,7 @@ public class CallBackHandlers implements Runnable {
                         if (group != null) {
                             redisUtil.setnoTimeOut(device_person_group + devicep.getGroup_id(), group);
                         } else {
-                            myPrintln("围栏组异常为空");
+                            myPrintln("围栏组异常为空"+devicep.getGroup_id());
                             return;
                         }
                     }
@@ -1081,7 +1114,7 @@ public class CallBackHandlers implements Runnable {
                             boolean status = hander_fence_detail(tag, pos, fence);
                             if (status) {
                                 Alarm_Sql alarm_sql = new Alarm_Sql();
-                                alarm_sql.addAlarm(alarmMapper, new Alarm(fence.getFence_type() == FenceType.OUT ? Alarm_Type.fence_on_sos : Alarm_Type.fence_out_sos, Alarm_object.device, tag.getMap_key(), fence.getId(), fence.getName(), tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
+                                alarm_sql.addAlarm(alarmMapper, new Alarm(devicep.getNear_s_address(), devicep.getNear_s_name(),fence.getFence_type() == FenceType.OUT ? Alarm_Type.fence_on_sos : Alarm_Type.fence_out_sos, Alarm_object.device, tag.getMap_key(), fence.getId(), fence.getName(), tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
                                 StringUtil.sendFenceSosDevice(devicep);
                             }
                         }
@@ -1109,7 +1142,7 @@ public class CallBackHandlers implements Runnable {
                         //true  表示处罚了围栏
                         if (status) {
                             Alarm_Sql   alarm_sql=new Alarm_Sql();
-                            alarm_sql.addAlarm(alarmMapper, new Alarm(fence.getFence_type()==FenceType.OUT?Alarm_Type.fence_on_sos:Alarm_Type.fence_out_sos, Alarm_object.person, tag.getMap_key(), person.getFence_id(), fenceMap.get(person.getFence_id()).getName(), tag.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key(),person.getLasttime()));
+                            alarm_sql.addAlarm(alarmMapper, new Alarm(person.getStation_mac(), person.getStation_name(),fence.getFence_type()==FenceType.OUT?Alarm_Type.fence_on_sos:Alarm_Type.fence_out_sos, Alarm_object.person, tag.getMap_key(), person.getFence_id(), fenceMap.get(person.getFence_id()).getName(), tag.getBt(), 0, "", person.getName(), person.getIdcard(), person.getProject_key(),person.getLasttime()));
                             StringUtil.sendFenceSosPerson(person);
                         }
                     }
@@ -1140,7 +1173,7 @@ public class CallBackHandlers implements Runnable {
                           if (status) {
                               try {
                                   Alarm_Sql alarm_sql = new Alarm_Sql();
-                                  alarm_sql.addAlarm(alarmMapper, new Alarm(fence.getFence_type() == FenceType.OUT ? Alarm_Type.fence_on_sos : Alarm_Type.fence_out_sos, Alarm_object.device, tag.getMap_key(), fence_id, fence.getName(), tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
+                                  alarm_sql.addAlarm(alarmMapper, new Alarm(devicep.getNear_s_address(), devicep.getNear_s_name(), fence.getFence_type() == FenceType.OUT ? Alarm_Type.fence_on_sos : Alarm_Type.fence_out_sos, Alarm_object.device, tag.getMap_key(), fence_id, fence.getName(), tag.getBt(), 0, "", devicep.getName(), devicep.getSn(), devicep.getProject_key(), devicep.getLasttime()));
                                   StringUtil.sendFenceSosDevice(devicep);
                               }catch (Exception e){
                                   myPrintln("异常="+e.getMessage());

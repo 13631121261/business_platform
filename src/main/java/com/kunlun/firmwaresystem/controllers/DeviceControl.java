@@ -90,26 +90,31 @@ public class DeviceControl {
             if(ids!=null&& !ids.toString().isEmpty()){
                 id.add(Integer.parseInt(ids.toString()));
                 Devicep devicep=devicePMapper.selectById(Integer.parseInt(ids.toString()));
-                if(devicep!=null){
-                    //如果设备有绑定信标，实现解绑操作
-                    if(devicep.getBind_mac()!=null&& !devicep.getBind_mac().isEmpty()){
-                        String bind_mac=devicep.getBind_mac();
-                        Tag_Sql tag_Sql=new Tag_Sql();
-                        List<Tag> tags= tag_Sql.getTagByMac(tagMapper,customer.getUserkey(),customer.getProject_key(),bind_mac);
-                        //如果MAC 相同，有多个标签，那绝对是错误的
-                        if(tags==null||tags.size()>1){
-                            return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",customer.getLang());
-                        }
-                        else{
-                            //信标解绑
-                            Tag tag=tags.get(0);
-                            tag.setBind_key("");
-                            tag.setBind_type(0);
-                            tag.setIsbind(0);
-                            tagMapper.updateById(tag);
-                        }
-
+                myPrintln(devicep.toString());
+                //如果设备有绑定信标，实现解绑操作
+                if(devicep.getBind_mac()!=null&& !devicep.getBind_mac().isEmpty()){
+                    String bind_mac=devicep.getBind_mac();
+                    Tag_Sql tag_Sql=new Tag_Sql();
+                    List<Tag> tags= tag_Sql.getTagByMac(tagMapper,customer.getUserkey(),customer.getProject_key(),bind_mac);
+                    //如果MAC 相同，有多个标签，那绝对是错误的
+                    if(tags==null||tags.size()>1){
+                        return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",customer.getLang());
                     }
+                    else{
+                        //信标解绑
+                        Tag tag=tags.get(0);
+                        tag.setBind_key("");
+                        tag.setBind_type(0);
+                        tag.setIsbind(0);
+                        Tag t=tagsMap.get(tag.getMac());
+                        if (t!=null){
+                            t.setBind_key("");
+                            t.setBind_type(0);
+                            t.setIsbind(0);
+                        }
+                        tagMapper.updateById(tag);
+                    }
+
                 }
             }
         }
@@ -160,6 +165,7 @@ public class DeviceControl {
         try{
             boolean status=deviceP_sql.update(devicePMapper,devicep);
             if (status) {
+                devicePMap.put(devicep.getSn(),devicep);
                 jsonObject=getJsonObj(CODE_OK,"",lang);
             }else
             {

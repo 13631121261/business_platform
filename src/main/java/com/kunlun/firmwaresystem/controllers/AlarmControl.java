@@ -171,6 +171,28 @@ public class AlarmControl {
             return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
         }
     }
+    @RequestMapping(value = "/userApi/Alarm_Device/del", method = RequestMethod.POST, produces = "application/json")
+    public JSONObject deleteAlarm_device(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
+        List<Integer> id=new ArrayList<Integer>();
+
+        for(Object ids:jsonArray){
+            if(ids!=null&&ids.toString().length()>0){
+                id.add(Integer.parseInt(ids.toString()));
+            }
+        }
+        if(id.size()>0){
+            int status = alarmMapper.deleteBatchIds(id);
+            if(status!=-1){
+                return JsonConfig.getJsonObj(CODE_OK,null,lang);
+            }else{
+                return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);
+            }
+        }else{
+            return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
+        }
+    }
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);

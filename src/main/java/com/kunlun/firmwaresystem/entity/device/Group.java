@@ -83,7 +83,7 @@ public class Group {
     }
 
     public void setTag_names(String[] tag_names) {
-        myPrintln("tag_names:" + Arrays.toString(tag_names));
+      //  myPrintln("tag_names:" + Arrays.toString(tag_names));
         this.tag_names = tag_names;
         if(tag_names!=null&&tag_names.length>0){
             String name="";

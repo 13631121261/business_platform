@@ -47,10 +47,10 @@ public class Alarm_Sql {
     }
     public  PageAlarm pageAlarm_getHistory(AlarmMapper alarmMapper,String sn,long start_time,long stop_time,String project_key,int page, int limt) {
 
-        QueryWrapper<Alarm > queryWrapper = Wrappers.query();
+        LambdaQueryWrapper<Alarm > queryWrapper = Wrappers.lambdaQuery();
         Page<Alarm> userPage = new Page<>(page, limt);
         IPage<Alarm> userIPage;
-        queryWrapper.eq("project_key",project_key).ge("create_time",start_time).le("create_time",stop_time).eq("sn",sn);
+        queryWrapper.eq(Alarm::getProject_key,project_key).ge(Alarm::getCreate_time,start_time).le(Alarm::getCreate_time, stop_time).eq(Alarm::getSn ,sn).orderByDesc(true,Alarm::getId);
         userIPage = alarmMapper.selectPage(userPage, queryWrapper);
         PageAlarm pageAlarm = new PageAlarm(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageAlarm;

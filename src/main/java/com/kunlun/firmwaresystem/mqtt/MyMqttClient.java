@@ -125,6 +125,7 @@ public class MyMqttClient {
             }*/
             client.subscribe("location_engine",0);
             client.subscribe("/cle/mqtt",0);
+           // client.subscribe("GwData12",0);
         //    client.subscribe("GwData",0);
            // client.subscribe("AlphaRsp",0);
            // client.subscribe("connected",0);

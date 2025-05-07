@@ -326,7 +326,7 @@ public class Devicep {
     }
 
     public void setTagfs_id(String[] tagf_ids) {
-        myPrintln("tag_names:" + Arrays.toString(tagf_ids));
+        //myPrintln("tag_names:" + Arrays.toString(tagf_ids));
         this.tagfs_id=tagf_ids;
         if(tagf_ids!=null&&tagf_ids.length>0){
             String name="";

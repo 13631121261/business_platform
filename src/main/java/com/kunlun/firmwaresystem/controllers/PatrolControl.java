@@ -212,7 +212,7 @@ public class PatrolControl {
                     int person_count =0;
                 for (String idcard:personMap.keySet()){
                     Person person = personMap.get(idcard);
-                    if (person.getPatrol_list_id().contains(patrol_list.getId()+"")){
+                    if (person.getPatrol_list_id()!=null&&person.getPatrol_list_id().contains(patrol_list.getId()+"")){
                         person_count++;
                     }
                     patrol_list.setPerson_count(person_count);

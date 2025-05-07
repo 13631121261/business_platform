@@ -206,6 +206,7 @@ public class HistoryControl {
                 Map m=getMap(history.getMap_key());
                 if (m != null) {
                     history.setMap_name(m.getName());
+                    history.setProportion(m.getProportion());
                     history.setMap_data(m.getData());
                     histories.add(history);
                 }
@@ -278,6 +279,15 @@ public class HistoryControl {
         private String sn;
         private long sum;
         private  List<History> list;
+        private double proportion;
+
+        public void setProportion(double proportion) {
+            this.proportion = proportion;
+        }
+
+        public double getProportion() {
+            return proportion;
+        }
 
         public void setId(int id) {
             this.id = id;
