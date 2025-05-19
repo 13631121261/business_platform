@@ -91,7 +91,7 @@ public class TagControl {
         List<Tag> tagList = tag_sql.getunAllTag(tagMapper,customer.getUserkey(),customer.getProject_key());
         JSONObject jsonObject = new JSONObject();
         if(lang!=null&&lang.equals("en")){
-            tagList.add(0,new Tag("UnBind"));
+            tagList.add(0,new Tag("Unbound"));
         }
         else{
             tagList.add(0,new Tag("不绑定标签"));

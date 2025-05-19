@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.support.odps.udf.CodecCheck;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.kunlun.firmwaresystem.MyWebSocket;
+import com.kunlun.firmwaresystem.WebSocket_Registration;
 import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.Map;
@@ -18,6 +20,7 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.DataFormatException;
@@ -53,7 +56,7 @@ public class CallBackHandlers implements Runnable {
         // subscribe后得到的消息会执行到这里面
 
         if(topic.equals("location_engine")){
-        //    myPrintln("log=订阅收到消息="+new String(message.getPayload()));
+            //myPrintln("log=订阅收到消息="+new String(message.getPayload()));
             if (message.getPayload()==null || message.getPayload().length==0){
                 return;
             }
@@ -76,13 +79,13 @@ public class CallBackHandlers implements Runnable {
 
                     if (station == null) {
                        // 从数据库读取
-                        myPrintln("从数据库读取");
+                      //  myPrintln("从数据库读取");
                         Station station1= Station_sql.getStationByMac(StationMapper,pushDevice.getAddress());
                         if (station1!=null){
                             station=station1;
                         }
                         else{
-                            myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
+                         //   myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
                             return;
                         }
                     }
@@ -110,7 +113,7 @@ public class CallBackHandlers implements Runnable {
                         station.setX(pushDevice.getX());
                         station.setY(pushDevice.getY());
                         station.setOnline(1);
-                        myPrintln("设置基站坐标"+station.getAddress()+"   X="+station.getX()+"   Y="+station.getY());
+                      //  myPrintln("设置基站坐标"+station.getAddress()+"   X="+station.getX()+"   Y="+station.getY());
                         //此平台原来是离线，有推送信息
 
                     }
@@ -124,7 +127,7 @@ public class CallBackHandlers implements Runnable {
                     }
                     else if (pushDevice.getPush_type().equals("offline")){
                         station.setLast_time(pushDevice.getLast_time());
-                        myPrintln("收到离线"+json_str);
+                       // myPrintln("收到离线"+json_str);
                        if (station.getOnline()==1){
                             Alarm_Sql alarm_sql = new Alarm_Sql();
                             alarm_sql.addAlarm(alarmMapper, new Alarm(station.getAddress(), station.getName(), Alarm_Type.sos_offline, Alarm_object.locator, station.getMap_key(), 0, "", 0, 0, "", station.getName(), station.getAddress(), station.getProject_key(), System.currentTimeMillis()/1000));
@@ -137,13 +140,32 @@ public class CallBackHandlers implements Runnable {
                     break;
                 case "beacon":
                 case "kunlun_card":
+                case "bracelet":
+                case "OFcat1":
+                  //  myPrintln(pushDevice.toString());
                     if(pushDevice.getPush_type().equals("location")){
+                      //  myPrintln("dddddddd"+pushDevice.toString());
                         tag = tagsMap.get(pushDevice.getAddress());
                         if (tag == null) {
                             break;
                         }else{
-                            tag.setX(pushDevice.getX());
-                            tag.setY(pushDevice.getY());
+                            if(pushDevice.getDevice_type().equals("kunlun_card")||pushDevice.getDevice_type().equals("OFcat1")){
+                                tag.setRun(pushDevice.getRun());
+                                tag.setSos(pushDevice.getSos());
+                                //工卡运动时更新位置坐标
+                                if (pushDevice.getRun()==1){
+                                    tag.setX(pushDevice.getX());
+                                    tag.setY(pushDevice.getY());
+
+                                  //  myPrintln("更新位置"+tag.getX()+"   Y="+tag.getY());
+                                }else{
+                                   // myPrintln("不更新位置");
+                                }
+                            }else{
+                                tag.setX(pushDevice.getX());
+                                tag.setY(pushDevice.getY());
+                            }
+
                             tag.setMap_key(pushDevice.getMap_key());
                             tag.setStation_address(pushDevice.getGateway_address());
                             tag.setOnline(1);
@@ -168,15 +190,56 @@ public class CallBackHandlers implements Runnable {
                                 hande_device(tag, deviceps, map,0);
                             }
                             else if (tag.getBind_type() == 2) {
-                                hander_person(tag,null, map, deviceps,0);
+                                hander_person(tag,null, map, deviceps,0,1);
                             }
                             if (!deviceps.isEmpty()) {
-
                                 sendTagPush(deviceps, tag.getMap_key());
                                 sendRelayPush(deviceps, tag.getMap_key());
                             }
                         }
                     }
+                    else if(pushDevice.getPush_type().equals("status")){
+                        {
+                            // myPrintln("dddddddd"+pushDevice.toString());
+                            tag = tagsMap.get(pushDevice.getAddress());
+                            if (tag == null) {
+                                break;
+                            }else{
+                                tag.setRun(pushDevice.getRun());
+                                tag.setSos(pushDevice.getSos());
+                                tag.setMap_key(pushDevice.getMap_key());
+                                tag.setStation_address(pushDevice.getGateway_address());
+                                tag.setOnline(1);
+                                tag.setLastTime(pushDevice.getLast_time());
+                            }
+                            if (tag.getIsbind() == 1 && tag.getBind_key() != null) {
+                                ArrayList<Object> deviceps = new ArrayList<>();
+                                Map map = (Map) redisUtil.get(redis_id_map +tag.getMap_key());
+                                if (map == null) {
+                                    Map_Sql map_sql = new Map_Sql();
+                                    map= map_sql.getMapByMapkey(mapMapper,tag.getMap_key());
+                                    if (map != null) {
+                                        map.setData("");
+                                        redisUtil.setnoTimeOut(redis_id_map +tag.getMap_key(),map);
+                                    }else{
+                                        myPrintln(pushDevice.toString());
+                                        myPrintln("status+地图是空的"+tag.getMap_key());
+                                        //return;
+                                    }
+                                }
+                                if (tag.getBind_type() == 1) {
+                                    //myPrintln("开始处理");
+                                    hande_device(tag, deviceps, map,0);
+                                }
+                                else if (tag.getBind_type() == 2) {
+                                    hander_person(tag,null, map, deviceps,0,2);
+
+                                }
+
+                            }
+                        }
+
+                }
                     else if(pushDevice.getPush_type().equals("online")){
                             Alarm_Sql alarm_sql = new Alarm_Sql();
                             Alarm  alarm=new Alarm();
@@ -195,13 +258,13 @@ public class CallBackHandlers implements Runnable {
 
                                             if (station == null) {
                                                 // 从数据库读取
-                                                myPrintln("从数据库读取");
+                                           //     myPrintln("从数据库读取");
                                                 Station station1= Station_sql.getStationByMac(StationMapper,pushDevice.getGateway_address());
                                                 if (station1!=null){
                                                     station=station1;
                                                 }
                                                 else{
-                                                    myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
+                                                   // myPrintln("不存在于系统的蓝牙网关基站，不添加，直接返回");
                                                     return;
                                                 }
                                             }
@@ -466,7 +529,7 @@ public class CallBackHandlers implements Runnable {
                                 }
                                 else if (tag.getBind_type() == 2) {
                                  //   myPrintln("开始处理"+station);
-                                    hander_person(tag, station, map, deviceps,1);
+                                    hander_person(tag, station, map, deviceps,1,1);
                                 }
                             }
                         }
@@ -578,23 +641,25 @@ public class CallBackHandlers implements Runnable {
 
     }
 
-    private void hander_person(Tag tag,Station station, Map map, ArrayList<Object> deviceps,int type) {
+    private void hander_person(Tag tag,Station station, Map map, ArrayList<Object> deviceps,int type,int keep_out) {
 
         Person person = personMap.get(tag.getBind_key());
-
-        person.setX(tag.getX());
-        person.setY(tag.getY());
+        if (keep_out == 1) {
+            person.setX(tag.getX());
+            person.setY(tag.getY());
+        }
+        person.setSos(tag.getSos());
         person.setOnline(1);
         if (map != null) {
             person.setMap_key(map.getMap_key());
             person.setMap_name(map.getName());
         }
+        person.setRun(tag.getRun());
 
         person.setStation_mac(tag.getStation_address());
-
         person.setOnline(1);
         person.setLasttime(tag.getLastTime());
-        myPrintln("最后时间="+person.getLasttime());
+    //   myPrintln("最后时间="+person.getLasttime());
         if (station==null) {
             station = (Station) redisUtil.get(redis_key_locator + tag.getStation_address());
         }
@@ -603,16 +668,12 @@ public class CallBackHandlers implements Runnable {
             //从数据库读取
             Station station1=  Station_sql.getStationByMac(StationMapper,tag.getStation_address());
             if (station1!=null){
-                //     myPrintln("shwai");
                 station=station1;
                 person.setStation_name(station.getName());
             }
-
         }else{
             person.setStation_name(station.getName());
         }
-
-
         deviceps.add(person);
         if (person.getMap_key() != null && !person.getMap_key().isEmpty()) {
             History history = new History();
@@ -626,11 +687,9 @@ public class CallBackHandlers implements Runnable {
             history.setName(person.getName());
             history_sql.addHistory(historyMapper, history);
         }
-
         if (map != null) {
             handleFence(tag, map.getProportion());
         }
-
         String patrol_id = person.getPatrol_list_id();
         //初始化，需要获取数据库信息，有绑定路线但是没有路线详情
         if (patrol_id != null && person.getPatrol_lists() == null) {
@@ -692,7 +751,6 @@ public class CallBackHandlers implements Runnable {
                             patrol_lists.add(patrol_list);
                         }
                     }
-                    //
                 }
                 person.setPatrol_lists(patrol_lists);
             }
@@ -737,7 +795,172 @@ public class CallBackHandlers implements Runnable {
                 }
             }
         }
+     //   myPrintln("person="+person);
 
+        if(registration_map.get(person.getProject_key()) != null&&registration_map.get(person.getProject_key()).isRun()) {
+            registration_map.get(person.getProject_key()).addPerson(person);
+            myPrintln("h获取 websocket");
+            try {
+                WebSocket_Registration webSocketRegistration = WebSocket_Registration.getWebSocket();
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("data",  person);
+                myPrintln("person" + person);
+                myPrintln("h获取 准备发送" + jsonObject);
+                webSocketRegistration.sendData(person.getProject_key(), jsonObject.toJSONString());
+            }catch (Exception e){
+                myPrintln("异常="+e.toString());
+            }
+        }else{
+            myPrintln("排除在外的人员"+person.getIdcard());
+        }
+
+        Check_sheet checkSheet = check_sheetMap.get(person.getProject_key());
+        //有需要做人员静止或者离开检测的需求
+        if (checkSheet != null&&checkSheet.isTime_out_set_status())
+        {
+
+            List<String[]> time_list=new ArrayList<>();
+            if (checkSheet.getTime_set() != null) {
+                time_list.addAll(Arrays.asList(checkSheet.getTime_set()));
+            }
+            for (int i = 0; i < time_list.size(); i++) {
+                myPrintln("时间段="+time_list.get(i)[0]+"-"+time_list.get(i)[1]);
+            }
+
+            //在不在检测的时间范围内
+            boolean status=isTimeInRanges(person.getLasttime(),time_list);
+            myPrintln("人员在线时间="+person.getLasttime());
+            myPrintln("是否在时间段范围="+status);
+            if (status) {
+                myPrintln("是否静止或者运动="+person.getRun());
+                //在时间范围。并且为静止，触发判断
+                if(person.getRun()==0){
+                   String  keep=(String) redisUtil.get(redis_key_person_run_result+person.getIdcard());
+                   if (keep != null && !keep.isEmpty()) {
+                       if (keep.equals("1")){
+                           //
+                           myPrintln("静止结果未到超时时间");
+                           return;
+                       }
+                   }
+                    String time1= (String) redisUtil.get(redis_key_person_run+person.getIdcard());
+                    long time=0;
+                    if (time1 != null&& !time1.isEmpty()) {
+
+                        time= Long.parseLong(time1);
+                    }
+                    //第一次静止，前面没有保存
+                    myPrintln(person.getIdcard()    + "上次保存时间="+time);
+                    if (time==0){
+                        //静止的时候，把超出范围的判断清0
+                        redisUtil.setnoTimeOut(redis_key_person_out+person.getIdcard(), 0+"");
+                        //设置第一次保存
+                        myPrintln("设置第一次保存="+person.getRun());
+                        redisUtil.setnoTimeOut(redis_key_person_run+person.getIdcard(), ""+person.getLasttime());
+                    }
+                    //否则，拿出时间，与当前时间对比
+                    else{
+                        //计算时间差，判断是否超过系统设置的时间阈值
+                      long time_c=  person.getLasttime()-time;
+                        myPrintln("阈值时间="+checkSheet.getTime_static_out());
+                        myPrintln("人员在线时间="+person.getLasttime());
+                        myPrintln("时间差值="+time_c);
+                      if (time_c>=checkSheet.getTime_static_out()){
+                          //超过时间，需要触发静止预警
+                          Alarm_Sql alarm_sql=new Alarm_Sql();
+                          Alarm alarm=new Alarm();
+                          alarm.setAlarm_object(Alarm_object.person);
+                          alarm.setAlarm_type(Alarm_Type.keep_static);
+                          alarm.setName(person.getName());
+                          alarm.setSn(person.getIdcard());
+                          alarm.setStation_address(person.getStation_mac());
+                          alarm.setStation_name(person.getStation_name());
+                          alarm.setMap_key(person.getMap_key());
+                          alarm.setProject_key(person.getProject_key());
+                          alarm.setCreate_time(System.currentTimeMillis()/1000);
+                          alarm_sql.addAlarm(alarmMapper, alarm);
+                          redisUtil.setnoTimeOut(redis_key_person_run+person.getIdcard(), 0+"");
+                          redisUtil.set(redis_key_person_run_result+person.getIdcard(), "1",checkSheet.getTime_keep());
+                          JSONObject jsonObject = new JSONObject();
+                          jsonObject.put("data",  person);
+                          jsonObject.put("type","keep_static");
+                          MyWebSocket.getWebSocket().sendData(person.getProject_key(),jsonObject.toJSONString());
+                      }
+                    }
+                }else{
+                    //把静止的判断时间清理
+                    redisUtil.setnoTimeOut(redis_key_person_run+person.getIdcard(), 0+"");
+                    //说明是没有计算位置传送
+                    //2 表示是由定位引擎推送过来的只限于 OFCAT1工卡的数据，没有定位 xy
+                          if(keep_out==2){
+                              String  keep=(String) redisUtil.get(redis_key_person_out_result+person.getIdcard());
+                              if (keep != null && !keep.isEmpty()) {
+                                  if (keep.equals("1")){
+                                      //
+                                      myPrintln("越界的---结果未到超时时间");
+                                      return;
+                                  }
+                              }
+
+                              String time1= (String) redisUtil.get(redis_key_person_out+person.getIdcard());
+                              long time=0;
+                              if (time1 != null&& !time1.isEmpty()) {
+                                  time= Long.parseLong(time1);
+                              }
+                              if (time==0){
+                                  //静止的时候，把超出范围的判断清0
+                                  //redisUtil.setnoTimeOut(redis_key_person_run+person.getIdcard(), 0+"");
+                                  //设置第一次保存
+                                  myPrintln("越界的设置第一次保存="+person.getRun());
+                                  redisUtil.setnoTimeOut(redis_key_person_out+person.getIdcard(), ""+person.getLasttime());
+                              }
+                              //否则，拿出时间，与当前时间对比
+                              else{
+                                  //计算时间差，判断是否超过系统设置的时间阈值
+                                  long time_c=  person.getLasttime()-time;
+                                  myPrintln("越界的阈值时间="+checkSheet.getTime_keep_out());
+                                  myPrintln("越界的人员在线时间="+person.getLasttime());
+                                  myPrintln("越界的时间差值="+time_c);
+                                  if (time_c>=checkSheet.getTime_keep_out()){
+                                      //超过时间，需要触发静止预警
+                                      Alarm_Sql alarm_sql=new Alarm_Sql();
+                                      Alarm alarm=new Alarm();
+                                      alarm.setAlarm_object(Alarm_object.person);
+                                      alarm.setAlarm_type(Alarm_Type.keep_out);
+                                      alarm.setName(person.getName());
+                                      alarm.setSn(person.getIdcard());
+                                      alarm.setStation_address(person.getStation_mac());
+                                      alarm.setStation_name(person.getStation_name());
+                                      alarm.setMap_key(person.getMap_key());
+                                      alarm.setProject_key(person.getProject_key());
+                                      alarm.setCreate_time(System.currentTimeMillis()/1000);
+                                      alarm_sql.addAlarm(alarmMapper, alarm);
+                                      redisUtil.setnoTimeOut(redis_key_person_out+person.getIdcard(), 0+"");
+                                      redisUtil.set(redis_key_person_out_result+person.getIdcard(), "1",checkSheet.getTime_keep());
+                                      JSONObject jsonObject = new JSONObject();
+                                      jsonObject.put("data",  person);
+                                      jsonObject.put("type","keep_out");
+                                      MyWebSocket.getWebSocket().sendData(person.getProject_key(),jsonObject.toJSONString());
+                                  }
+                              }
+                          }
+                          else{
+                              redisUtil.setnoTimeOut(redis_key_person_out+person.getIdcard(), 0+"");
+                          }
+                    //出于运动状态
+                    //需要判断是否运动有包含基站定位
+                    //如果没有，则有需要触发超出定位地图的报警
+
+                }
+            }
+            //如果不在检测时间范围，那就把时间清掉，避免冲突
+            else {
+                redisUtil.setnoTimeOut(redis_key_person_run+person.getIdcard(), 0+"");
+                redisUtil.setnoTimeOut(redis_key_person_out+person.getIdcard(), 0+"");
+            }
+
+
+        }
 
 //0表示该标签是非 AOA 标签，只有 AOA 标签才会继续执行
         if (type == 1) {
@@ -746,6 +969,37 @@ public class CallBackHandlers implements Runnable {
         }
 
 
+    }
+    public static boolean isTimeInRanges(long timestamp, List<String[]> timeRanges) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        String currentTime = sdf.format(new Date(timestamp*1000)); // 格式化为 "HH:mm"
+        myPrintln("转换后的时间="+currentTime);
+        for (String[] range : timeRanges) {
+            String startTime = range[0].substring(0, 5); // 取 "HH:mm" 部分
+            String endTime = range[1].substring(0, 5);   // 取 "HH:mm" 部分
+
+            if (isTimeBetween(currentTime, startTime, endTime)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private static boolean isTimeBetween(String time, String startTime, String endTime) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+            Date current = sdf.parse(time);
+            Date start = sdf.parse(startTime);
+            Date end = sdf.parse(endTime);
+
+            // 处理跨天的情况（如 23:00 - 01:00）
+            if (end.before(start)) {
+                return !current.before(start) || !current.after(end);
+            } else {
+                return !current.before(start) && !current.after(end);
+            }
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("时间格式无效，必须是 HH:mm", e);
+        }
     }
     public static int checkPointLocation(double x, double y, String[][] polygonVertices, double maxDistance) {
         // 1. 转换输入数据
@@ -891,7 +1145,9 @@ public class CallBackHandlers implements Runnable {
             return;
         }
         devicep.setMap_key(tag.getMap_key());
-        devicep.setMap_name(map.getName());
+        if (map!=null) {
+            devicep.setMap_name(map.getName());
+        }
         devicep.setX(tag.getX());
         devicep.setY(tag.getY());
         devicep.setLasttime(tag.getLastTime());
@@ -932,8 +1188,10 @@ public class CallBackHandlers implements Runnable {
         }
 
 
+        if (map!=null) {
+            handleFence(tag, map.getProportion());
+        }
 
-        handleFence(tag, map.getProportion());
         if (type==1){
             handleSos_AOA(tag);
             handleBt_AOA(tag);

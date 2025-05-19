@@ -24,21 +24,24 @@ public class SystemControl {
     private RedisUtils redisUtil;
     @Autowired
     private CheckSheetMapper checkSheetMapper;
-    @RequestMapping(value = "/userApi/SystemSet", method = RequestMethod.POST, produces = "text/plain")
-    public String SystemSet(HttpServletRequest request, @RequestBody JSONObject json) {
+    @RequestMapping(value = "/userApi/SystemSet", method = RequestMethod.POST, produces = "application/json")
+    public JSONObject SystemSet(HttpServletRequest request, @RequestBody JSONObject json) {
         Customer customer=getCustomer(request);
         myPrintln(json.toString());
         String jsons=json.toString();
-        jsons=jsons.replaceAll("true","1");
-        jsons=jsons.replaceAll("false","0");
+       // jsons=jsons.replaceAll("true","1");
+       // jsons=jsons.replaceAll("false","0");
         json=JSONObject.parseObject(jsons);
         Check_sheet check_sheet=new Gson().fromJson(json.toString(),new TypeToken<Check_sheet>(){}.getType());
         myPrintln(check_sheet.toString());
         check_sheet.setProject_key(customer.getProject_key());
         check_sheet.setUserkey(customer.getUserkey());
-        String jsonObject= JsonConfig.getJson(JsonConfig.CODE_OK,"",customer.getLang());
+        check_sheet.setTime_out_set();
+        JSONObject jsonObject= JsonConfig.getJsonObj(JsonConfig.CODE_OK,"",customer.getLang());
         CheckSheet_Sql checkSheet_sql=new CheckSheet_Sql();
         checkSheet_sql.update(checkSheetMapper,check_sheet);
+        check_sheetMap=checkSheet_sql.getCheckSheet(checkSheetMapper);
+        myPrintln(check_sheet.toString());
         /*new Thread(new Runnable() {
             @Override
             public void run() {
@@ -79,7 +82,18 @@ public class SystemControl {
         jsonObject.put("mqtt_status",status);*/
         return jsonObject;
     }
+    //设置静止报警以及超出定位范围的报警时间规则
+    @RequestMapping(value = "/userApi/setTimeOut", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject setTimeOut(HttpServletRequest request) {
+        Customer customer=getCustomer(request);
 
+        Check_sheet check_sheet= check_sheetMap.get(customer.getProject_key());
+
+        JSONObject jsonObject= JsonConfig.getJsonObj(JsonConfig.CODE_OK,check_sheet,customer.getLang());
+      /* boolean status=  myMqttClientMap.get(customer.getProject_key()).getStatus();
+        jsonObject.put("mqtt_status",status);*/
+        return jsonObject;
+    }
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);

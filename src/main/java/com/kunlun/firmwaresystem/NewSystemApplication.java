@@ -54,7 +54,7 @@ public class NewSystemApplication {
     public static final String url="http://172.17.73.62:808/download";*/
 
 
-
+    public static HashMap<String,Registration> registration_map = new HashMap<>();
     //信号在1米时的值暂定为-51；
     public static double rssi_At_1m = 47;
     public static RedisUtils redisUtil;
@@ -295,7 +295,8 @@ public class NewSystemApplication {
         webSocket.start();
         MyWebSocketTag webSockettag = MyWebSocketTag.getWebSocket();
         webSockettag.start();
-
+        WebSocket_Registration webSocketRegistration = WebSocket_Registration.getWebSocket();
+        webSocketRegistration.start();
 
     }
     @Bean

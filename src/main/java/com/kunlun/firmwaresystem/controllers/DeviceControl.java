@@ -357,7 +357,7 @@ public class DeviceControl {
             }
             myPrintln("111mac="+mac);
             //原来没有绑定，现在也不需要绑定
-            if ((mac.equals("不绑定标签") || mac.equals("UnBind")) &&devicep.getBind_mac()!=null&& devicep.getBind_mac().isEmpty()) {
+            if ((mac.equals("不绑定标签") || mac.equals("Unbound")) &&devicep.getBind_mac()!=null&& devicep.getBind_mac().isEmpty()) {
                 //deviceP_sql.update(devicePMapper,devicep);
                 bind_fence(fence_type,f_g_id,devicep);
                 tagsMap=tag_sql.getAllTag(tagMapper);
@@ -384,7 +384,7 @@ public class DeviceControl {
                     devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
                 }
             }
-            if(!mac.equals("不绑定标签")&&!mac.equals("UnBind")){
+            if(!mac.equals("不绑定标签")&&!mac.equals("Unbound")){
                 myPrintln("mac="+mac);
                 try{
                     List<Tag> tagList = tag_sql.getTagByMac(tagMapper,customer.getUserkey(),customer.getProject_key(),mac);

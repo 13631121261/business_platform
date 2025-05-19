@@ -69,6 +69,7 @@ mqtt:
     host: 192.168.1.10
     subTopic: location_engine
 
-log-impl: org.apache.ibatis.logging.stdout.StdOutImpl /org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+#log-impl: org.apache.ibatis.logging.stdout.StdOutImpl /org.apache.ibatis.logging.nologging.NoLoggingImpl
 
 

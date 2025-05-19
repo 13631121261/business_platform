@@ -218,7 +218,7 @@ public class FenceControl {
         List<Fence> fences=fence_sql.getAllFence(fenceMapper,customer.getUserkey(),customer.getProject_key());
         Fence fence=new Fence();
         if(lang!=null&&lang.equals("en")){
-            fence.setName("UnBind");
+            fence.setName("Unbound");
         }else {
             fence.setName("不绑定围栏");
         }

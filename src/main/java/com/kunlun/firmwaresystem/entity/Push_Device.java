@@ -14,6 +14,24 @@ public class Push_Device {
     String device_type;
     long last_time;
     long time=0;
+    int run=0;
+    int sos=0;
+
+    public void setSos(int sos) {
+        this.sos = sos;
+    }
+
+    public int getSos() {
+        return sos;
+    }
+
+    public void setRun(int run) {
+        this.run = run;
+    }
+
+    public int getRun() {
+        return run;
+    }
 
     public void setMap_key(String map_key) {
         this.map_key = map_key;
@@ -116,6 +134,8 @@ public class Push_Device {
                 ", push_type='" + push_type + '\'' +
                 ", device_type='" + device_type + '\'' +
                 ", last_time=" + last_time +
+                ", time=" + time +
+                ", run=" + run +
                 '}';
     }
 }

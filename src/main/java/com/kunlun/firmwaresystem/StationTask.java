@@ -35,7 +35,7 @@ public class StationTask {
     public void execute() throws Exception
     {
         Alarm_Sql alarm_sql = new Alarm_Sql();
-        myPrintln("一分钟一次");
+        //myPrintln("一分钟一次");
         long start = System.currentTimeMillis()/1000;
        for (Devicep devicep : devicePMap.values()) {
            try {

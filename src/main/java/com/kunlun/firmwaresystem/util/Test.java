@@ -1,5 +1,7 @@
 package com.kunlun.firmwaresystem.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
@@ -11,6 +13,10 @@ public class Test {
         for (String id : ids) {
             myPrintln(id);
         }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss sss");
+        String currentTime = sdf.format(new Date(1747562614L *1000)); // 格式化为 "HH:mm"
+        myPrintln("转换后的时间="+currentTime);
        /* Scanner sr = new Scanner(System.in);
 
         int n = sr.nextInt();

@@ -42,13 +42,13 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
          //   checkBeacon();
             checkPerson();
             checkDevice();
-            System.out.println("30秒清空一次数据"+time);
+         //   System.out.println("30秒清空一次数据"+time);
             deleteCache();
             if(time%3==0){
                 //for(String key:myMqttClientMap.keySet()){
                   // MyMqttClient client= myMqttClientMap.get(key);
                    //if (client != null) {
-                System.out.println("66666"+mqttClient.getStatus());
+              //  System.out.println("66666"+mqttClient.getStatus());
                        if (!mqttClient.getStatus()){
                            myPrintln("真实重连 MQTT  定时检测");
                            new Thread(new Runnable() {
@@ -92,7 +92,7 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
                 }
             }
             for(String project_key:devStatusMap.keySet()){
-                myPrintln("循环="+devStatusMap.get(project_key));
+             //   myPrintln("循环="+devStatusMap.get(project_key));
                 redisUtil.set(redis_key_locator_project+project_key,devStatusMap.get(project_key));
             }
         }

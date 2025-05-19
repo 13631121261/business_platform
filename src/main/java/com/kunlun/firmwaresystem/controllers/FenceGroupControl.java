@@ -241,7 +241,7 @@ public class FenceGroupControl {
         List<Fence_group> fences=fence_sql.getAll(fenceGroupMapper,customer.getProject_key());
         Fence_group fence=new Fence_group();
         if(lang!=null&&lang.equals("en")){
-            fence.setName("UnBind");
+            fence.setName("Unbound");
         }else {
             fence.setName("不绑定围栏组");
         }

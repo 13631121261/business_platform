@@ -111,6 +111,16 @@ public class Constant {
     public static final String ConnectState_searching = "searching";
     public static final String ConnectState_redy = "redy";
     public static final String ConnectState_sta_conn_params_updated = "sta_conn_params_updated";
+    //判断人员的静止或者超出定位地图
+    public static final String redis_key_person_run="redis_key_person_run";
+    //下一次判断的超时时间
+    public static final String redis_key_person_run_result="redis_key_person_run_result";
+    public static final String redis_key_person_out_result="redis_key_person_out_result";
+    //人员上一次位置的更新时间
+    public static final String redis_key_person_location="redis_key_person_location";
+
+    //判断人员的静止或者超出定位地图
+    public static final String redis_key_person_out="redis_key_person_out";
   /*  public static final String fence_check_device="b_fence_check_device";
     public static final String fence_check_device_res="b_fence_check_device_res";*/
     public static final String fence_check_object="fence_check_object";

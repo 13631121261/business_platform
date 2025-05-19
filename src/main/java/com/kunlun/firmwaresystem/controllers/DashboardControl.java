@@ -118,7 +118,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
         String lang=customer.getLang();
         DevStatus devStatus=(DevStatus) redisUtil.get(redis_key_person_project+customer.getProject_key());
         if(devStatus!=null){
-            myPrintln(devStatus.toString());
+         //   myPrintln(devStatus.toString());
         }
         return   getJsonObj(CODE_OK,devStatus,lang);
     }
@@ -128,7 +128,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
         String lang=customer.getLang();
         DevStatus devStatus=(DevStatus) redisUtil.get(redis_key_locator_project+customer.getProject_key());
         if(devStatus!=null){
-            myPrintln(devStatus.toString());
+          //  myPrintln(devStatus.toString());
         }
         return   getJsonObj(CODE_OK,devStatus,lang);
     }
@@ -280,7 +280,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
             t.setName(map.getName());
             t.setOff(state[1]);
             t.setOn(state[0]);
-            myPrintln(t.toString());
+         //   myPrintln(t.toString());
             map_device.add(t);
 
         }
@@ -288,7 +288,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
         jsonObject.put("code", 1);
         jsonObject.put("msg", "ok");
         jsonObject.put("data", map_device);
-        myPrintln(jsonObject.toString());
+    //    myPrintln(jsonObject.toString());
         return  jsonObject;
     }
     private Customer getCustomer(HttpServletRequest request) {

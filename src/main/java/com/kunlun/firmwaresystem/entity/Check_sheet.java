@@ -1,6 +1,9 @@
 package com.kunlun.firmwaresystem.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 public class Check_sheet {
@@ -35,8 +38,111 @@ public class Check_sheet {
     int     low_p;
     int detach;
     int     move;
+    @TableField(exist = false)
+    String[][] time_set;
+    @TableField(exist = false)
+    int time_keep_out;
+    @TableField(exist = false)
+    int time_static_out;
+    String time_out_set;
+    boolean time_out_set_status;
+    int time_keep;
     public Check_sheet(){
 
+    }
+
+    public void setTime_keep(int time_keep) {
+        this.time_keep = time_keep;
+    }
+
+    public int getTime_keep() {
+        return time_keep;
+    }
+
+    public void setTime_out_set_status(boolean time_out_set_status) {
+        this.time_out_set_status = time_out_set_status;
+    }
+
+    public boolean isTime_out_set_status() {
+        return time_out_set_status;
+    }
+
+    public void setTime_out_set(String time_out_set) {
+        this.time_out_set = time_out_set;
+    }
+
+    public void setTime_out_set() {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < time_set.length; i++) {
+            if (time_set[i]!=null&&time_set[i].length > 0) {
+                if (i > 0) {
+                    sb.append(" ");
+                }
+                sb.append(time_set[i][0]).append(",").append(time_set[i][1]);
+            }
+
+
+        }
+
+        this.time_out_set= time_static_out+"-"+time_keep_out+"-"+ sb;
+
+    }
+    public String getTime_out_set() {
+        return time_out_set;
+    }
+
+    public void setTime_keep_out(int time_keep_out) {
+        this.time_keep_out = time_keep_out;
+    }
+
+    public void setTime_static_out(int time_static_out) {
+        this.time_static_out = time_static_out;
+    }
+
+    public int getTime_keep_out() {
+        return time_keep_out;
+    }
+
+    public int getTime_static_out() {
+        return time_static_out;
+    }
+
+    public String[][] getTime_set() {
+        return time_set;
+    }
+
+    public void setTime_set(String[][] time_set) {
+        this.time_set = time_set;
+    }
+
+    public void setTime_set(String time_sets) {
+        if (time_sets == null|| time_sets.isEmpty()) {
+            return;
+        }
+        String[] rows = time_sets.split("-");
+        if (rows.length != 3) {
+            return;
+        }
+        int time_static_out = Integer.parseInt(rows[0]);
+        int time_keep_out = Integer.parseInt(rows[1]);
+        rows = rows[2].split(" ");
+        // 初始化二维数组
+        String[][] result = new String[rows.length][];
+
+        for (int i = 0; i < rows.length; i++) {
+            // 按逗号分割每行的元素
+            String[] elements = rows[i].split(",");
+            result[i] = new String[elements.length];
+
+            for (int j = 0; j < elements.length; j++) {
+                result[i][j] = elements[j];
+            }
+        }
+        this.time_static_out=time_static_out;
+        this.time_keep_out=time_keep_out;
+        this.time_set = result;
     }
     public void setLine_time(int line_time) {
         this.line_time = line_time;
@@ -289,7 +395,8 @@ public class Check_sheet {
     @Override
     public String toString() {
         return "Check_sheet{" +
-                "line_time=" + line_time +
+                "project_key='" + project_key + '\'' +
+                ", line_time=" + line_time +
                 ", udp='" + udp + '\'' +
                 ", id=" + id +
                 ", name='" + name + '\'' +
@@ -319,6 +426,10 @@ public class Check_sheet {
                 ", low_p=" + low_p +
                 ", detach=" + detach +
                 ", move=" + move +
+                ", time_set=" + Arrays.toString(time_set) +
+                ", time_static_out=" + time_static_out +
+                ", time_keep_out=" + time_keep_out +
+                ", time_out_set='" + time_out_set + '\'' +
                 '}';
     }
 }

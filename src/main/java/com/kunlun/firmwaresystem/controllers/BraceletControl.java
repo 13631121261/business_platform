@@ -87,7 +87,7 @@ public class BraceletControl {
         List<Bracelet> braceletList=braceletSql.getunAllBracelet(braceletMapper,customer.getUserkey(),customer.getProject_key(),type);
         JSONObject jsonObject = new JSONObject();
         if(lang!=null&&lang.equals("en")){
-            braceletList.add(0, new Bracelet("UnBind"));
+            braceletList.add(0, new Bracelet("Unbound"));
         }else {
             braceletList.add(0, new Bracelet("不绑定标签"));
         }

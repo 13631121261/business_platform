@@ -68,6 +68,8 @@ public class PersonControl {
                 person.setB_area_name(person1.getB_area_name());
                 person.setMap_name(person1.getMap_name());
                 person.setOnline(person1.getOnline());
+                person.setRun(person1.getRun());
+                person.setSos(person1.getSos());
                 person.setLasttime(person1.getLasttime());
                 person1.setId(person.getId());
                 Fence fence = fenceMap.get(person1.getFence_id());
@@ -177,7 +179,7 @@ public class PersonControl {
             }
             //有绑定，处理新的信标
            // myPrintln("3333"+person.getBind_mac());
-            if (!person.getBind_mac().isEmpty() && !person.getBind_mac().equals("不绑定标签")&& !person.getBind_mac().equals("UnBind")) {
+            if (!person.getBind_mac().isEmpty() && !person.getBind_mac().equals("不绑定标签")&& !person.getBind_mac().equals("Unbound")) {
                // myPrintln("4444");
                 person.setIsbind(1);
                 List<Tag> tags = tag_sql.getTagByMac(tagMapper, person.getUser_key(), person.getProject_key(), person.getBind_mac());
@@ -192,7 +194,7 @@ public class PersonControl {
                 tagsMap.put(tag1.getMac(), tag1);
             }
 
-            if (person.getBind_mac().isEmpty() || person.getBind_mac() == null || person.getBind_mac().equals("不绑定标签")|| person.getBind_mac().equals("UnBind")) {
+            if (person.getBind_mac().isEmpty() || person.getBind_mac() == null || person.getBind_mac().equals("不绑定标签")|| person.getBind_mac().equals("Unbound")) {
                 person.setIsbind(0);
                 person.setBind_mac("");
             }
@@ -295,6 +297,37 @@ public class PersonControl {
             return JsonConfig.getJsonObj(CODE_RESPONSE_NULL,null,lang);
         }
     }
+    @RequestMapping(value = "userApi/Person/registration", method = RequestMethod.POST, produces = "application/json")
+    public JSONObject registration(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "time") int time, @ParamsNotNull @RequestParam(value = "start") boolean start) {
+        Customer customer=getCustomer(request);
+        String project_key=customer.getProject_key();
+
+        if (start) {
+            registration_map.put(project_key,new Registration(time).setRun(true));
+            new Thread(new Runnable() {
+                int time1=time;
+                final String key=project_key;
+                @Override
+                public void run() {
+                    while (time1>0&&  registration_map.get(key).isRun()){
+                        try {
+                            Thread.sleep(1000);
+                            myPrintln("倒计时=" +time1 );
+                            time1--;
+                        }catch (InterruptedException ignored){}
+                    }
+                    registration_map.get(key).setRun(false);
+                    myPrintln("停止执行");
+                    myPrintln("在线的数量="+ registration_map.get(key).getPersonList().size());
+                }
+            }).start();
+        }else{
+          registration_map.get(project_key).setRun(false);
+
+        }
+
+    return JsonConfig.getJsonObj(CODE_OK,"",customer.getLang());
+    }
     @RequestMapping(value = "userApi/Person/del", method = RequestMethod.POST, produces = "application/json")
     public JSONObject deleteBeacon(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         Customer customer = getCustomer(request);
@@ -338,10 +371,23 @@ public class PersonControl {
         List<Person> personList=person_sql.getAllPerson(personMapper,customer.getUserkey(),customer.getProject_key());
         JSONObject jsonObject = new JSONObject();
         if(lang!=null&&lang.equals("en")){
-            personList.add(0,new Person("-1","UnBind"));
+            personList.add(0,new Person("-1","Unbound"));
         }else {
             personList.add(0, new Person("-1", "不绑定人员"));
         }
+        jsonObject.put("code", CODE_OK);
+        jsonObject.put("msg", CODE_OK_txt);
+        jsonObject.put("count", personList.size());
+        jsonObject.put("data", personList);
+        return jsonObject;
+    }
+    @RequestMapping(value = "/userApi/Person/index2", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject selectAllPerson2( HttpServletRequest request){
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
+        Person_Sql person_sql=new Person_Sql();
+        List<Person> personList=person_sql.getAllPerson(personMapper,customer.getUserkey(),customer.getProject_key());
+        JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", CODE_OK);
         jsonObject.put("msg", CODE_OK_txt);
         jsonObject.put("count", personList.size());

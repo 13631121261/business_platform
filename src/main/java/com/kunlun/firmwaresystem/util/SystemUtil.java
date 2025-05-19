@@ -300,10 +300,10 @@ public static  void  createExcelTwo(String path , String[] title, Map<String, De
             cell.setCellValue(tag.getMac());
 
             cell=row.createCell(1);
-            cell.setCellValue(tag.getOnline()==1?"OnLine":"OffLine");
+            cell.setCellValue(tag.getOnline()==1?"Online":"Offline");
 
             cell=row.createCell(2);
-            cell.setCellValue(tag.getIsbind()==1?"Bind":"unBind");
+            cell.setCellValue(tag.getIsbind()==1?"Bind":"Unbound");
 
             cell=row.createCell(3);
             cell.setCellValue(tag.getBind_key());

@@ -32,7 +32,26 @@ public class Person {
     String idcard;
 
     int online;
+    @TableField(exist = false)
+    int run;
+    @TableField(exist = false)
+    int sos;
 
+    public void setSos(int sos) {
+        this.sos = sos;
+    }
+
+    public int getSos() {
+        return sos;
+    }
+
+    public void setRun(int run) {
+        this.run = run;
+    }
+
+    public int getRun() {
+        return run;
+    }
 
     String  Station_mac;
 
