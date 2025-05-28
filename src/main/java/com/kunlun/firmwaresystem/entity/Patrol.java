@@ -121,12 +121,16 @@ public  class Patrol {
         this.update_time = update_time;
     }
 
-    public void setStart_end_time(String[] startEndTime){
+    public void setStartEndTime(String[] startEndTime){
         if (startEndTime!=null&&startEndTime.length==2){
             startTime=startEndTime[0];
             endTime=startEndTime[1];
         }
     }
+    public String getStartEndTime() {
+        return "";
+    }
+
     public void setTime_range(String  startTime,String endTime){
        String[] time_range=new String[2];
        time_range[0]=startTime;

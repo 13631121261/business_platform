@@ -47,7 +47,7 @@ public class PatrolControl {
             }.getType());
             patrol.setUpdate_time(System.currentTimeMillis()/1000);
             patrol.setEnable_day(patrol.getEnable_days());
-            patrol.setStart_end_time(patrol.getTime_range());
+            patrol.setStartEndTime(patrol.getTime_range());
             patrol.setProject_key(customer.getProject_key());
             patrol.setUser_key(customer.getUserkey());
 
@@ -80,7 +80,7 @@ public class PatrolControl {
             }.getType());
 
             patrol.setEnable_day(patrol.getEnable_days());
-            patrol.setStart_end_time(patrol.getTime_range());
+            patrol.setStartEndTime(patrol.getTime_range());
             patrol.setProject_key(customer.getProject_key());
             patrol.setUser_key(customer.getUserkey());
             patrol.setCreate_time(System.currentTimeMillis()/1000);

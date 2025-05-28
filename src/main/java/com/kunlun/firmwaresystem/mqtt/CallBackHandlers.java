@@ -781,13 +781,11 @@ public class CallBackHandlers implements Runnable {
                                     real_point.setCreate_time(System.currentTimeMillis() / 1000);
                                     real_point.setPartol_id(patrol.getId());
                                     realPointMapper.insert(real_point);
-                                  //  myPrintln("插入数据完成");
+                                    myPrintln(patrol.getName()+"插入数据完成");
                                 }catch (Exception e){
                                     myPrintln(e.toString());
                                 }
                             }
-
-
                         } catch (IllegalArgumentException e) {
                             System.out.println("输入错误: " + e.getMessage());
                         }
@@ -799,7 +797,6 @@ public class CallBackHandlers implements Runnable {
 
         if(registration_map.get(person.getProject_key()) != null&&registration_map.get(person.getProject_key()).isRun()) {
             registration_map.get(person.getProject_key()).addPerson(person);
-            myPrintln("h获取 websocket");
             try {
                 WebSocket_Registration webSocketRegistration = WebSocket_Registration.getWebSocket();
                 JSONObject jsonObject = new JSONObject();
@@ -811,7 +808,7 @@ public class CallBackHandlers implements Runnable {
                 myPrintln("异常="+e.toString());
             }
         }else{
-            myPrintln("排除在外的人员"+person.getIdcard());
+           // myPrintln("排除在外的人员"+person.getIdcard());
         }
 
         Check_sheet checkSheet = check_sheetMap.get(person.getProject_key());
@@ -824,15 +821,15 @@ public class CallBackHandlers implements Runnable {
                 time_list.addAll(Arrays.asList(checkSheet.getTime_set()));
             }
             for (int i = 0; i < time_list.size(); i++) {
-                myPrintln("时间段="+time_list.get(i)[0]+"-"+time_list.get(i)[1]);
+             //   myPrintln("时间段="+time_list.get(i)[0]+"-"+time_list.get(i)[1]);
             }
 
             //在不在检测的时间范围内
             boolean status=isTimeInRanges(person.getLasttime(),time_list);
-            myPrintln("人员在线时间="+person.getLasttime());
-            myPrintln("是否在时间段范围="+status);
+          //  myPrintln("人员在线时间="+person.getLasttime());
+         //   myPrintln("是否在时间段范围="+status);
             if (status) {
-                myPrintln("是否静止或者运动="+person.getRun());
+            //    myPrintln("是否静止或者运动="+person.getRun());
                 //在时间范围。并且为静止，触发判断
                 if(person.getRun()==0){
                    String  keep=(String) redisUtil.get(redis_key_person_run_result+person.getIdcard());
@@ -973,7 +970,7 @@ public class CallBackHandlers implements Runnable {
     public static boolean isTimeInRanges(long timestamp, List<String[]> timeRanges) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         String currentTime = sdf.format(new Date(timestamp*1000)); // 格式化为 "HH:mm"
-        myPrintln("转换后的时间="+currentTime);
+      //  myPrintln("转换后的时间="+currentTime);
         for (String[] range : timeRanges) {
             String startTime = range[0].substring(0, 5); // 取 "HH:mm" 部分
             String endTime = range[1].substring(0, 5);   // 取 "HH:mm" 部分

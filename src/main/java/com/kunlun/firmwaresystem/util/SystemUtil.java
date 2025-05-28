@@ -177,11 +177,11 @@ public class SystemUtil {
         if (cell != null) {
             // 判断cell类型
             switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_NUMERIC: {
+                case NUMERIC: {
                     cellValue = String.valueOf(cell.getNumericCellValue());
                     break;
                 }
-                case Cell.CELL_TYPE_FORMULA: {
+                case FORMULA: {
                     // 判断cell是否为日期格式
                     if (DateUtil.isCellDateFormatted(cell)) {
                         // 转换为日期格式YYYY-mm-dd
@@ -192,7 +192,7 @@ public class SystemUtil {
                     }
                     break;
                 }
-                case Cell.CELL_TYPE_STRING: {
+                case STRING: {
                     cellValue = cell.getRichStringCellValue().getString();
                     break;
                 }

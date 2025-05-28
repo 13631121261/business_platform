@@ -6,15 +6,20 @@ import com.kunlun.firmwaresystem.mappers.CheckRecordMapper;
 import com.kunlun.firmwaresystem.mappers.DevicePMapper;
 import com.kunlun.firmwaresystem.mappers.StationMapper;
 import com.kunlun.firmwaresystem.sql.Alarm_Sql;
+import com.kunlun.firmwaresystem.sql.Real_Point_Sql;
+import com.kunlun.firmwaresystem.util.PIDTimeTracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
+import static com.kunlun.firmwaresystem.util.PIDTimeTracker.calculateStayTimeSegments;
 
 @Component
 public class StationTask {
@@ -35,7 +40,7 @@ public class StationTask {
     public void execute() throws Exception
     {
         Alarm_Sql alarm_sql = new Alarm_Sql();
-        //myPrintln("一分钟一次");
+        myPrintln("一分钟一次"+df.format(System.currentTimeMillis()));
         long start = System.currentTimeMillis()/1000;
        for (Devicep devicep : devicePMap.values()) {
            try {
@@ -119,6 +124,29 @@ public class StationTask {
             }
 
         }
+
+
+    }
+    // 或者使用 cron 表达式（推荐）
+    @Scheduled(cron = "*/30 * * * * ?") // 每小时的第0分钟执行
+    public void hourlyTaskWithCron() {
+        myPrintln("Cron 定时任务执行，当前时间：" + System.currentTimeMillis()/1000);
+        Real_Point_Sql   realPointSql = new Real_Point_Sql();
+        for (Person person : personMap.values()) {
+            myPrintln("人员是="+person.getName());
+            List<Real_Point> realPoints= realPointSql.select_One_day(realPointMapper,person.getIdcard());
+
+            myPrintln("数据长度="+realPoints.size());
+            Map<Integer, List<PIDTimeTracker.TimeSegment>> result = calculateStayTimeSegments(realPoints);
+            // 输出结果
+            result.forEach((pid, segments) -> {
+                System.out.println("PID: " + pid);
+                segments.forEach(System.out::println);
+                System.out.println();
+            });
+        }
+
+
 
 
     }

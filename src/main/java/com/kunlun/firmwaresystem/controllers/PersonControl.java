@@ -5,25 +5,35 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.kunlun.firmwaresystem.NewSystemApplication;
 import com.kunlun.firmwaresystem.device.PagePerson;
 import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.DepartmentMapper;
 import com.kunlun.firmwaresystem.mappers.PersonMapper;
+import com.kunlun.firmwaresystem.sql.CallRecord_Sql;
 import com.kunlun.firmwaresystem.sql.Tag_Sql;
 import com.kunlun.firmwaresystem.sql.Person_Sql;
 import com.kunlun.firmwaresystem.util.JsonConfig;
 import com.kunlun.firmwaresystem.util.RedisUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
+import static org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND;
 
 @RestController
 public class PersonControl {
@@ -303,7 +313,19 @@ public class PersonControl {
         String project_key=customer.getProject_key();
 
         if (start) {
-            registration_map.put(project_key,new Registration(time).setRun(true));
+            CallRecord callRecord = new CallRecord();
+            callRecord.setStart_time(System.currentTimeMillis()/1000);
+            callRecord.setUser_key(customer.getUserkey());
+            callRecord.setProject_key(project_key);
+            int count=0;
+            for(Person person:personMap.values()){
+                if (person.getProject_key().equals(project_key)) {
+                    count++;
+                }
+            }
+            callRecord.setShould(count);
+            registration_map.put(project_key,new Registration(time,callRecord).setRun(true));
+
             new Thread(new Runnable() {
                 int time1=time;
                 final String key=project_key;
@@ -319,15 +341,97 @@ public class PersonControl {
                     registration_map.get(key).setRun(false);
                     myPrintln("停止执行");
                     myPrintln("在线的数量="+ registration_map.get(key).getPersonList().size());
+                    CallRecord callRecord= registration_map.get(key).getCallRecord();
+                    callRecord.setAbsent(callRecord.getShould()-registration_map.get(key).getPersonList().size());
+                    callRecord.setPresent(registration_map.get(key).getPersonList().size());
+                    callRecord.setStop_time(System.currentTimeMillis()/1000);
+
+                    if(callRecord.getAbsent()>0){
+                        for (Person person:personMap.values()) {
+                            if (person.getProject_key().equals(project_key)) {
+                                if(person.getOnline()==0){
+                                    registration_map.get(key).addPerson(person);
+                                }
+                            }
+                        }
+                    }
+                    List<Person> personList = new ArrayList<>(registration_map.get(key).getPersonList().values());
+                    String userDir = System.getProperty("user.dir");
+                    File dir = new File(userDir+"/excel_callRecord/");
+                    if (!dir.exists()) {
+                        dir.mkdirs();
+                    }
+                   String path= generateExcel(personList,userDir+"/excel_callRecord/"+System.currentTimeMillis()/1000+".xlsx");
+                    if (path != null) {
+                        path=path.replaceAll("//","-").replaceAll("\\\\","-").replaceAll("/","-");
+                        callRecord.setPath(path);
+                        callRecordMapper.insert(callRecord);
+                        registration_map.get(key).setPath(path);
+                    }
+
+
+
                 }
             }).start();
         }else{
-          registration_map.get(project_key).setRun(false);
+            if (registration_map.get(project_key)!=null) {
 
+                registration_map.get(project_key).setRun(false);
+            }
         }
 
     return JsonConfig.getJsonObj(CODE_OK,"",customer.getLang());
     }
+
+
+
+    @RequestMapping(value = "/userApi/download_callRecord", method = RequestMethod.GET)
+    @ResponseBody
+    public void downloadExcel(HttpServletRequest request, HttpServletResponse response)   {
+        Customer customer=getCustomer(request);
+        String path=request.getParameter("path");
+        if (path == null|| path.isEmpty()) {
+            path= registration_map.get(customer.getProject_key()).getPath();
+        }
+        path=path.replaceAll("-","/");
+        File file = new File(path);
+        if (file.exists()) { //判断文件父目录是否存在q
+            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+           response.setHeader("Content-Disposition", "attachment;fileName=" + java.net.URLEncoder.encode(path, StandardCharsets.UTF_8));
+            byte[] buffer = new byte[1024];
+            FileInputStream fis = null; //文件输入流
+            BufferedInputStream bis = null;
+            OutputStream os = null; //输出流
+            try {
+                os = response.getOutputStream();
+                fis = new FileInputStream(file);
+                bis = new BufferedInputStream(fis);
+                int i = bis.read(buffer);
+                while (i != -1) {
+                    os.write(buffer, 0, i);
+                    i = bis.read(buffer);
+                }
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            myPrintln("----------file download---" + file.getPath());
+            try {
+                if (bis != null) {
+                    bis.close();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     @RequestMapping(value = "userApi/Person/del", method = RequestMethod.POST, produces = "application/json")
     public JSONObject deleteBeacon(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         Customer customer = getCustomer(request);
@@ -400,4 +504,68 @@ public class PersonControl {
         Customer customer = (Customer) redisUtil.get(token);
         return customer;
     }
+    public static String generateExcel(List<Person> userList, String outputPath) {
+        // 创建输出目录（如果不存在）
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        // 创建工作簿和工作表
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("点名报表");
+        // 创建表头
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"姓名", "最后在线位置", "最后在线时间", "状态"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+        }
+
+        // 创建单元格样式
+        CellStyle onlineStyle = workbook.createCellStyle();
+        onlineStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+        onlineStyle.setFillPattern(SOLID_FOREGROUND);
+
+        CellStyle offlineStyle = workbook.createCellStyle();
+        offlineStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+        offlineStyle.setFillPattern(SOLID_FOREGROUND);
+
+        // 填充数据
+        for (int i = 0; i < userList.size(); i++) {
+            Person user = userList.get(i);
+            Row row = sheet.createRow(i + 1);
+
+            // 设置单元格值
+            row.createCell(0).setCellValue(user.getName());
+            row.createCell(1).setCellValue(user.getStation_name());
+            row.createCell(2).setCellValue(df.format( user.getLasttime()*1000));
+            row.createCell(3).setCellValue(user.getOnline()==1 ? "在线" : "离线");
+
+            // 根据在线状态设置行样式
+            CellStyle style = user.getOnline() ==1? onlineStyle : offlineStyle;
+            for (int j = 0; j < headers.length; j++) {
+                row.getCell(j).setCellStyle(style);
+            }
+        }
+
+        // 自动调整列宽
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // 保存文件
+        String filePath = outputPath;
+        try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
+            workbook.write(outputStream);
+            System.out.println("Excel文件已生成: " + filePath);
+            return filePath;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                workbook.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

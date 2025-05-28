@@ -9,14 +9,33 @@ public class Registration {
     int time;
     boolean run=false;
     HashMap<String,Person> personList;
+    CallRecord callRecord;
+    String path;
 
-    public Registration(int time) {
+    public Registration(int time,CallRecord callRecord) {
         this.time = time;
         this.personList = new HashMap<>();
+       this. callRecord = callRecord;
     }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public CallRecord getCallRecord() {
+        return callRecord;
+    }
+
     public void addPerson(Person person) {
         myPrintln("人员状态="+person.getIdcard());
         this.personList.put(person.getIdcard(), person);
+    }
+    public void clearPerson() {
+        this.personList=new HashMap<>();
     }
     public int getTime() {
         return time;

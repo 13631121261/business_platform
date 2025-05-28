@@ -59,6 +59,7 @@ public class NewSystemApplication {
     public static double rssi_At_1m = 47;
     public static RedisUtils redisUtil;
     public static WordCardaMapper wordCardaMapper;
+    public static CallRecordMapper callRecordMapper;
     public static WifiMapper wifiMapper;
     public static TagMapper tagMapper;
     public static BraceletMapper braceletMapper;
@@ -113,8 +114,9 @@ public class NewSystemApplication {
     public  static  MyMqttClient mqttClient;
     public static   Real_PointMapper realPointMapper;
     @Autowired
-    public void setDataSource( Real_PointMapper realPointMapper,PatrolMapper patrolMapper,PatrolListMapper patrolListMapper,StationMapper stationMapper,GroupMapper groupMapper, FenceGroupMapper fenceGroupMapper,Mqtt mqtt, FWordcardMapper fWordcardMapper, NettyTcpServer nettyTcpServer, HistoryMapper historyMapper, LocatorMapper locatorMapper, AlarmMapper alarmMapper, FenceMapper fenceMapper, MapMapper mapMapper, DeviceP_recordMapper devicePRecordMapper, MofflineMapper mofflineMapper, CheckRecordMapper checkRecordMapper, CheckSheetMapper checkSheetMapper, DevicePMapper devicePMapper, PersonMapper personMapper, BTagMapper bTagMapper, UserMapper userMapper, CustomerMapper customerMapper, Record_SosMapper recordSosMapper, AreaMapper areaMapper, WordCardaMapper wordCardaMapper, RecordMapper recordMapper, TagMapper tagMapper, BraceletMapper braceletMapper, WifiMapper wifiMapper, BleMapper bleMapper, RedisUtils redisUtil, DeviceModelMapper deviceModelMapper, DirectExchangeProducer topicExchangeProducer, StationMapper StationMapper, RulesMapper rulesMapper) {
+    public void setDataSource(CallRecordMapper callRecordMapper, Real_PointMapper realPointMapper,PatrolMapper patrolMapper,PatrolListMapper patrolListMapper,StationMapper stationMapper,GroupMapper groupMapper, FenceGroupMapper fenceGroupMapper,Mqtt mqtt, FWordcardMapper fWordcardMapper, NettyTcpServer nettyTcpServer, HistoryMapper historyMapper, LocatorMapper locatorMapper, AlarmMapper alarmMapper, FenceMapper fenceMapper, MapMapper mapMapper, DeviceP_recordMapper devicePRecordMapper, MofflineMapper mofflineMapper, CheckRecordMapper checkRecordMapper, CheckSheetMapper checkSheetMapper, DevicePMapper devicePMapper, PersonMapper personMapper, BTagMapper bTagMapper, UserMapper userMapper, CustomerMapper customerMapper, Record_SosMapper recordSosMapper, AreaMapper areaMapper, WordCardaMapper wordCardaMapper, RecordMapper recordMapper, TagMapper tagMapper, BraceletMapper braceletMapper, WifiMapper wifiMapper, BleMapper bleMapper, RedisUtils redisUtil, DeviceModelMapper deviceModelMapper, DirectExchangeProducer topicExchangeProducer, StationMapper StationMapper, RulesMapper rulesMapper) {
         NewSystemApplication.mqtt=mqtt;
+        NewSystemApplication.callRecordMapper=callRecordMapper;
         NewSystemApplication.realPointMapper=realPointMapper;
         NewSystemApplication.patrolListMapper=patrolListMapper;
         NewSystemApplication.patrolMapper=patrolMapper;
