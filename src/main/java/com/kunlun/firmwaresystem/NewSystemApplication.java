@@ -1,4 +1,5 @@
 package com.kunlun.firmwaresystem;
+
 import com.kunlun.firmwaresystem.Tcp.NettyTcpServer;
 import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.device.DeviceModel;
@@ -20,6 +21,8 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import oshi.SystemInfo;
+import oshi.hardware.ComputerSystem;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_company;
 
 @EnableCaching // 启用缓存功能
 @EnableScheduling // 开启定时任务功能
@@ -53,7 +64,7 @@ public class NewSystemApplication {
    /* public static final String paths="D:\\kunlBluetooth\\上海环境监测蓝牙项目安装文件\\Server\\log\\";
     public static final String url="http://172.17.73.62:808/download";*/
 
-
+    public static HashMap<String,History> historyMap=new HashMap<>();
     public static HashMap<String,Registration> registration_map = new HashMap<>();
     //信号在1米时的值暂定为-51；
     public static double rssi_At_1m = 47;
@@ -90,8 +101,11 @@ public class NewSystemApplication {
     public static UserMapper userMapper;
     public static BTagMapper bTagMapper;
     public static PersonMapper personMapper;
+    public static CompanyMapper companyMapper;
     public static Map<String,Person> personMap;
     public static Map<Integer,Fence> fenceMap;
+    public static Map<Integer,Fence_group> fenceGroupMap;
+
     public static DevicePMapper devicePMapper;
     public static DeviceP_recordMapper devicePRecordMapper;
     public static Map<String, Devicep> devicePMap;
@@ -114,8 +128,9 @@ public class NewSystemApplication {
     public  static  MyMqttClient mqttClient;
     public static   Real_PointMapper realPointMapper;
     @Autowired
-    public void setDataSource(CallRecordMapper callRecordMapper, Real_PointMapper realPointMapper,PatrolMapper patrolMapper,PatrolListMapper patrolListMapper,StationMapper stationMapper,GroupMapper groupMapper, FenceGroupMapper fenceGroupMapper,Mqtt mqtt, FWordcardMapper fWordcardMapper, NettyTcpServer nettyTcpServer, HistoryMapper historyMapper, LocatorMapper locatorMapper, AlarmMapper alarmMapper, FenceMapper fenceMapper, MapMapper mapMapper, DeviceP_recordMapper devicePRecordMapper, MofflineMapper mofflineMapper, CheckRecordMapper checkRecordMapper, CheckSheetMapper checkSheetMapper, DevicePMapper devicePMapper, PersonMapper personMapper, BTagMapper bTagMapper, UserMapper userMapper, CustomerMapper customerMapper, Record_SosMapper recordSosMapper, AreaMapper areaMapper, WordCardaMapper wordCardaMapper, RecordMapper recordMapper, TagMapper tagMapper, BraceletMapper braceletMapper, WifiMapper wifiMapper, BleMapper bleMapper, RedisUtils redisUtil, DeviceModelMapper deviceModelMapper, DirectExchangeProducer topicExchangeProducer, StationMapper StationMapper, RulesMapper rulesMapper) {
+    public void setDataSource(CompanyMapper companyMapper, CallRecordMapper callRecordMapper, Real_PointMapper realPointMapper,PatrolMapper patrolMapper,PatrolListMapper patrolListMapper,StationMapper stationMapper,GroupMapper groupMapper, FenceGroupMapper fenceGroupMapper,Mqtt mqtt, FWordcardMapper fWordcardMapper, NettyTcpServer nettyTcpServer, HistoryMapper historyMapper, LocatorMapper locatorMapper, AlarmMapper alarmMapper, FenceMapper fenceMapper, MapMapper mapMapper, DeviceP_recordMapper devicePRecordMapper, MofflineMapper mofflineMapper, CheckRecordMapper checkRecordMapper, CheckSheetMapper checkSheetMapper, DevicePMapper devicePMapper, PersonMapper personMapper, BTagMapper bTagMapper, UserMapper userMapper, CustomerMapper customerMapper, Record_SosMapper recordSosMapper, AreaMapper areaMapper, WordCardaMapper wordCardaMapper, RecordMapper recordMapper, TagMapper tagMapper, BraceletMapper braceletMapper, WifiMapper wifiMapper, BleMapper bleMapper, RedisUtils redisUtil, DeviceModelMapper deviceModelMapper, DirectExchangeProducer topicExchangeProducer, StationMapper StationMapper, RulesMapper rulesMapper) {
         NewSystemApplication.mqtt=mqtt;
+        NewSystemApplication.companyMapper=companyMapper;
         NewSystemApplication.callRecordMapper=callRecordMapper;
         NewSystemApplication.realPointMapper=realPointMapper;
         NewSystemApplication.patrolListMapper=patrolListMapper;
@@ -160,9 +175,62 @@ public class NewSystemApplication {
      private RedisUtils redisUtil;
      @Autowired
      DeviceModelMapper deviceModelMapper;*/
-    public static void main(String[] args) {
+    private static final String SECRET_KEY =  "ThisIsA16ByteKey"; // 128/192/256位密钥
+    private static final String INIT_VECTOR = "16ByteInitVector"; // 16字节IV
 
+    // AES加密
+    public static String encrypt(String value) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes(StandardCharsets.UTF_8));
+            SecretKeySpec skeySpec = new SecretKeySpec(SECRET_KEY.getBytes(StandardCharsets.UTF_8), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+            byte[] encrypted = cipher.doFinal(value.getBytes());
+            return Base64.getEncoder().encodeToString(encrypted);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    // AES解密
+    public static String decrypt(String encrypted) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes(StandardCharsets.UTF_8));
+            SecretKeySpec skeySpec = new SecretKeySpec(SECRET_KEY.getBytes(StandardCharsets.UTF_8), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+
+            byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+            return new String(original);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+    public static String getSystemUUID() {
+        SystemInfo systemInfo = new SystemInfo();
+        ComputerSystem computerSystem = systemInfo.getHardware().getComputerSystem();
+        return computerSystem.getHardwareUUID();
+    }
+    public static void main(String[] args) {
+        String uuid= getSystemUUID();
+        // 加密
+        String encrypted = encrypt(uuid);
+        System.out.println("加密后: " + encrypted);
+        // 解密
+        String decrypted = decrypt(encrypted);
+        System.out.println("解密后: " + decrypted);
+        // 验证
+        System.out.println("验证结果: " + uuid.equals(decrypted));
+        if(!uuid.equals(decrypted)){
+            return;
+        }
         SpringApplication.run(NewSystemApplication.class, args);
+
       //  myMqttClientMap=new HashMap<>();
         //  myPrintln("启动结果："+redisUtil+"====>"+deviceModelMapper);
 
@@ -170,7 +238,7 @@ public class NewSystemApplication {
  /*
         String id="178BFBFF00860F016FB55D78-B9E5-11EA-80DE-002B67BD78A6";
 
-        try {
+        try {C24186F5-6A82-5956-A4E1-C51F80E6CEDD
             File file=new File(paths+"kunlun");
             file.mkdir();
             file=new File(paths+"kunlun/kunlun.key");
@@ -224,10 +292,17 @@ public class NewSystemApplication {
         devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
         Fence_Sql fence_sql=new Fence_Sql();
         fenceMap=  fence_sql.getAllFence(fenceMapper);
+        Fence_Group_Sql fenceGroupSql=new Fence_Group_Sql();
+        fenceGroupMap=fenceGroupSql.getAll(fenceGroupMapper);
         Station_sql stationSql=new Station_sql();
         station_maps =stationSql.getAllStation(redisUtil,stationMapper);
         Person_Sql personSql=new Person_Sql();
         personMap=personSql.getAllPerson(personMapper);
+        Company_Sql companySql=new Company_Sql();
+        List<Company> list= companySql.getAll(companyMapper);
+        for (Company company:list) {
+            redisUtil.setnoTimeOut(redis_key_company+company.getId(), company);
+        }
        //
         // Person_Sql person_sql=new Person_Sql();
         /*DeviceModel_sql deviceModel_sql = new DeviceModel_sql();
@@ -342,8 +417,7 @@ public class NewSystemApplication {
         logQueue.offer(msg); // 非阻塞写入队列
     }
     public static void myPrintln(String log){
-       // System.out.println("LOOO"+log);
-       // executorService.submit(() -> {
+
             StackWalker.getInstance().walk(frames -> {
                 StackWalker.StackFrame frame = frames
                         .skip(1) // 跳过当前 walk 方法的调用
@@ -359,6 +433,6 @@ public class NewSystemApplication {
                 return null;
             });
         }
-   // }
+
 
 }

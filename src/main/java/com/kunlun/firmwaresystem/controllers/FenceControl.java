@@ -114,25 +114,23 @@ public class FenceControl {
     }
     }
 
-/*
-    @RequestMapping(value = "userApi/selectPageMap", method = RequestMethod.GET, produces = "text/plain")
-    public String selectPageMap(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "page") String page,
-                                @ParamsNotNull @RequestParam(value = "limit") String limit, @RequestParam(value = "name") String name) {
+
+    @RequestMapping(value = "userApi/fence/getByMap", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject selectPageMap(HttpServletRequest request, @ParamsNotNull @RequestParam(value = "map_key") String map_key) {
         String response = null;
         Customer user1 = getCustomer(request);
         if (!user1.getUsername().equals("admin")) {
             ////预留后续的权限，只有管理员才能创建用户
         }
-        Map_Sql map_sql = new Map_Sql();
-        PageMap pageMap = map_sql.selectPageMap(mapMapper, Integer.parseInt(page), Integer.parseInt(limit), user1.getCustomerkey(), name);
+        Fence_Sql fence_sql=new Fence_Sql();
+        List<Fence> fences=    fence_sql.getFenceByMao(fenceMapper,map_key);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", 0);
+        jsonObject.put("code", CODE_OK);
         jsonObject.put("msg", "ok");
-        jsonObject.put("count", pageMap.getTotal());
-        jsonObject.put("data", pageMap.getMapList());
-        return jsonObject.toString();
-
-    }*/
+        jsonObject.put("count", fences.size());
+        jsonObject.put("data", fences);
+        return jsonObject;
+    }
 
     /*@RequestMapping(value = "userApi/area/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllbindMap(HttpServletRequest request) {
@@ -252,11 +250,10 @@ public class FenceControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", fences.size());
         jsonObject.put("data",  fences);
-        //  myPrintln(System.currentTimeMillis());
         return jsonObject;
     }
     @RequestMapping(value = "/userApi/fence/del", method = RequestMethod.POST, produces = "application/json")
-    public JSONObject deleteArea(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
+    public JSONObject deleteFence(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         String response = "默认参数";
         Customer user = getCustomer(request);
         String lang=user.getLang();
@@ -266,20 +263,18 @@ public class FenceControl {
         DeviceP_Sql deviceP_sql=new DeviceP_Sql();
 
         for(Object ids:jsonArray){
-        /*    List<Devicep> deviceps= deviceP_sql.getDeviceByFenceID(devicePMapper,Integer.parseInt(ids.toString()));
-            if(deviceps!=null&&deviceps.size()>0){
+            List<Devicep> deviceps= deviceP_sql.getDeviceByFence_id(user.getProject_key(), devicePMapper,ids.toString());
+            if(deviceps!=null&& !deviceps.isEmpty()){
                 return JsonConfig.getJsonObj(CODE_10,null,lang);
             }
             List<Person> personList= person_sql.getPersonByFenceID(personMapper,Integer.parseInt(ids.toString()));
-            if(personList!=null&&personList.size()>0){
+            if(personList!=null&& !personList.isEmpty()){
                 return JsonConfig.getJsonObj(CODE_10,null,lang);
-            }*/
+            }
             id.add(Integer.parseInt(ids.toString()));
         }
 
-
-
-        if(id.size()>0){
+        if(!id.isEmpty()){
             int status = fence_sql.deletes(fenceMapper, id);
             if(status!=-1){
                 return JsonConfig.getJsonObj(CODE_OK,null,lang);

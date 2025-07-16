@@ -1,4 +1,7 @@
 package com.kunlun.firmwaresystem.entity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+
 public class Alarm {
     int id;
     Alarm_Type alarm_type;
@@ -15,6 +18,10 @@ public class Alarm {
     String project_key;
     String station_name;
     String station_address;
+    @TableField(exist = false)
+    String station_type;
+    @TableField(exist = false)
+    String company_name;
     public Alarm(){
 
     }
@@ -47,6 +54,22 @@ public class Alarm {
     this.create_time=time;
     this.name=name;
     this.project_key=project_key;
+    }
+
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
+    }
+
+    public String getCompany_name() {
+        return company_name;
+    }
+
+    public void setStation_type(String station_type) {
+        this.station_type = station_type;
+    }
+
+    public String getStation_type() {
+        return station_type;
     }
 
     public void setStation_address(String station_address) {

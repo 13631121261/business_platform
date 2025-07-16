@@ -3,19 +3,26 @@ package com.kunlun.firmwaresystem.controllers;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.kunlun.firmwaresystem.device.PageAlarm;
+import com.kunlun.firmwaresystem.entity.Alarm;
+import com.kunlun.firmwaresystem.entity.Company;
 import com.kunlun.firmwaresystem.entity.Customer;
+import com.kunlun.firmwaresystem.entity.Person;
+import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.AlarmMapper;
+import com.kunlun.firmwaresystem.mappers.CompanyMapper;
 import com.kunlun.firmwaresystem.sql.Alarm_Sql;
+import com.kunlun.firmwaresystem.sql.Company_Sql;
 import com.kunlun.firmwaresystem.util.JsonConfig;
 import com.kunlun.firmwaresystem.util.RedisUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -24,6 +31,8 @@ public class AlarmControl {
     private RedisUtils redisUtil;
     @Resource
     private AlarmMapper alarmMapper;
+    @Autowired
+    private CompanyMapper companyMapper;
 
     @RequestMapping(value = "userApi/Alarm_Device/index", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAlarmByDevice(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "sn") String sn) {
@@ -116,7 +125,7 @@ public class AlarmControl {
         return jsonObject;
     }*/
     @RequestMapping(value = "userApi/Alarm/index", method = RequestMethod.GET, produces = "application/json")
-    public JSONObject getAllMap(HttpServletRequest request) {
+    public JSONObject getAlarm(HttpServletRequest request) {
         String quickSearch=request.getParameter("quickSearch");
         String alarm_object=request.getParameter("alarm_object");
         String alarm_type=request.getParameter("alarm_type");
@@ -147,6 +156,46 @@ public class AlarmControl {
         jsonObject.put("msg", "ok");
         jsonObject.put("count", pageAlarm.getTotal());
         jsonObject.put("data",  pageAlarm.getAlarmList());
+        return jsonObject;
+    }
+
+    @RequestMapping(value = "userApi/Alarm/getTen", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getOneHour(HttpServletRequest request) {
+        Customer user1 = getCustomer(request);
+        Alarm_Sql alarm_sql = new Alarm_Sql();
+        String map_key=request.getParameter("map_key");
+        if (map_key.isEmpty()) {
+            return null;
+        }
+        List<Alarm> pageAlarm = alarm_sql.selectByOneHour(alarmMapper, user1.getProject_key(),map_key);
+        for (Alarm alarm : pageAlarm) {
+          Person person= personMap.get(alarm.getSn());
+          if(person==null){
+              Devicep devicep=devicePMap.get(alarm.getSn());
+              if(devicep!=null){
+                  if (devicep.getCompany_id()>0&&devicep.getCompany_name()==null){
+                     Company company= companyMapper.selectById(devicep.getCompany_id());
+                      devicep.setCompany_name(company.getName());
+                      alarm.setCompany_name(devicep.getCompany_name());
+                  }else{
+                      alarm.setCompany_name(devicep.getCompany_name());
+                  }
+              }
+          }else{
+              if (person.getCompany_id()>0&&person.getCompany_name()==null){
+                  Company company= companyMapper.selectById(person.getCompany_id());
+                  person.setCompany_name(company.getName());
+                  alarm.setCompany_name(person.getCompany_name());
+              }else{
+                  alarm.setCompany_name(person.getCompany_name());
+              }
+          }
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", 1);
+        jsonObject.put("msg", "ok");
+        jsonObject.put("count", pageAlarm.size());
+        jsonObject.put("data",  pageAlarm);
         return jsonObject;
     }
     @RequestMapping(value = "/userApi/Alarm/del", method = RequestMethod.POST, produces = "application/json")

@@ -107,10 +107,33 @@ public class DeviceP_Sql {
         }
 
     }
-    //根据设备组
+
+    //根据围栏
+    public   List<Devicep>  getDeviceByFence_id(String project_key, DevicePMapper devicePMapper, String f_id) {
+        try {
+            LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+
+            userLambdaQueryWrapper.eq(Devicep::getFence_id,f_id).eq(Devicep::getProject_key, project_key);
+
+            List<Devicep> deviceps= devicePMapper.selectList(userLambdaQueryWrapper);
+            return deviceps ;
+        }catch (Exception e){
+            myPrintln("异常="+e.getMessage());
+            return null;
+        }
+
+    }
+    //根据公司
     public    List<Devicep>  getDeviceByGroupID(DevicePMapper devicePMapper, int group_id) {
         LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         userLambdaQueryWrapper.eq(Devicep::getGroup_id, group_id);
+        List<Devicep> deviceps = devicePMapper.selectList(userLambdaQueryWrapper);
+        return deviceps;
+    }
+    //根据设备组
+    public    List<Devicep>  getDeviceByCompany(DevicePMapper devicePMapper, int company_id) {
+        LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        userLambdaQueryWrapper.eq(Devicep::getCompany_id, company_id);
         List<Devicep> deviceps = devicePMapper.selectList(userLambdaQueryWrapper);
         return deviceps;
     }
@@ -177,6 +200,21 @@ public class DeviceP_Sql {
 
             userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getGroup_id,group_id).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).or()
                                   .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).eq(Devicep::getGroup_id,group_id).like(Devicep::getName, search);
+            userIPage = devicePMapper.selectPage(userPage, userLambdaQueryWrapper);
+            PageDeviceP pageDeviceP = new PageDeviceP(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
+            return pageDeviceP;
+        }catch (Exception e){
+            myPrintln("异常="+e.getMessage());
+            return null;
+        }
+    }
+    public PageDeviceP selectPageDevicePByCompany(DevicePMapper devicePMapper, int page, int limt, String project_key, int company_id) {
+
+        try {
+            LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+            Page<Devicep> userPage = new Page<>(page, limt);
+            IPage<Devicep> userIPage;
+            userLambdaQueryWrapper.eq(Devicep::getCompany_id,company_id).eq(Devicep::getProject_key, project_key);
             userIPage = devicePMapper.selectPage(userPage, userLambdaQueryWrapper);
             PageDeviceP pageDeviceP = new PageDeviceP(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
             return pageDeviceP;

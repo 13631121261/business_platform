@@ -220,12 +220,13 @@ public class StringUtil {
 
     //给地图推送位置
     public static void sendTagPush(ArrayList<Object> devicep, String map_key ) {
+       // myPrintln("原始" +devicep.size() );
         JSONObject jsonObject1 = new JSONObject();
         jsonObject1.put("device", devicep);
         id++;
         jsonObject1.put("id", id);
         jsonObject1.put("time", sdf.format(new Date()));
-      //  myPrintln("原始" + jsonObject1);
+       // myPrintln("原始" + jsonObject1);
       //  myPrintln("原始" + map_key);
         RabbitMessage rabbitMessage1 = new RabbitMessage("", jsonObject1.toString(),map_key);
        directExchangeProducer.send(rabbitMessage1.toString(), sendtoMap);

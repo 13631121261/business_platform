@@ -152,18 +152,23 @@ public class Station_sql {
         for (Station Station : StationList) {
             updateStation(StationMapper,Station);
             redisUtil.set(redis_key_locator + Station.getAddress(), Station);
+            StationMap.get(Station.getAddress());
         }
         return StationMap;
     }
 
-    public Map<String, Station> getAllStation( StationMapper StationMapper) {
-        myPrintln("执行11一次获取全部数据");
-        List<Station> StationList = StationMapper.selectList(null);
+    public  HashMap<String, Station> getAllStation( StationMapper StationMapper,String project_key) {
+        QueryWrapper<Station> queryWrapper = Wrappers.query();
+
+        queryWrapper.eq("project_key",project_key);
+        List<Station> StationList =StationMapper.selectList(queryWrapper);
         HashMap<String, Station> StationMap = new HashMap<>();
         for (Station Station : StationList) {
             StationMap.put(Station.getAddress(), Station);
         }
         return StationMap;
+
+
     }
     public   List<StationTree> getAllStation(StationMapper StationMapper, String user_key, String project_key,String config_key) {
         myPrintln("执行333一次获取全部数据");

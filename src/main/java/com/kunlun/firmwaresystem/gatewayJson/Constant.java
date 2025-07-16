@@ -137,5 +137,7 @@ public class Constant {
     public static final String tag_address="tag_address";
     public static final String fence_group="fence_group";
     public static final String device_person_group="device_person_group";
+    //公司信息
+    public static final String redis_key_company="b_redis_key_company";
 
 }

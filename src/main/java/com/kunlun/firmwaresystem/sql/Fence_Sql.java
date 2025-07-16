@@ -113,6 +113,13 @@ public class Fence_Sql {
         return fences;
     }
 
+    public    List<Fence> getFenceByMao(FenceMapper fenceMapper,String map_key) {
+        QueryWrapper<Fence> queryWrapper = Wrappers.query();
+        queryWrapper.eq("map_key",map_key);
+        List<Fence> fences= fenceMapper.selectList(queryWrapper);
+        return fences;
+    }
+
     public boolean check(FenceMapper areaMapper, Fence fence) {
         QueryWrapper<Fence> queryWrapper = Wrappers.query();
         queryWrapper.eq("name", fence.getName());

@@ -52,7 +52,7 @@ public class MyWebSocket extends WebSocketServer {
 
     @Override
     public void onMessage(org.java_websocket.WebSocket webSocket, String s) {
-        myPrintln("接收消息" + s);
+       // myPrintln("接收消息" + s);
       //  webSocket.send("收到了");
         connectlist.put(s, webSocket);
     }

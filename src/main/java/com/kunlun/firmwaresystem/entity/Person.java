@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 public class Person {
+    int company_id;
     int id;
     String name;
     String phone;
@@ -15,8 +16,13 @@ public class Person {
     String photo;
     int department_id;
     int fence_id;
+    int fence_group_id;
     @TableField(exist = false)
     String fence_name;
+    @TableField(exist = false)
+    String fence_group_name;
+    @TableField(exist = false)
+    String company_name;
     String department_name;
     long create_time;
     long lasttime;
@@ -30,12 +36,44 @@ public class Person {
     String user_key;
     String project_key;
     String idcard;
-
+    long first_time;
     int online;
     @TableField(exist = false)
-    int run;
+    int run=-1;
     @TableField(exist = false)
-    int sos;
+    int sos=-1;
+
+    public void setCompany_id(int company_id) {
+        this.company_id = company_id;
+    }
+
+    public int getCompany_id() {
+        return company_id;
+    }
+
+    public void setFence_group_id(int fence_group_id) {
+        this.fence_group_id = fence_group_id;
+    }
+
+    public void setFence_group_name(String fence_group_name) {
+        this.fence_group_name = fence_group_name;
+    }
+
+    public String getFence_group_name() {
+        return fence_group_name;
+    }
+
+    public int getFence_group_id() {
+        return fence_group_id;
+    }
+
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
+    }
+
+    public String getCompany_name() {
+        return company_name;
+    }
 
     public void setSos(int sos) {
         this.sos = sos;
@@ -74,6 +112,14 @@ public class Person {
     String[] patrol_list_ids;
     @TableField(exist = false)
     List<Patrol_list>patrol_lists;
+
+    public void setFirst_time(long first_time) {
+        this.first_time = first_time;
+    }
+
+    public long getFirst_time() {
+        return first_time;
+    }
 
     public void setPatrol_lists(List<Patrol_list> patrol_lists) {
         this.patrol_lists = patrol_lists;
@@ -412,14 +458,17 @@ public class Person {
     @Override
     public String toString() {
         return "Person{" +
-                "id=" + id +
+                "company_id=" + company_id +
+                ", id=" + id +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", sex=" + sex +
                 ", photo='" + photo + '\'' +
                 ", department_id=" + department_id +
                 ", fence_id=" + fence_id +
+                ", fence_group_id=" + fence_group_id +
                 ", fence_name='" + fence_name + '\'' +
+                ", company_name='" + company_name + '\'' +
                 ", department_name='" + department_name + '\'' +
                 ", create_time=" + create_time +
                 ", lasttime=" + lasttime +
@@ -433,7 +482,10 @@ public class Person {
                 ", user_key='" + user_key + '\'' +
                 ", project_key='" + project_key + '\'' +
                 ", idcard='" + idcard + '\'' +
+                ", first_time=" + first_time +
                 ", online=" + online +
+                ", run=" + run +
+                ", sos=" + sos +
                 ", Station_mac='" + Station_mac + '\'' +
                 ", Station_name='" + Station_name + '\'' +
                 ", customer_key='" + customer_key + '\'' +
@@ -444,7 +496,7 @@ public class Person {
                 ", map_key='" + map_key + '\'' +
                 ", patrol_list_id='" + patrol_list_id + '\'' +
                 ", patrol_list_ids=" + Arrays.toString(patrol_list_ids) +
+                ", patrol_lists=" + patrol_lists +
                 '}';
-
-}
+    }
 }

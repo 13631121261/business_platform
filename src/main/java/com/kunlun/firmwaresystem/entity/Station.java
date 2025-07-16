@@ -22,6 +22,15 @@ public class Station implements Serializable {
     String type_name;
     @TableField(exist = false)
     String map_name;
+    String ip;
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getIp() {
+        return ip;
+    }
 
     public void setMap_name(String map_name) {
         this.map_name = map_name;

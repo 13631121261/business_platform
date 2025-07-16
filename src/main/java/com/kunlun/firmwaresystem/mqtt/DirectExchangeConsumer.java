@@ -25,6 +25,7 @@ import java.util.Map;
 //import static com.kunlun.firmwaresystem.NewSystemApplication.myMqttClientMap;
 import static com.kunlun.firmwaresystem.NewSystemApplication.mqttClient;
 import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.sendtoMap;
 
 //import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.Push;
 
@@ -84,16 +85,14 @@ public class DirectExchangeConsumer {
         }
     }
     //发给网页websocket
-    @RabbitListener(queues = "sendtoMap",concurrency = "10")
+    @RabbitListener(queues = sendtoMap,concurrency = "10")
     @RabbitHandler
     public void getQueue6Message(String msg) {
        // myPrintln("这里"+msg);
         JSONObject jsonObject = JSONObject.parseObject(msg);
         String key = jsonObject.getString("project_key");
         String data = jsonObject.getString("msg");
-
         if (key != null&&!key.isEmpty() && data != null) {
-
             webSockettag.sendData(key, data);
         }
     }

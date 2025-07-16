@@ -24,6 +24,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 import static com.kunlun.firmwaresystem.controllers.UserControl.ExpireTime;
 
 public class RedisSessionInterceptor implements HandlerInterceptor {
@@ -33,7 +34,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
     private LogsMapper logsMapper;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-       // myPrintln("handler="+handler);
+        myPrintln("handler="+handler);
         Customer customer=null;
         String token = request.getHeader("batoken");
         if(token==null||token.equals("")){

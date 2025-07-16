@@ -19,7 +19,7 @@ public class DirectExchangeRabbitMQConfig {
     public static final String Push = "Push";*/
 
     //推送给网页地图展示
-    public static final String sendtoMap = "sendtoMap";
+    public static final String sendtoMap = "sendtoMap_business";
     //  private static final String queue3BindingKey = "#";
     // 声明直连交换机
     @Bean

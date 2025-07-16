@@ -4,10 +4,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.check.DevStatus;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
+import com.kunlun.firmwaresystem.mappers.CompanyMapper;
 import com.kunlun.firmwaresystem.mappers.StationMapper;
-import com.kunlun.firmwaresystem.sql.Alarm_Sql;
-import com.kunlun.firmwaresystem.sql.Map_Sql;
+import com.kunlun.firmwaresystem.mappers.StationTypeMapper;
+import com.kunlun.firmwaresystem.sql.*;
 import com.kunlun.firmwaresystem.util.RedisUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
@@ -25,73 +28,14 @@ import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 public class DashboardControl {
     @Resource
     private RedisUtils redisUtil;
-
     @Resource
     private StationMapper StationMapper;
-/*
-    @RequestMapping(value = "userApi/AOA/index", method = RequestMethod.GET, produces = "application/json")
-    public JSONObject getAllBeacon(HttpServletRequest request) {
-        Customer customer = getCustomer(request);
-        Beacon_Sql beacon_sql=new Beacon_Sql();
-        String quickSearch=request.getParameter("quickSearch");
-        String pages=request.getParameter("page");
-        String limits=request.getParameter("limit");
-        int page=1;
-        int limit=10;
-        if (!StringUtils.isBlank(pages)) {
-            page=Integer.parseInt(pages);
-        }
-        if (!StringUtils.isBlank(limits)) {
-            limit=Integer.parseInt(limits);
-        }
-        if (StringUtils.isBlank(quickSearch)) {
-            quickSearch="";
-        }
-        PageBeacon pageBeacon=beacon_sql.selectPageBeacon_AOA(beaconMapper,page,limit,quickSearch,customer.getUserkey(),customer.getProject_key());
-        if(pageBeacon.getBeaconList().size()>0){
-            for(Beacon beacon:pageBeacon.getBeaconList()){
-                Beacon beacon1=beaconsMap.get(beacon.getMac());
-                beacon.setMap_key(beacon1.getMap_key());
-                if(beacon1.getOnline()==0){
-                    beacon.setSos(-1);
-                    beacon.setRun(-1);
-                    beacon.setBt(0);
-                }else{
-                    beacon.setSos(beacon1.getSos());
-                    beacon.setRun(beacon1.getRun());
-                    beacon.setBt(beacon1.getBt());
-                }
-                beacon.setLastTime(beacon1.getLastTime());
-                beacon.setOnline(beacon1.getOnline());
-                if(beacon.getIsbind()==1&&beacon.getBind_type()==1){
-                    if(beacon.getDevice_sn()!=null){
-                        myPrintln(beacon.getDevice_sn());
-                        Devicep devicep=devicePMap.get(beacon.getDevice_sn());
-                        if(devicep!=null){
-                            beacon.setDevice_name(devicep.getName());
-                        }
-                    }
-                }
-                if(beacon.getIsbind()==1&&beacon.getBind_type()==2){
-                    if(beacon.getDevice_sn()!=null){
-                        myPrintln(beacon.getDevice_sn());
-                        Person person=personMap.get(beacon.getDevice_sn());
-                        if(person!=null){
-                            beacon.setDevice_name(person.getName());
-                        }
+    @Autowired
+    private StationTypeMapper stationTypeMapper;
+    @Autowired
+    private CompanyMapper companyMapper;
 
-                    }
-                }
-            }
-        }
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", 1);
-        jsonObject.put("msg", "ok");
-        jsonObject.put("count", pageBeacon.getTotal());
-        jsonObject.put("data", pageBeacon.getBeaconList());
-         return jsonObject;
-    }*/
-@RequestMapping(value = "userApi/getAssetState", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "userApi/getAssetState", method = RequestMethod.GET, produces = "application/json")
 public JSONObject getAssetState(HttpServletRequest request) {
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
@@ -200,14 +144,34 @@ public JSONObject getAssetState(HttpServletRequest request) {
         long one_time = time - 86340;
         Alarm_Sql alarm_sql = new Alarm_Sql();
         List<Alarm> alarms = alarm_sql.selectByOneDay(alarmMapper, customer.getProject_key(), one_time);
+        for (Alarm alarm : alarms) {
+            Station station=(Station) redisUtil.get(redis_key_locator+alarm.getStation_address());
+            if (station!=null){
+                alarm.setStation_type(station.getType_name());
+            }
+            Person person=personMap.get(alarm.getSn());
+            if (person!=null){
+                Company company=(Company) redisUtil.get(redis_key_company+person.getCompany_id());
+                if (company!=null){
+                    alarm.setCompany_name(company.getName());
+                }
+            }else {
+                Devicep devicep=devicePMap.get(alarm.getSn());
+                if (devicep!=null){
+                    Company company=(Company) redisUtil.get(redis_key_company+devicep.getCompany_id());
+                    if (company!=null){
+                        alarm.setCompany_name(company.getName());
+                    }
 
+                }
+            }
+
+        }
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", 1);
             jsonObject.put("msg", "ok");
-
             jsonObject.put("data",alarms);
             return jsonObject;
-
     }
 
     class T{
@@ -291,6 +255,127 @@ public JSONObject getAssetState(HttpServletRequest request) {
     //    myPrintln(jsonObject.toString());
         return  jsonObject;
     }
+
+    @RequestMapping(value = "userApi/getAllStatus", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getStatus(HttpServletRequest request) {
+        Customer customer=getCustomer(request);
+
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", 1);
+        jsonObject.put("msg", "ok");
+
+        StationType_Sql stationTypeSql=new StationType_Sql();
+        List<StationType> stationTypeList= stationTypeSql.getAll(stationTypeMapper,customer.getProject_key());
+        Station_sql station_sql=new Station_sql();
+        HashMap<String,Station> stationMap=  station_sql.getAllStation(stationMapper,customer.getProject_key());
+        List<Object> list_data=new ArrayList<>();
+
+        Company_Sql companySql=new Company_Sql();
+        List<Company> companyList=companySql.getAll(companyMapper,customer.getProject_key());
+        for (Company company : companyList) {
+            List<Object> list=new ArrayList<>();
+            T1 t1=new T1();
+            int person_online_count=0;
+            int device_online_count=0;
+            try {
+                for (StationType stationType : stationTypeList) {
+                    int person_count=0;
+                    int device_count=0;
+                    String  name="";
+                    name = stationType.getName();
+                    for (Person person : personMap.values()) {
+                      //  myPrintln("人员的公司 ID" + person.getCompany_id());
+                        if (company.getId() == person.getCompany_id()&&person.getOnline()==1) {
+                           // myPrintln("公司相同 ID");
+                            if (person.getStation_mac() != null && !person.getStation_mac().isEmpty()) {
+                               // myPrintln("人员的基站 MAC=" + person.getStation_mac());
+                                if (person.getStation_mac() == null || person.getStation_mac().isEmpty()) {
+                                   // myPrintln("人员的基站 空值，继续循环");
+                                    continue;
+                                }
+                                Station station = stationMap.get(person.getStation_mac());
+                                myPrintln("人员的基站 名称=" + station.getName());
+                                if (station.getType_id() == stationType.getId()) {
+                                    myPrintln(" 符合条件=" + person.getName());
+                                    person_count++;
+                                    person_online_count++;
+                                }
+                            }
+                        }
+                    }
+                    for (Devicep device : devicePMap.values()) {
+                        if (company.getId() == device.getCompany_id()&&device.getOnline()==1) {
+                            if (device.getNear_s_address() != null && !device.getNear_s_address().isEmpty()) {
+                                Station station = stationMap.get(device.getNear_s_address());
+                                if (station != null && station.getType_id() == stationType.getId()) {
+                                    device_count++;
+                                    device_online_count++;
+                                }
+                            }
+                        }
+                    }
+                    T1 t = new T1();
+                    t.setPerson_count(person_count);
+                    t.setDevice_count(device_count);
+                    t.setName(name);
+                    list.add(t);
+
+                }
+                t1.setDetail(list);
+            }catch (Exception e){
+                myPrintln("异常="+e.getMessage());
+            }
+            t1.setName(company.getName());
+            t1.setDevice_count(device_online_count);
+            t1.setPerson_count(person_online_count);
+
+            list_data.add(t1);
+        }
+        jsonObject.put("code", 1);
+        jsonObject.put("msg", "ok");
+        jsonObject.put("data", list_data);
+        //    myPrintln(jsonObject.toString());
+        return  jsonObject;
+    }
+class T1{
+    private int person_count=0,device_count=0;
+    private String name="";
+    private List<Object> detail=null;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getDevice_count() {
+        return device_count;
+    }
+
+    public void setDevice_count(int device_count) {
+        this.device_count = device_count;
+    }
+
+    public int getPerson_count() {
+        return person_count;
+    }
+
+    public void setPerson_count(int person_count) {
+        this.person_count = person_count;
+    }
+
+    public void setDetail(List<Object> detail) {
+        this.detail = detail;
+    }
+
+    public List<Object> getDetail() {
+        return detail;
+    }
+}
+
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");
         Customer customer = (Customer) redisUtil.get(token);

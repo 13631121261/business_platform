@@ -128,11 +128,12 @@ public class StationTask {
 
     }
     // 或者使用 cron 表达式（推荐）
-    @Scheduled(cron = "*/30 * * * * ?") // 每小时的第0分钟执行
+    @Scheduled(cron = "*/59 * * * * ?") // 每小时的第0分钟执行
     public void hourlyTaskWithCron() {
-        myPrintln("Cron 定时任务执行，当前时间：" + System.currentTimeMillis()/1000);
-        Real_Point_Sql   realPointSql = new Real_Point_Sql();
-        for (Person person : personMap.values()) {
+        //一开始用于巡更检测的
+       // myPrintln("Cron 定时任务执行，当前时间：" + System.currentTimeMillis()/1000);
+      //  Real_Point_Sql   realPointSql = new Real_Point_Sql();
+        /*for (Person person : personMap.values()) {
             myPrintln("人员是="+person.getName());
             List<Real_Point> realPoints= realPointSql.select_One_day(realPointMapper,person.getIdcard());
 
@@ -141,9 +142,14 @@ public class StationTask {
             // 输出结果
             result.forEach((pid, segments) -> {
                 System.out.println("PID: " + pid);
-                segments.forEach(System.out::println);
-                System.out.println();
+               // segments.forEach(System.out::println);
+                //System.out.println();
             });
+        }*/
+
+        //每分钟更新一下历史记录
+        for(History history:historyMap.values()) {
+            historyMapper.updateById(history);
         }
 
 

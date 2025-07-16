@@ -7,9 +7,11 @@ import com.google.gson.reflect.TypeToken;
 import com.kunlun.firmwaresystem.device.PageDeviceP;
 import com.kunlun.firmwaresystem.device.PageFence;
 import com.kunlun.firmwaresystem.device.PageFenceGroup;
+import com.kunlun.firmwaresystem.device.PagePerson;
 import com.kunlun.firmwaresystem.entity.Customer;
 import com.kunlun.firmwaresystem.entity.Fence;
 import com.kunlun.firmwaresystem.entity.Fence_group;
+import com.kunlun.firmwaresystem.entity.Person;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.entity.device.Group;
 import com.kunlun.firmwaresystem.mappers.FenceGroupMapper;
@@ -225,12 +227,47 @@ public class FenceGroupControl {
         }
         DeviceP_Sql deviceP_Sql=new DeviceP_Sql();
         PageDeviceP pageDeviceP= deviceP_Sql.getDeviceByGroupIdOrF_G_id(customer.getProject_key(),devicePMapper,ids,f_g_id,page,limit);
+        Person_Sql person_Sql=new Person_Sql();
+        PagePerson pagePerson=person_Sql.getPersonByF_G_id(customer.getProject_key(),personMapper,f_g_id,page,limit);
+        ArrayList<T> data=new ArrayList<>();
+        for (Devicep devicep:pageDeviceP.getDeviceList()){
+            T t=new T();
+            t.setName(devicep.getName());
+            t.setSn(devicep.getSn());
+            data.add(t);
+        }
+        for(Person person:pagePerson.getPersonList()){
+            T t=new T();
+            t.setName(person.getName());
+            t.setSn(person.getIdcard());
+            data.add(t);
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", 1);
         jsonObject.put("msg", "ok");
-        jsonObject.put("count", pageDeviceP.getTotal());
-        jsonObject.put("data",  pageDeviceP.getDeviceList());
+        jsonObject.put("count", data.size());
+        jsonObject.put("data", data);
         return  jsonObject;
+    }
+    private class T{
+        String name;
+        String sn;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setSn(String sn) {
+            this.sn = sn;
+        }
+
+        public String getSn() {
+            return sn;
+        }
     }
     @RequestMapping(value = "userApi/Fence_group/index1", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getAllFence_group1(HttpServletRequest request) {

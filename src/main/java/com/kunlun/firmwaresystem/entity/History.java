@@ -1,18 +1,47 @@
 package com.kunlun.firmwaresystem.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class History {
+    @TableId(type = IdType.AUTO)  // 数据库ID自增
     long id;
-    double x;
-    double y;
     String map_key;
     String type;
     String sn;
-    long time;
+    long start_time;
+    long end_time;
     String project_key;
     String name;
+    String station_mac;
+    double x,y;
+
+    public double getY() {
+        return y;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public void setStation_mac(String station_mac) {
+        this.station_mac = station_mac;
+    }
+
+    public String getStation_mac() {
+        return station_mac;
+    }
+
     public long getId() {
         return id;
     }
@@ -21,20 +50,20 @@ public class History {
         this.id = id;
     }
 
-    public double getX() {
-        return x;
+    public long getStart_time() {
+        return start_time;
     }
 
-    public void setX(double x) {
-        this.x = x;
+    public void setStart_time(long start_time) {
+        this.start_time = start_time;
     }
 
-    public double getY() {
-        return y;
+    public long getEnd_time() {
+        return end_time;
     }
 
-    public void setY(double y) {
-        this.y = y;
+    public void setEnd_time(long end_time) {
+        this.end_time = end_time;
     }
 
     public String getMap_key() {
@@ -77,26 +106,18 @@ public class History {
         this.sn = sn;
     }
 
-    public long getTime() {
-        return time;
-    }
-
-    public void setTime(long time) {
-        this.time = time;
-    }
-
     @Override
     public String toString() {
         return "History{" +
                 "id=" + id +
-                ", x=" + x +
-                ", y=" + y +
                 ", map_key='" + map_key + '\'' +
                 ", type='" + type + '\'' +
                 ", sn='" + sn + '\'' +
-                ", time=" + time +
+                ", start_time=" + start_time +
+                ", end_time=" + end_time +
                 ", project_key='" + project_key + '\'' +
                 ", name='" + name + '\'' +
+                ", station_mac='" + station_mac + '\'' +
                 '}';
     }
 }

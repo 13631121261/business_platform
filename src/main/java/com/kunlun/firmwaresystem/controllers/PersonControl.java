@@ -81,10 +81,15 @@ public class PersonControl {
                 person.setRun(person1.getRun());
                 person.setSos(person1.getSos());
                 person.setLasttime(person1.getLasttime());
+                person.setFirst_time(person1.getFirst_time());
                 person1.setId(person.getId());
                 Fence fence = fenceMap.get(person1.getFence_id());
                 if (fence != null) {
                     person.setFence_name(fence.getName());
+                }
+                Fence_group fenceGroup = fenceGroupMap.get(person1.getFence_group_id());
+                if (fenceGroup != null) {
+                    person.setFence_group_name(fenceGroup.getName());
                 }
                 person_sql.update(personMapper, person1);
             }catch (Exception e){
@@ -207,6 +212,7 @@ public class PersonControl {
             if (person.getBind_mac().isEmpty() || person.getBind_mac() == null || person.getBind_mac().equals("不绑定标签")|| person.getBind_mac().equals("Unbound")) {
                 person.setIsbind(0);
                 person.setBind_mac("");
+                person.setOnline(0);
             }
             if (personMap==null||personMap.isEmpty()) {
                 personMap=person_sql.getAllPerson(personMapper);
@@ -280,7 +286,10 @@ public class PersonControl {
             }
         }
         person.setIsbind(0);
+        person.setSos(-1);
+        person.setRun(-1);
         person.setBind_mac("");
+        person.setOnline(0);
         Person_Sql person_sql=new Person_Sql();
         myPrintln("返回状态55");
        boolean status=  person_sql.update(personMapper,person);
@@ -433,7 +442,7 @@ public class PersonControl {
 
 
     @RequestMapping(value = "userApi/Person/del", method = RequestMethod.POST, produces = "application/json")
-    public JSONObject deleteBeacon(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
+    public JSONObject deletePerson(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
         Person_Sql person_sql=new Person_Sql();

@@ -1,16 +1,15 @@
 package com.kunlun.firmwaresystem.controllers;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kunlun.firmwaresystem.entity.Customer;
-import com.kunlun.firmwaresystem.entity.History;
-import com.kunlun.firmwaresystem.entity.Map;
-import com.kunlun.firmwaresystem.entity.Person;
+import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
+import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.AlarmMapper;
 import com.kunlun.firmwaresystem.sql.*;
 import com.kunlun.firmwaresystem.util.RedisUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -21,7 +20,9 @@ import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.NewSystemApplication.redisUtil;
+import static com.kunlun.firmwaresystem.entity.StationStayAnalyzer.analyzeStationStays;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_id_map;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 import static io.lettuce.core.GeoArgs.Unit.m;
 
@@ -162,7 +163,6 @@ public class HistoryControl {
             List<MHistory> histories = new ArrayList<>();
             myPrintln("数据长度=" + historyList.size());
             List<Integer> dd=new ArrayList<>();
-
             for (int i = 0; i < historyList.size(); i++)
             {
                 if (historyList.get(i).getMap_key()==null||historyList.get(i).getMap_key().equals("")) {
@@ -172,19 +172,7 @@ public class HistoryControl {
                 if(i==0){
                     continue;
                 }
-                    //没有换地图
-                    if ( historyList.get(i).getMap_key().equals(historyList.get(i - 1).getMap_key())) {
 
-                        if ((historyList.get(i).getTime() - historyList.get(i - 1).getTime() > 30*1000)) {
-                            myPrintln("时间差距  I="+historyList.get(i).getTime());
-                            myPrintln("时间差距  I-1="+historyList.get(i-1).getTime());
-                            dd.add(i);
-                        }
-                    }//换了地图
-                    else {
-                       // Map m =getMap( historyList.get(i).getMap_key());
-                        dd.add(i);
-                    }
 
 
             }
@@ -267,6 +255,52 @@ public class HistoryControl {
             JSONObject jsonObject=getJsonObj(CODE_OK,deviceps,lang);
             return jsonObject;
         }
+    }
+////localhost/userApi/History/index?history_type=device&start_time=1749700800&stop_time=1749873600&quickSearch=3693
+    @RequestMapping(value = "userApi/History/Search_custom", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject Search_custom(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "sn") String sn) {
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
+try {
+
+    String start_time = request.getParameter("start_time");
+    String stop_time = request.getParameter("stop_time");
+    myPrintln("start_time="+start_time);
+    myPrintln("stop_time="+stop_time);
+    myPrintln("sn="+sn);
+    myPrintln("开始时间"+System.currentTimeMillis());
+    History_Sql history_sql = new History_Sql();
+    List<History> historyList = history_sql.getHistory(historyMapper, sn, Long.parseLong(start_time) , Long.parseLong(stop_time) , customer.getProject_key());
+    List<StationStayAnalyzer.StationStay> stays = analyzeStationStays(historyList);
+    myPrintln("1111数据长度=" + historyList.size());
+    myPrintln("查到时间"+System.currentTimeMillis());
+    // Print results
+    List<StationStayAnalyzer.StationStay> list=new ArrayList<>();
+    for (int i= stays.size()-1;i>=0;i--)
+    //StationStayAnalyzer.StationStay stay : stays)
+    {
+        StationStayAnalyzer.StationStay stay=stays.get(i);
+        Station station = (Station) redisUtil.get(redis_key_locator + stay.getStationMac());
+        if(station!=null){
+            stay.setStation_name(station.getName());
+        }
+        Devicep devicep=devicePMap.get(sn);
+        if (devicep != null) {
+            stay.setName(devicep.getName());
+        }else{
+            Person person=personMap.get(sn);
+            if (person != null) {
+                stay.setName(person.getName());
+            }
+        }
+        list.add(stay);
+    }
+    myPrintln("结束时间"+System.currentTimeMillis());
+    return  getJsonObj(CODE_OK,list,lang);
+    }catch (Exception e){
+        myPrintln("异常="+e.getMessage());
+    }
+        return null;
     }
     class MHistory{
         int id;
@@ -380,8 +414,8 @@ public class HistoryControl {
                 this.list=new ArrayList<History>();
             }
             sum=list.size();
-            setStart_time(list.get(0).getTime());
-            setStop_time(list.get(list.size()-1).getTime());
+            setStart_time(list.get(0).getStart_time());
+            setStop_time(list.get(0).getEnd_time());
             setMap_key(list.get(0).getMap_key());
             setSn(list.get(0).getSn());
             setName(list.get(0).getName());

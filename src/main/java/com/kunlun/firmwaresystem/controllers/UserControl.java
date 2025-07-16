@@ -95,14 +95,14 @@ public class UserControl {
             jsonObject = JsonConfig.getJsonObj(JsonConfig.CODE_RESPONSE_MORE, null,lang);
         } else {
             customer=customerList.get(0);
-            myPrintln("账号="+customer);
+       //     myPrintln("账号="+customer);
            String toketn="";
            if(customer.getType()==1){
                toketn = Base64.getEncoder().encodeToString((customer.getUserkey() + "_" + System.currentTimeMillis()).getBytes()).replaceAll("\\+", "");
            }else{
                toketn = Base64.getEncoder().encodeToString((customer.getCustomerkey() + "_" + System.currentTimeMillis()).getBytes()).replaceAll("\\+", "");
            }
-            myPrintln( new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+         //   myPrintln( new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
             customer.setToken(toketn);
             customer.setLast_login_time(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
             customer.setRefresh_token("");
@@ -115,7 +115,7 @@ public class UserControl {
             redisUtil.set(toketn, customer, ExpireTime);
 
             jsonObject = JsonConfig.getJsonToken(CODE_OK, customer,toketn,lang);
-            myPrintln("登录信息=" + customer);
+//("登录信息=" + customer);
         }
 
         return jsonObject;
@@ -129,267 +129,264 @@ public class UserControl {
     public JSONObject getRoute(HttpServletRequest httpRequest){
        Customer customer= getCustomer(httpRequest);
        String lang= customer.getLang();
+       myPrintln("语言="+lang);
        String project_key=httpRequest.getParameter("project_key");
        String time=( new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        myPrintln("获取参数"+customer.toString());
-       if(customer!=null){
-            JSONObject data = new JSONObject();
-            JSONObject json = new JSONObject();
-            json.put("code",1);
-            json.put("msg","ok");
-            JSONObject adminInfo = new JSONObject();
-            adminInfo.put("super",false);
-            adminInfo.put("last_login_time",time);
-            adminInfo.put("nickname",customer.getNickname());
-            adminInfo.put("id",customer.getId());
-            adminInfo.put("avatar","https://bpic.51yuansu.com/pic2/cover/00/31/39/5810b3a30ead9_610.jpg");
-            adminInfo.put("username",customer.getUsername());
-            adminInfo.put("project_key",project_key);
-            data.put("adminInfo",adminInfo);
-           String api="{\"siteName\": \"业务管理平台\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
+   //     myPrintln("获取参数"+customer.toString());
+        JSONObject data = new JSONObject();
+        JSONObject json = new JSONObject();
+        json.put("code",1);
+        json.put("msg","ok");
+        JSONObject adminInfo = new JSONObject();
+        adminInfo.put("super",false);
+        adminInfo.put("last_login_time",time);
+        adminInfo.put("nickname",customer.getNickname());
+        adminInfo.put("id",customer.getId());
+        adminInfo.put("avatar","https://bpic.51yuansu.com/pic2/cover/00/31/39/5810b3a30ead9_610.jpg");
+        adminInfo.put("username",customer.getUsername());
+        adminInfo.put("project_key",project_key);
+        data.put("adminInfo",adminInfo);
+        String api="{\"siteName\": \"业务管理平台\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
 
-           if(lang.equals("en")){
-               api="{\"siteName\": \"Business Management Platform\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
-           }
-           JSONObject apiUrl=JSONObject.parseObject(api);
-            data.put("time",System.currentTimeMillis()/1000);
-            String t="{\n" +
-                    "            \"installServicePort\":\"8000\",\n" +
-                    "            \"npmPackageManager\":\"pnpm\"\n" +
-                    "        }";
-            JSONObject terminal=JSONObject.parseObject(t);
-            data.put("terminal",terminal);
-            data.put("siteConfig",apiUrl);
-            if(customer.getType()==1&&project_key==null){
-                String menus="";
-                switch (lang){
-                    case "en":
-                        menus=" [ { \"extend\": \"none\",\"path\": \"project\",\"component\": \"\",\"menu_type\": null, \"keepalive\": 0,\"icon\": \"fa fa-group\",\"pid\": 0,\"type\": \"menu_dir\",\"title\": \"Project\",\"url\": \"\",\"children\": [{\"menu_type\": \"tab\",\"keepalive\": \"project/list\",\"icon\": \"fa fa-group\",\"pid\": 0,\"type\": \"menu\",\"title\": \"Project List\",\"url\": \"\",\"extend\": \"none\",\"path\": \"project/list\",\"component\": \"/src/views/backend/project/list/index.vue\",\"children\":" +
-                                " [{\"extend\": \"none\",\"path\": \"\",\"component\": \"\",\"menu_type\": null,\"keepalive\": 0,\"name\": \"project/list/edit\",\"icon\": \"\",\"pid\": 3,\"id\": 4,\"type\": \"button\",\"title\": \"编辑\",\"url\": \"\"}," +
-                                "{\"extend\": \"none\",\"path\": \"\",\"component\": \"\",\"menu_type\": null,\"keepalive\": 0,\"name\": \"project/list/add\",\"icon\": \"\",\"pid\": 3,\"id\": 4,\"type\": \"button\",\"title\": \"添加\",\"url\": \"\"}," +
-                                "{\"extend\": \"none\",\"path\": \"\",\"component\": \"\",\"menu_type\": null,\"keepalive\": 0,\"name\": \"project/list/del\",\"icon\": \"\",\"pid\": 3,\"id\": 4,\"type\": \"button\",\"title\": \"删除\",\"url\": \"\"}],\"name\": \"project/list\",\"id\": 1}]}]";
-                        break;
-
-                    default:
-                        menus="[\n" +
-                                "            {\n" +
-                                "                \"extend\": \"none\",\n" +
-                                "                \"path\": \"project\",\n" +
-                                "                \"component\": \"\",\n" +
-                                "                \"menu_type\": null,\n" +
-                                "                \"children\": [\n" +
-                                "                    {\n" +
-                                "                        \"menu_type\": \"tab\",\n" +
-                                "                        \"keepalive\": \"project/list\",\n" +
-                                "                        \"icon\": \"fa fa-group\",\n" +
-                                "                        \"pid\": 0,\n" +
-                                "                        \"type\": \"menu\",\n" +
-                                "                        \"title\": \"项目列表\",\n" +
-                                "                        \"url\": \"\",\n" +
-                                "                        \"extend\": \"none\",\n" +
-                                "                        \"path\": \"project/list\",\n" +
-                                "                        \"component\": \"/src/views/backend/project/list/index.vue\",\n" +
-                                "                        \"children\": [\n" +
-                                "                            {\n" +
-                                "                                \"extend\": \"none\",\n" +
-                                "                                \"path\": \"\",\n" +
-                                "                                \"component\": \"\",\n" +
-                                "                                \"menu_type\": null,\n" +
-                                "                                \"keepalive\": 0,\n" +
-                                "                                \"name\": \"project/list/edit\",\n" +
-                                "                                \"icon\": \"\",\n" +
-                                "                                \"pid\": 3,\n" +
-                                "                                \"id\": 4,\n" +
-                                "                                \"type\": \"button\",\n" +
-                                "                                \"title\": \"编辑\",\n" +
-                                "                                \"url\": \"\"\n" +
-                                "                            },\n" +
-                                "                            {\n" +
-                                "                                \"extend\": \"none\",\n" +
-                                "                                \"path\": \"\",\n" +
-                                "                                \"component\": \"\",\n" +
-                                "                                \"menu_type\": null,\n" +
-                                "                                \"keepalive\": 0,\n" +
-                                "                                \"name\": \"project/list/add\",\n" +
-                                "                                \"icon\": \"\",\n" +
-                                "                                \"pid\": 3,\n" +
-                                "                                \"id\": 4,\n" +
-                                "                                \"type\": \"button\",\n" +
-                                "                                \"title\": \"添加\",\n" +
-                                "                                \"url\": \"\"\n" +
-                                "                            },\n" +
-                                "                            {\n" +
-                                "                                \"extend\": \"none\",\n" +
-                                "                                \"path\": \"\",\n" +
-                                "                                \"component\": \"\",\n" +
-                                "                                \"menu_type\": null,\n" +
-                                "                                \"keepalive\": 0,\n" +
-                                "                                \"name\": \"project/list/del\",\n" +
-                                "                                \"icon\": \"\",\n" +
-                                "                                \"pid\": 3,\n" +
-                                "                                \"id\": 4,\n" +
-                                "                                \"type\": \"button\",\n" +
-                                "                                \"title\": \"删除\",\n" +
-                                "                                \"url\": \"\"\n" +
-                                "                            }\n" +
-                                "                        ],\n" +
-                                "                        \"name\": \"project/list\",\n" +
-                                "                        \"id\": 1\n" +
-                                "                    }\n" +
-                                "                ],\n" +
-                                "                \"keepalive\": 0,\n" +
-                                "                \"icon\": \"fa fa-group\",\n" +
-                                "                \"pid\": 0,\n" +
-                                "                \"type\": \"menu_dir\",\n" +
-                                "                \"title\": \"项目管理\",\n" +
-                                "                \"url\": \"\"\n" +
-                                "            },\n" +
-                                "{\n" +
-                                "                         \"menu_type\": \"tab\",\n" +
-                                "                        \"keepalive\": \"system/list\",\n" +
-                                "                        \"icon\": \"fa fa-group\",\n" +
-                                "                        \"pid\": 0,\n" +
-                                "                        \"type\": \"menu\",\n" +
-                                "                        \"title\": \"系统设置\",\n" +
-                                "                        \"url\": \"\",\n" +
-                                "                        \"extend\": \"none\",\n" +
-                                "                        \"path\": \"system/list\",\n" +
-                                "                        \"component\": \"/src/views/backend/system/list/index.vue\"\n" +
-                                "}        ]";
-
+        if(lang.equals("en")){
+            api="{\"siteName\": \"Business Management Platform\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
+        }
+        JSONObject apiUrl=JSONObject.parseObject(api);
+        data.put("time",System.currentTimeMillis()/1000);
+        String t="{\n" +
+                "            \"installServicePort\":\"8000\",\n" +
+                "            \"npmPackageManager\":\"pnpm\"\n" +
+                "        }";
+        JSONObject terminal=JSONObject.parseObject(t);
+        data.put("terminal",terminal);
+        data.put("siteConfig",apiUrl);
+        if(customer.getType()==1&&project_key==null){
+            String menus="";
+            switch (lang){
+                case "en":
+                    menus=" [ { \"extend\": \"none\",\"path\": \"project\",\"component\": \"\",\"menu_type\": null, \"keepalive\": 0,\"icon\": \"fa fa-group\",\"pid\": 0,\"type\": \"menu_dir\",\"title\": \"Project\",\"url\": \"\",\"children\": [{\"menu_type\": \"tab\",\"keepalive\": \"project/list\",\"icon\": \"fa fa-group\",\"pid\": 0,\"type\": \"menu\",\"title\": \"Project List\",\"url\": \"\",\"extend\": \"none\",\"path\": \"project/list\",\"component\": \"/src/views/backend/project/list/index.vue\",\"children\":" +
+                            " [{\"extend\": \"none\",\"path\": \"\",\"component\": \"\",\"menu_type\": null,\"keepalive\": 0,\"name\": \"project/list/edit\",\"icon\": \"\",\"pid\": 3,\"id\": 4,\"type\": \"button\",\"title\": \"编辑\",\"url\": \"\"}," +
+                            "{\"extend\": \"none\",\"path\": \"\",\"component\": \"\",\"menu_type\": null,\"keepalive\": 0,\"name\": \"project/list/add\",\"icon\": \"\",\"pid\": 3,\"id\": 4,\"type\": \"button\",\"title\": \"添加\",\"url\": \"\"}," +
+                            "{\"extend\": \"none\",\"path\": \"\",\"component\": \"\",\"menu_type\": null,\"keepalive\": 0,\"name\": \"project/list/del\",\"icon\": \"\",\"pid\": 3,\"id\": 4,\"type\": \"button\",\"title\": \"删除\",\"url\": \"\"}],\"name\": \"project/list\",\"id\": 1}]}]";
                     break;
-                }
 
-                //String menus="[{ \"extend\":\"none\", \"path\":\"project\", \"component\":\"\", \"menu_type\":null, \"children\":[  {\"extend\":\"none\",\"path\":\"project/list\",\"component\":\"/src/views/backend/project/list/index.vue\",\"menu_type\":\"tab\",\"keepalive\":\"project/list\",\"icon\":\"fa fa-group\",\"name\":\"project/list\",\"pid\":0,\"id\":1,\"type\":\"menu\",\"title\":\"项目列表\",\"url\":\"\"  },  {\"menu_type\":\"tab\",\"keepalive\":\"project/auth\",\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu\",\"title\":\"项目权限\",\"url\":\"\",\"extend\":\"none\",\"path\":\"project/auth\",\"component\":\"/src/views/backend/project/auth/index.vue\",\"children\":[ {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"project/auth/edit\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"编辑\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"project/auth/add\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"添加\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"project/auth/del\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"删除\",  \"url\":\"\" }],\"name\":\"project/auth\",\"id\":1  } ], \"keepalive\":0, \"icon\":\"fa fa-group\", \"pid\":0, \"type\":\"menu_dir\", \"title\":\"项目管理\", \"url\":\"\"},{ \"extend\":\"none\", \"path\":\"user\", \"component\":\"\", \"menu_type\":null, \"children\":[  {\"menu_type\":\"tab\",\"keepalive\":\"user/user\",\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu\",\"title\":\"用户列表\",\"url\":\"\",\"extend\":\"none\",\"path\":\"user/user\",\"component\":\"/src/views/backend/user/user/index.vue\",\"children\":[ {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/user/edit\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"编辑\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/user/add\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"添加\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/user/del\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"删除\",  \"url\":\"\" }],\"name\":\"user/user\",\"id\":1  },  {\"menu_type\":\"tab\",\"keepalive\":\"user/rule\",\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu\",\"title\":\"用户角色\",\"url\":\"\",\"extend\":\"none\",\"path\":\"user/rule\",\"component\":\"/src/views/backend/user/rule/index.vue\",\"children\":[ {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/rule/edit\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"编辑\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/rule/add\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"添加\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/rule/del\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"删除\",  \"url\":\"\" }],\"name\":\"user/rule\",\"id\":1  } ], \"keepalive\":0, \"icon\":\"fa fa-group\", \"pid\":0, \"type\":\"menu_dir\", \"title\":\"用户管理\", \"url\":\"\"}  ]";
+                default:
+                    menus="[\n" +
+                            "            {\n" +
+                            "                \"extend\": \"none\",\n" +
+                            "                \"path\": \"project\",\n" +
+                            "                \"component\": \"\",\n" +
+                            "                \"menu_type\": null,\n" +
+                            "                \"children\": [\n" +
+                            "                    {\n" +
+                            "                        \"menu_type\": \"tab\",\n" +
+                            "                        \"keepalive\": \"project/list\",\n" +
+                            "                        \"icon\": \"fa fa-group\",\n" +
+                            "                        \"pid\": 0,\n" +
+                            "                        \"type\": \"menu\",\n" +
+                            "                        \"title\": \"项目列表\",\n" +
+                            "                        \"url\": \"\",\n" +
+                            "                        \"extend\": \"none\",\n" +
+                            "                        \"path\": \"project/list\",\n" +
+                            "                        \"component\": \"/src/views/backend/project/list/index.vue\",\n" +
+                            "                        \"children\": [\n" +
+                            "                            {\n" +
+                            "                                \"extend\": \"none\",\n" +
+                            "                                \"path\": \"\",\n" +
+                            "                                \"component\": \"\",\n" +
+                            "                                \"menu_type\": null,\n" +
+                            "                                \"keepalive\": 0,\n" +
+                            "                                \"name\": \"project/list/edit\",\n" +
+                            "                                \"icon\": \"\",\n" +
+                            "                                \"pid\": 3,\n" +
+                            "                                \"id\": 4,\n" +
+                            "                                \"type\": \"button\",\n" +
+                            "                                \"title\": \"编辑\",\n" +
+                            "                                \"url\": \"\"\n" +
+                            "                            },\n" +
+                            "                            {\n" +
+                            "                                \"extend\": \"none\",\n" +
+                            "                                \"path\": \"\",\n" +
+                            "                                \"component\": \"\",\n" +
+                            "                                \"menu_type\": null,\n" +
+                            "                                \"keepalive\": 0,\n" +
+                            "                                \"name\": \"project/list/add\",\n" +
+                            "                                \"icon\": \"\",\n" +
+                            "                                \"pid\": 3,\n" +
+                            "                                \"id\": 4,\n" +
+                            "                                \"type\": \"button\",\n" +
+                            "                                \"title\": \"添加\",\n" +
+                            "                                \"url\": \"\"\n" +
+                            "                            },\n" +
+                            "                            {\n" +
+                            "                                \"extend\": \"none\",\n" +
+                            "                                \"path\": \"\",\n" +
+                            "                                \"component\": \"\",\n" +
+                            "                                \"menu_type\": null,\n" +
+                            "                                \"keepalive\": 0,\n" +
+                            "                                \"name\": \"project/list/del\",\n" +
+                            "                                \"icon\": \"\",\n" +
+                            "                                \"pid\": 3,\n" +
+                            "                                \"id\": 4,\n" +
+                            "                                \"type\": \"button\",\n" +
+                            "                                \"title\": \"删除\",\n" +
+                            "                                \"url\": \"\"\n" +
+                            "                            }\n" +
+                            "                        ],\n" +
+                            "                        \"name\": \"project/list\",\n" +
+                            "                        \"id\": 1\n" +
+                            "                    }\n" +
+                            "                ],\n" +
+                            "                \"keepalive\": 0,\n" +
+                            "                \"icon\": \"fa fa-group\",\n" +
+                            "                \"pid\": 0,\n" +
+                            "                \"type\": \"menu_dir\",\n" +
+                            "                \"title\": \"项目管理\",\n" +
+                            "                \"url\": \"\"\n" +
+                            "            },\n" +
+                            "{\n" +
+                            "                         \"menu_type\": \"tab\",\n" +
+                            "                        \"keepalive\": \"system/list\",\n" +
+                            "                        \"icon\": \"fa fa-group\",\n" +
+                            "                        \"pid\": 0,\n" +
+                            "                        \"type\": \"menu\",\n" +
+                            "                        \"title\": \"系统设置\",\n" +
+                            "                        \"url\": \"\",\n" +
+                            "                        \"extend\": \"none\",\n" +
+                            "                        \"path\": \"system/list\",\n" +
+                            "                        \"component\": \"/src/views/backend/system/list/index.vue\"\n" +
+                            "}        ]";
 
-                JSONArray menu=JSONArray.parseArray(menus);
-                data.put("menus",menu);
-                json.put("data",data);
-              /*  String b="{    \"msg\": \"搞笑了\",    \"code\": 1,    \"data\": {   \"adminInfo\": {  \"super\": true,  \"last_login_time\": \"2023-07-25 14:18:59\",  \"nickname\": \"Admin\",  \"id\": 1,  \"avatar\": \"https://www.kunlunlink.com/wp-content/uploads/2021/04/logo.png\",  \"username\": \"admin\"   },   \"siteConfig\": {  \"apiUrl\": \"https://buildadmin.com\",  \"upload\": { \"mode\": \"local\", \"savename\": \"/storage/{topic}/{year}{mon}{day}/{filename}{filesha1}{.suffix}\", \"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\", \"maxsize\": 10485760  },  \"cdnUrl\": \"https://demo.buildadmin.com\",  \"siteName\": \"KUNLUN资产管理\",  \"version\": \"v1.0.0\"   },   \"menus\": [{\"extend\": \"none\", \"path\": \"Station\", \"component\": \"\", \"menu_type\": null,\t \"keepalive\": 0, \"icon\": \"fa fa-group\", \"pid\": 0, \"type\": \"menu_dir\", \"title\": \"网关管理\", \"url\": \"\", \"children\": [{    \"menu_type\": \"tab\",    \"keepalive\": 0,    \"icon\": \"fa fa-group\",    \"pid\": 0,    \"type\": \"menu_dir\",    \"title\": \"网关管理\",    \"url\": \"\",    \"extend\": \"none\",    \"path\": \"Station/list\",    \"component\": \"/src/views/backend/Station/list/index.vue\",    \"children\": [   {  \"extend\": \"none\",  \"path\": \"\",  \"component\": \"\",  \"menu_type\": null,  \"keepalive\": 0,  \"name\": \"Station/list/edit\",  \"icon\": \"\",  \"pid\": 3,  \"id\": 4,  \"type\": \"button\",  \"title\": \"编辑\",  \"url\": \"\"   },   {  \"extend\": \"none\",  \"path\": \"\",  \"component\": \"\",  \"menu_type\": null,  \"keepalive\": 0,  \"name\": \"Station/list/add\",  \"icon\": \"\",  \"pid\": 3,  \"id\": 4,  \"type\": \"button\",  \"title\": \"添加\",  \"url\": \"\"   },   {  \"extend\": \"none\",  \"path\": \"\",  \"component\": \"\",  \"menu_type\": null,  \"keepalive\": 0,  \"name\": \"Station/list/del\",  \"icon\": \"\",  \"pid\": 3,  \"id\": 4,  \"type\": \"button\",  \"title\": \"删除\",  \"url\": \"\"   }    ],    \"name\": \"Station/list\",    \"id\": 1} ]  }   ],   \"terminal\": {  \"installServicePort\": \"8000\",  \"npmPackageManager\": \"pnpm\"   }    },    \"time\": 1690265939}";
-                        com.alibaba.fastjson.JSONObject jsonObject= JSON.parseObject(b);*/
-                return json;
+                break;
             }
-            else if(customer.getType()==1&&project_key!=null||customer.getType()==2){
-                myPrintln("账号"+customer.getProject_key());
-                myPrintln("语言="+customer.getLang());
-                switch (lang){
-                    case  "en":
-                        List<Menu_en> list=null;
-                        if(customer.getType()==1){
-                            //类型1，超级管理员，获取全部界面
+
+            //String menus="[{ \"extend\":\"none\", \"path\":\"project\", \"component\":\"\", \"menu_type\":null, \"children\":[  {\"extend\":\"none\",\"path\":\"project/list\",\"component\":\"/src/views/backend/project/list/index.vue\",\"menu_type\":\"tab\",\"keepalive\":\"project/list\",\"icon\":\"fa fa-group\",\"name\":\"project/list\",\"pid\":0,\"id\":1,\"type\":\"menu\",\"title\":\"项目列表\",\"url\":\"\"  },  {\"menu_type\":\"tab\",\"keepalive\":\"project/auth\",\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu\",\"title\":\"项目权限\",\"url\":\"\",\"extend\":\"none\",\"path\":\"project/auth\",\"component\":\"/src/views/backend/project/auth/index.vue\",\"children\":[ {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"project/auth/edit\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"编辑\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"project/auth/add\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"添加\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"project/auth/del\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"删除\",  \"url\":\"\" }],\"name\":\"project/auth\",\"id\":1  } ], \"keepalive\":0, \"icon\":\"fa fa-group\", \"pid\":0, \"type\":\"menu_dir\", \"title\":\"项目管理\", \"url\":\"\"},{ \"extend\":\"none\", \"path\":\"user\", \"component\":\"\", \"menu_type\":null, \"children\":[  {\"menu_type\":\"tab\",\"keepalive\":\"user/user\",\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu\",\"title\":\"用户列表\",\"url\":\"\",\"extend\":\"none\",\"path\":\"user/user\",\"component\":\"/src/views/backend/user/user/index.vue\",\"children\":[ {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/user/edit\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"编辑\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/user/add\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"添加\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/user/del\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"删除\",  \"url\":\"\" }],\"name\":\"user/user\",\"id\":1  },  {\"menu_type\":\"tab\",\"keepalive\":\"user/rule\",\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu\",\"title\":\"用户角色\",\"url\":\"\",\"extend\":\"none\",\"path\":\"user/rule\",\"component\":\"/src/views/backend/user/rule/index.vue\",\"children\":[ {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/rule/edit\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"编辑\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/rule/add\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"添加\",  \"url\":\"\" }, {  \"extend\":\"none\",  \"path\":\"\",  \"component\":\"\",  \"menu_type\":null,  \"keepalive\":0,  \"name\":\"user/rule/del\",  \"icon\":\"\",  \"pid\":3,  \"id\":4,  \"type\":\"button\",  \"title\":\"删除\",  \"url\":\"\" }],\"name\":\"user/rule\",\"id\":1  } ], \"keepalive\":0, \"icon\":\"fa fa-group\", \"pid\":0, \"type\":\"menu_dir\", \"title\":\"用户管理\", \"url\":\"\"}  ]";
+
+            JSONArray menu=JSONArray.parseArray(menus);
+            data.put("menus",menu);
+            json.put("data",data);
+          /*  String b="{    \"msg\": \"搞笑了\",    \"code\": 1,    \"data\": {   \"adminInfo\": {  \"super\": true,  \"last_login_time\": \"2023-07-25 14:18:59\",  \"nickname\": \"Admin\",  \"id\": 1,  \"avatar\": \"https://www.kunlunlink.com/wp-content/uploads/2021/04/logo.png\",  \"username\": \"admin\"   },   \"siteConfig\": {  \"apiUrl\": \"https://buildadmin.com\",  \"upload\": { \"mode\": \"local\", \"savename\": \"/storage/{topic}/{year}{mon}{day}/{filename}{filesha1}{.suffix}\", \"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\", \"maxsize\": 10485760  },  \"cdnUrl\": \"https://demo.buildadmin.com\",  \"siteName\": \"KUNLUN资产管理\",  \"version\": \"v1.0.0\"   },   \"menus\": [{\"extend\": \"none\", \"path\": \"Station\", \"component\": \"\", \"menu_type\": null,\t \"keepalive\": 0, \"icon\": \"fa fa-group\", \"pid\": 0, \"type\": \"menu_dir\", \"title\": \"网关管理\", \"url\": \"\", \"children\": [{    \"menu_type\": \"tab\",    \"keepalive\": 0,    \"icon\": \"fa fa-group\",    \"pid\": 0,    \"type\": \"menu_dir\",    \"title\": \"网关管理\",    \"url\": \"\",    \"extend\": \"none\",    \"path\": \"Station/list\",    \"component\": \"/src/views/backend/Station/list/index.vue\",    \"children\": [   {  \"extend\": \"none\",  \"path\": \"\",  \"component\": \"\",  \"menu_type\": null,  \"keepalive\": 0,  \"name\": \"Station/list/edit\",  \"icon\": \"\",  \"pid\": 3,  \"id\": 4,  \"type\": \"button\",  \"title\": \"编辑\",  \"url\": \"\"   },   {  \"extend\": \"none\",  \"path\": \"\",  \"component\": \"\",  \"menu_type\": null,  \"keepalive\": 0,  \"name\": \"Station/list/add\",  \"icon\": \"\",  \"pid\": 3,  \"id\": 4,  \"type\": \"button\",  \"title\": \"添加\",  \"url\": \"\"   },   {  \"extend\": \"none\",  \"path\": \"\",  \"component\": \"\",  \"menu_type\": null,  \"keepalive\": 0,  \"name\": \"Station/list/del\",  \"icon\": \"\",  \"pid\": 3,  \"id\": 4,  \"type\": \"button\",  \"title\": \"删除\",  \"url\": \"\"   }    ],    \"name\": \"Station/list\",    \"id\": 1} ]  }   ],   \"terminal\": {  \"installServicePort\": \"8000\",  \"npmPackageManager\": \"pnpm\"   }    },    \"time\": 1690265939}";
+                    com.alibaba.fastjson.JSONObject jsonObject= JSON.parseObject(b);*/
+            return json;
+        }
+        else if(customer.getType()==1&&project_key!=null||customer.getType()==2){
+           // myPrintln("账号"+customer.getProject_key());
+         //   myPrintln("语言="+customer.getLang());
+            switch (lang){
+                case  "en":
+                    List<Menu_en> list=null;
+                    if(customer.getType()==1){
+                        //类型1，超级管理员，获取全部界面
+                        MenuEn_Sql menu_sql=new MenuEn_Sql();
+                        list=menu_sql.getAllMenu(menuEnMapper);
+                        customer.setProject_key(project_key);
+                        redisUtil.set(httpRequest.getHeader("batoken"),customer,600);
+                    }else if(customer.getType()==2){
+                        //普通管理员，获取对应的权限
+                        project_key=customer.getProject_key();
+                        if(project_key==null||project_key.equals("")){
+                            return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",lang);
+                        }
+                        else{
+                        //    myPrintln("RoseId"+customer.getRoles_id().substring(1));
+                            String[] rolesid=customer.getRoles_id().substring(1).split("-");
+                            Roles roles=null;
                             MenuEn_Sql menu_sql=new MenuEn_Sql();
-                            list=menu_sql.getAllMenu(menuEnMapper);
-                            customer.setProject_key(project_key);
-                            redisUtil.set(httpRequest.getHeader("batoken"),customer,600);
-                        }else if(customer.getType()==2){
-                            //普通管理员，获取对应的权限
-                            project_key=customer.getProject_key();
-                            if(project_key==null||project_key.equals("")){
-                                return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",lang);
-                            }
-                            else{
-                                myPrintln("RoseId"+customer.getRoles_id().substring(1));
-                                String[] rolesid=customer.getRoles_id().substring(1).split("-");
-                                Roles roles=null;
-                                MenuEn_Sql menu_sql=new MenuEn_Sql();
-                                Roles_Sql roles_sql=new Roles_Sql();
-                                List<Integer> ids=new ArrayList<Integer>();
-                                List<Integer> ids1=new ArrayList<Integer>();
-                                for(String id:rolesid){
-                                    myPrintln("获取具体的权限ID");
-                                    roles=roles_sql.getOneRoles(rolesMapper,Integer.parseInt(id));
-                                    String[] menu_ids=roles.getRules();
-                                    for(String a:menu_ids){
-                                        ids.add(Integer.parseInt(a));
-                                    }
+                            Roles_Sql roles_sql=new Roles_Sql();
+                            List<Integer> ids=new ArrayList<Integer>();
+                            List<Integer> ids1=new ArrayList<Integer>();
+                            for(String id:rolesid){
+                            //    myPrintln("获取具体的权限ID");
+                                roles=roles_sql.getOneRoles(rolesMapper,Integer.parseInt(id));
+                                String[] menu_ids=roles.getRules();
+                                for(String a:menu_ids){
+                                    ids.add(Integer.parseInt(a));
                                 }
-                                for(int id:ids){
-                                    ids1.add(id);
-                                    Menu_en menu=  menu_sql.getMenu(menuEnMapper,id);
-                                    getMenuEn(menu_sql,menu.getPid(),ids1);
-                                }
-                                list=menu_sql.getMenu(menuEnMapper,ids1);
                             }
+                            for(int id:ids){
+                                ids1.add(id);
+                                Menu_en menu=  menu_sql.getMenu(menuEnMapper,id);
+                                getMenuEn(menu_sql,menu.getPid(),ids1);
+                            }
+                            list=menu_sql.getMenu(menuEnMapper,ids1);
                         }
-                        //  String menus="[{\"extend\":\"none\",\"path\":\"Station\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"children\":[{\"menu_type\":\"tab\",\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"extend\":\"none\",\"path\":\"Station/list\",\"component\":\"/src/views/backend/Station/list/index.vue\",\"children\":[{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/edit\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"编辑\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/add\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"添加\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/del\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"删除\",\"url\":\"\"}],\"name\":\"Station/list\",\"id\":1}]}]";
-                        /* JSONArray.parseArray(list.*/
-                        // JSONArray menu=JSONArray.parseArray(menus);
-                        //   data.put("menus",menu);
-                        myPrintln("id="+list.toString());
-                        data.put("menus",list);
-                        json.put("data",data);
-                        return json;
-                    case  "zh-cn":
-                        List<Menu> list1=null;
-                        if(customer.getType()==1){
-                            //类型1，超级管理员，获取全部界面
+                    }
+                    //  String menus="[{\"extend\":\"none\",\"path\":\"Station\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"children\":[{\"menu_type\":\"tab\",\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"extend\":\"none\",\"path\":\"Station/list\",\"component\":\"/src/views/backend/Station/list/index.vue\",\"children\":[{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/edit\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"编辑\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/add\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"添加\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/del\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"删除\",\"url\":\"\"}],\"name\":\"Station/list\",\"id\":1}]}]";
+                    /* JSONArray.parseArray(list.*/
+                    // JSONArray menu=JSONArray.parseArray(menus);
+                    //   data.put("menus",menu);
+                  //  myPrintln("id="+list.toString());
+                    data.put("menus",list);
+                    json.put("data",data);
+                    return json;
+                case  "zh-cn":
+                    List<Menu> list1=null;
+                    if(customer.getType()==1){
+                        //类型1，超级管理员，获取全部界面
+                        Menu_Sql menu_sql=new Menu_Sql();
+                        list1=menu_sql.getAllMenu(menuMapper);
+                        customer.setProject_key(project_key);
+                        redisUtil.set(httpRequest.getHeader("batoken"),customer,600);
+                    }else if(customer.getType()==2){
+                      //  myPrintln("类型2");
+                        //普通管理员，获取对应的权限
+                        project_key=customer.getProject_key();
+                        if(project_key==null||project_key.equals("")){
+                            return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",lang);
+                        }
+                        else{
+                          //  myPrintln("RoseId"+customer.getRoles_id().substring(1));
+                            String[] rolesid=customer.getRoles_id().substring(1).split("-");
+                            Roles roles=null;
                             Menu_Sql menu_sql=new Menu_Sql();
-                            list1=menu_sql.getAllMenu(menuMapper);
-                            customer.setProject_key(project_key);
-                            redisUtil.set(httpRequest.getHeader("batoken"),customer,600);
-                        }else if(customer.getType()==2){
-                            myPrintln("类型2");
-                            //普通管理员，获取对应的权限
-                            project_key=customer.getProject_key();
-                            if(project_key==null||project_key.equals("")){
-                                return JsonConfig.getJsonObj(CODE_SQL_ERROR,"",lang);
-                            }
-                            else{
-                                myPrintln("RoseId"+customer.getRoles_id().substring(1));
-                                String[] rolesid=customer.getRoles_id().substring(1).split("-");
-                                Roles roles=null;
-                                Menu_Sql menu_sql=new Menu_Sql();
-                                Roles_Sql roles_sql=new Roles_Sql();
-                                List<Integer> ids=new ArrayList<Integer>();
-                                List<Integer> ids1=new ArrayList<Integer>();
-                                for(String id:rolesid){
-                                    myPrintln("RoseId"+id);
-                                    roles=roles_sql.getOneRoles(rolesMapper,Integer.parseInt(id));
-                                    String[] menu_ids=roles.getRules();
-                                    for(String a:menu_ids){
-                                        myPrintln("RoseId"+a);
-                                        ids.add(Integer.parseInt(a));
-                                    }
+                            Roles_Sql roles_sql=new Roles_Sql();
+                            List<Integer> ids=new ArrayList<Integer>();
+                            List<Integer> ids1=new ArrayList<Integer>();
+                            for(String id:rolesid){
+                              //  myPrintln("RoseId"+id);
+                                roles=roles_sql.getOneRoles(rolesMapper,Integer.parseInt(id));
+                                String[] menu_ids=roles.getRules();
+                                for(String a:menu_ids){
+                                  //  myPrintln("RoseId"+a);
+                                    ids.add(Integer.parseInt(a));
                                 }
-                                for(int id:ids){
-                                    myPrintln("ids1+"+id);
-                                    ids1.add(id);
-                                    Menu menu=  menu_sql.getMenu(menuMapper,id);
-                                    myPrintln(menu.toString());
-                                    getMenu(menu_sql,menu.getPid(),ids1);
-                                }
-                                myPrintln("sdsd"+ids1);
-                                list1=menu_sql.getMenu(menuMapper,ids1);
                             }
+                            for(int id:ids){
+                              //  myPrintln("ids1+"+id);
+                                ids1.add(id);
+                                Menu menu=  menu_sql.getMenu(menuMapper,id);
+                              //  myPrintln(menu.toString());
+                                getMenu(menu_sql,menu.getPid(),ids1);
+                            }
+                          //  myPrintln("sdsd"+ids1);
+                            list1=menu_sql.getMenu(menuMapper,ids1);
                         }
-                        //  String menus="[{\"extend\":\"none\",\"path\":\"Station\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"children\":[{\"menu_type\":\"tab\",\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"extend\":\"none\",\"path\":\"Station/list\",\"component\":\"/src/views/backend/Station/list/index.vue\",\"children\":[{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/edit\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"编辑\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/add\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"添加\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/del\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"删除\",\"url\":\"\"}],\"name\":\"Station/list\",\"id\":1}]}]";
-                        /* JSONArray.parseArray(list.*/
-                        // JSONArray menu=JSONArray.parseArray(menus);
-                        //   data.put("menus",menu);
+                    }
+                    //  String menus="[{\"extend\":\"none\",\"path\":\"Station\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"children\":[{\"menu_type\":\"tab\",\"keepalive\":0,\"icon\":\"fa fa-group\",\"pid\":0,\"type\":\"menu_dir\",\"title\":\"网关管理\",\"url\":\"\",\"extend\":\"none\",\"path\":\"Station/list\",\"component\":\"/src/views/backend/Station/list/index.vue\",\"children\":[{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/edit\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"编辑\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/add\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"添加\",\"url\":\"\"},{\"extend\":\"none\",\"path\":\"\",\"component\":\"\",\"menu_type\":null,\"keepalive\":0,\"name\":\"Station/list/del\",\"icon\":\"\",\"pid\":3,\"id\":4,\"type\":\"button\",\"title\":\"删除\",\"url\":\"\"}],\"name\":\"Station/list\",\"id\":1}]}]";
+                    /* JSONArray.parseArray(list.*/
+                    // JSONArray menu=JSONArray.parseArray(menus);
+                    //   data.put("menus",menu);
 
-                        data.put("menus",list1);
-                        json.put("data",data);
-                        return json;
-
-                }
-
-
+                    data.put("menus",list1);
+                    json.put("data",data);
+                    return json;
 
             }
-            else{
-                //普通管理员登录
-                return (JSONObject) new JSONObject().put("data","微红2");
 
-            }
+
+
+        }
+        else{
+            //普通管理员登录
+            return (JSONObject) new JSONObject().put("data","微红2");
+
         }
 
 
-
-
-      return (JSONObject) new JSONObject().put("data","cunstomer账号为空");
+        return (JSONObject) new JSONObject().put("data","cunstomer账号为空");
     }
 private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
-    myPrintln(" pid="+p_id);
+   // myPrintln(" pid="+p_id);
     if(p_id!=0) {
         ids.add(p_id);
         Menu m = menu_sql.getMenu(menuMapper, p_id);
@@ -428,7 +425,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
 
 
         token=request.getHeader("batoken");
-        myPrintln("token"+token);
+      //  myPrintln("token"+token);
 
         Customer customer=(Customer)  redisUtil.get(token);
         String lang=customer.getLang();
@@ -437,7 +434,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
       //  redisUtil.set("tokenId:"+customer.getCustomerkey() , toketn, ExpireTime);
         //设置token对应内容
         redisUtil.set(token, "", ExpireTime);
-       String  response = JsonConfig.getJson(CODE_ReLogin,null,lang);
+        String  response = JsonConfig.getJson(CODE_ReLogin,null,lang);
         return response;
     }
 
@@ -457,7 +454,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     public com.alibaba.fastjson.JSONObject getDashboard(HttpServletRequest request){
 
        String token= request.getHeader("batoken");
-        myPrintln("Token="+token);
+      //  myPrintln("Token="+token);
        String a=    "{\n"+
                 "    \"code\": 1,\n"+
                 "    \"msg\": \"\",\n"+
@@ -473,7 +470,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/setMenu", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public JSONObject setMenu(HttpServletRequest request, HttpServletResponse httpServletResponse, @RequestBody JSONArray json) {
-        myPrintln(json.toString());
+       // myPrintln(json.toString());
         Gson gson = new Gson();
         ArrayList<Menu> menuArrayList  = gson.fromJson(json.toString(), new TypeToken<List<Menu>>(){}.getType());
         for(Menu menu:menuArrayList){
@@ -589,7 +586,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         String rules="";
         int id=100;
         for(int i=0;i<jsonArray.size();i++){
-            myPrintln(jsonArray.get(i).toString());
+           // myPrintln(jsonArray.get(i).toString());
             rules=rules+","+jsonArray.get(i).toString();
             if(Integer.parseInt(jsonArray.get(i).toString())<id){
                 id=Integer.parseInt(jsonArray.get(i).toString());
@@ -635,7 +632,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             Customer_sql customer_sql=new Customer_sql();
             for(Object jsonObject:json){
                 try {
-                    myPrintln(jsonObject.toString());
+                   // myPrintln(jsonObject.toString());
                      id = Integer.parseInt(jsonObject.toString());
                    boolean status= customer_sql.check(customerMapper,id,customer.getUserkey());
                    if(status){
@@ -654,7 +651,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     roles_sql.delete(rolesMapper,id);
                 }catch (Exception e){
                     myPrintln("3");
-                    return JsonConfig.getJsonObj(CODE_DR,CODE_DR_txt,lang);
+                   // return JsonConfig.getJsonObj(CODE_DR,CODE_DR_txt,lang);
                 }
             }
             return JsonConfig.getJsonObj(CODE_OK,"",lang);
@@ -665,7 +662,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/Roles/add", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public JSONObject addRoles(HttpServletRequest request, HttpServletResponse httpServletResponse, @RequestBody JSONObject json) {
-        myPrintln(json.toString());
+      //  myPrintln(json.toString());
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
         String project_key=customer.getProject_key();
@@ -681,13 +678,13 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             String rules="";
             int id=100;
             for(int i=0;i<jsonArray.size();i++){
-                myPrintln(jsonArray.get(i).toString());
+              //  myPrintln(jsonArray.get(i).toString());
                 rules=rules+","+jsonArray.get(i).toString();
                 if(Integer.parseInt(jsonArray.get(i).toString())<id){
                     id=Integer.parseInt(jsonArray.get(i).toString());
                 }
             }
-            myPrintln("id="+id);
+         //   myPrintln("id="+id);
 
             String details="";
             try {
@@ -715,7 +712,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             data.put("msg","ok");
             return data; }
             catch (Exception e){
-                myPrintln(e.getMessage());
+             //   myPrintln(e.getMessage());
                 return null;
             }
         }
@@ -747,7 +744,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                     int group_arr[]=new int[ids.length];
                     int i=0;
                     for(String d:ids){
-                        myPrintln(d);
+                     //   myPrintln(d);
                        Roles roles= roles_sql.getOneRoles(rolesMapper,Integer.parseInt(d));
                        if(roles==null){
                            continue;
@@ -772,7 +769,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     public JSONObject addCustomer(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
-        myPrintln(jsonObject.toString());
+       // myPrintln(jsonObject.toString());
         if(customer.getType()!=1){
             return JsonConfig.getJsonObj(CODE_noP,null,lang);
         }
@@ -818,7 +815,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     public JSONObject updateCustomer(HttpServletRequest request,@RequestBody JSONObject jsonObject) {
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
-        myPrintln(jsonObject.toString());
+      //  myPrintln(jsonObject.toString());
         if(customer.getType()!=1){
             return JsonConfig.getJsonObj(CODE_noP,null,lang);
         }
@@ -889,7 +886,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                 }
             }
             JSONObject jsonObject=JsonConfig.getJsonObj(CODE_OK,customer2,lang);
-            myPrintln(jsonObject.toString());
+         //   myPrintln(jsonObject.toString());
             JSONObject jsonObject1=jsonObject.getJSONObject("data");
             jsonObject1.put("group_name_arr",roles_name);
             jsonObject1.put("group_arr",roles_id);
@@ -914,7 +911,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         int id=0;
         for(Object jsonObject:json){
             try {
-                myPrintln(jsonObject.toString());
+               // myPrintln(jsonObject.toString());
                 id = Integer.parseInt(jsonObject.toString());
                 int status= customer_sql.deleteCustomer(customerMapper,id);
                 if(status<0){
@@ -964,7 +961,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/Logs/del", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public JSONObject deleteLogs(HttpServletRequest request, @RequestBody JSONArray json) {
-        myPrintln(json.toString());
+      //  myPrintln(json.toString());
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
         if(json==null||json.size()==0){
@@ -974,7 +971,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             List<Integer> ids=new ArrayList<>();
             for(Object jsonObject:json){
                 try {
-                    myPrintln(jsonObject.toString());
+                  //  myPrintln(jsonObject.toString());
                     id = Integer.parseInt(jsonObject.toString());
                     ids.add(id);
                 }catch (Exception e){
@@ -1014,7 +1011,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null,lang);
         }
        else if(customer.getPermission().getEdituser()==1 ){
-            myPrintln("对象为" + customer.getUsername());
+         //   myPrintln("对象为" + customer.getUsername());
             User user = new User(userName, passWord,  nickName, phoneNumber,permission_key);
             User_sql user_sql = new User_sql();
             int result = user_sql.addUser(userMapper, user);
@@ -1039,7 +1036,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null,lang);
         }
         else if(customer.getPermission().getEditdepartment()==1 ){
-            myPrintln("对象为" + customer.getUsername());
+           // myPrintln("对象为" + customer.getUsername());
             Department department=new Department(name,customer.getUserkey(),p_id,customer.getCustomerkey());
             Department_Sql departmentSql = new Department_Sql();
             boolean result = departmentSql.addDepartment(departmentMapper, department);
@@ -1132,7 +1129,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             return JsonConfig.getJson(CODE_noP,null,lang);
         }
         else if(user1.getPermission().getEditperson()==1 ){
-            myPrintln("对象为" + user1.getUsername());
+          //  myPrintln("对象为" + user1.getUsername());
             Person person=personMap.get(idcard);
             if(person!=null){
                 String pathss=null;
@@ -1189,7 +1186,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         String info=json.getString("project_info");
         Customer customer = getCustomer(request);
         String lang=customer.getLang();
-        myPrintln("2665"+json.toString()+response.toString());
+       // myPrintln("2665"+json.toString()+response.toString());
         if(json==null){
             return response;
         }
@@ -1254,7 +1251,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
     @RequestMapping(value = "userApi/updateProject", method = RequestMethod.POST, produces = "application/json")
     public JSONObject updateProject(HttpServletRequest request, @RequestBody JSONObject json){
         JSONObject response =JSON.parseObject("{\"msg\":\"用户权限异常\",\"code\":2}");
-        myPrintln(json.toString());
+    //    myPrintln(json.toString());
         String user_key=json.getString("user_key");
         String name=json.getString("project_name");
         String info=json.getString("project_info");
@@ -1650,7 +1647,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
             int ok = 0;
             int fail = 0;
             for (java.util.Map<String, String> map : data) {
-                myPrintln("循环");
+             //   myPrintln("循环");
                 Station Station = new Station(map.get("ble_mac"), Double.parseDouble(map.get("x")), Double.parseDouble(map.get("y")));
                 Station.setUser_key(user.getUserkey());
                 Station.setProject_key(user.getProject_key());
@@ -2362,7 +2359,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            myPrintln("----------file download---" + file.getPath());
+         //   myPrintln("----------file download---" + file.getPath());
             try {
                 bis.close();
                 fis.close();

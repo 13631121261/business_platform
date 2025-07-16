@@ -198,39 +198,17 @@ public class TagControl {
                  Tag tag = new Tag();
                  String types = map.get("type");
                  String mac=map.get("mac");
-                 if(types==null||types.equals("")||mac==null||mac.equals("")){
+                 if(mac==null|| mac.isEmpty()){
                      map.put("result", "Failed, incomplete data");
                      continue;
                  }
-                 int type = 0;
-                 switch (types) {
-                     case "KTBB818":
-                         type = 1;
-                         break;
-                     case "KTBB818-K":
-                         type = 2;
-                         break;
-                     case "KTBB818-A":
-                         type = 3;
-                         break;
-                     case "KTBB818-KA":
-                         type = 4;
 
-                         break;
-                     case "AOA":
-                         type = 5;
-                         break;
-                     default:
-                         map.put("result", "Failed, tag type does not match");
-                         continue;
-                 }
-                 tag.setType(type);
+                 tag.setType(0);
                  tag.setProject_key(customer.getProject_key());
                  tag.setUser_key(customer.getUserkey());
                  tag.setMac(map.get("mac"));
                  boolean status = tag_sql.addTag(tagMapper, tag);
                  if (status) {
-
                      map.put("result", "Import was successful");
                  } else {
                      map.put("result", "Import failed, data duplication or other anomalies. Please contact the administrator");

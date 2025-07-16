@@ -16,6 +16,15 @@ public class Push_Device {
     long time=0;
     int run=0;
     int sos=0;
+    String ip="";
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getIp() {
+        return ip;
+    }
 
     public void setSos(int sos) {
         this.sos = sos;

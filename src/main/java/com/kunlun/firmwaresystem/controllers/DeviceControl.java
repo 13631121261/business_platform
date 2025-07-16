@@ -213,18 +213,26 @@ public class DeviceControl {
             }
 
             int group_id=devicep.getGroup_id();
-            if (group_id!=0) {
+            if (group_id>0) {
                 Group group=groupMapper.selectById(group_id);
                 if(group!=null){
                     devicep.setGroup_name(group.getGroup_name());
                 }
             }
+            int company_id=devicep.getCompany_id();
+            if (company_id>0) {
+                Company company=companyMapper.selectById(company_id);
+                if(company!=null){
+                    devicep.setGroup_name(company.getName());
+                }
+            }
+
             int f_id=devicep.getFence_id();
             int f_g_id=devicep.getFence_group_id();
             if (f_id!=0&&f_id!=-1) {
               Fence fence=  fenceMapper.selectById(f_id);
               if(fence!=null){
-                devicep.setF_g_name(fence.getName());
+                devicep.setF_name(fence.getName());
               }
             }
             else if(f_g_id!=0&&f_g_id!=-1) {
@@ -246,7 +254,7 @@ public class DeviceControl {
                 devicep.setMap_name(d.getMap_name());
                 devicep.setNear_s_name(d.getNear_s_name());
                 devicep.setNear_s_address(d.getNear_s_address());
-
+                devicep.setFirst_time(d.getFirst_time());
 
             }
         }

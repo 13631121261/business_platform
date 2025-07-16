@@ -8,10 +8,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kunlun.firmwaresystem.device.PageFenceGroup;
 import com.kunlun.firmwaresystem.device.PageGroup;
 import com.kunlun.firmwaresystem.entity.Fence_group;
+import com.kunlun.firmwaresystem.entity.Map;
 import com.kunlun.firmwaresystem.entity.device.Group;
 import com.kunlun.firmwaresystem.mappers.FenceGroupMapper;
 import com.kunlun.firmwaresystem.mappers.GroupMapper;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class Fence_Group_Sql {
@@ -60,6 +62,15 @@ public class Fence_Group_Sql {
         queryWrapper.eq("project_key",project_key);
         List<Fence_group> groups= groupMapper.selectList(queryWrapper);
         return groups;
+    }
+    public HashMap<Integer, Fence_group> getAll(FenceGroupMapper groupMapper) {
+        QueryWrapper<Fence_group> queryWrapper = Wrappers.query();
+        List<Fence_group> groups= groupMapper.selectList(queryWrapper);
+        HashMap<Integer, Fence_group> map= new HashMap<>();
+        for (Fence_group group : groups) {
+            map.put(group.getId(), group);
+        }
+        return map;
     }
 
     public boolean check(FenceGroupMapper groupMapper, Fence_group group) {

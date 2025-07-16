@@ -14,6 +14,8 @@ import com.kunlun.firmwaresystem.mappers.HistoryMapper;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+import static com.kunlun.firmwaresystem.entity.Alarm_Type.fence_on_sos;
+import static com.kunlun.firmwaresystem.entity.Alarm_Type.fence_out_sos;
 
 public class Alarm_Sql {
     public boolean addAlarm(AlarmMapper alarmMapper, Alarm alarm) {
@@ -62,7 +64,13 @@ public class Alarm_Sql {
         return alarms;
 
     }
+    public List<Alarm> selectByOneHour(AlarmMapper alarmMapper,String project_key,String map_key){
+        LambdaQueryWrapper<Alarm> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        userLambdaQueryWrapper.eq(Alarm::getProject_key, project_key).eq(Alarm::getMap_key,map_key).orderByDesc(true,Alarm::getId).like(Alarm::getAlarm_type,fence_on_sos).last("LIMIT 10").gt(Alarm::getCreate_time, System.currentTimeMillis()/1000-60).
+                or().eq(Alarm::getProject_key, project_key).eq(Alarm::getMap_key,map_key).orderByDesc(true,Alarm::getId).like(Alarm::getAlarm_type,fence_out_sos).last("LIMIT 10").gt(Alarm::getCreate_time, System.currentTimeMillis()/1000-60);
+        List<Alarm> alarms=alarmMapper.selectList(userLambdaQueryWrapper);
+        return alarms;
+    }
     public  void deletes(List<Integer> ids){
-
     }
 }

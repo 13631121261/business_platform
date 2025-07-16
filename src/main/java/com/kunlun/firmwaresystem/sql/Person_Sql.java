@@ -5,8 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kunlun.firmwaresystem.device.PageDeviceP;
 import com.kunlun.firmwaresystem.device.PagePerson;
+import com.kunlun.firmwaresystem.entity.Alarm;
 import com.kunlun.firmwaresystem.entity.Person;
+import com.kunlun.firmwaresystem.entity.device.Devicep;
+import com.kunlun.firmwaresystem.mappers.DevicePMapper;
 import com.kunlun.firmwaresystem.mappers.PermissionMapper;
 import com.kunlun.firmwaresystem.mappers.PersonMapper;
 
@@ -14,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 
 public class Person_Sql {
     public boolean addPerson(PersonMapper PersonMapper, Person Person) {
@@ -46,8 +52,19 @@ public class Person_Sql {
         return PersonHashMap;
     }
 
+        public PagePerson getPersonPageByCompany(PersonMapper PersonMapper, int page, int limt, String userkey,String Project_key,int company_id) {
+            Page<Person> userPage = new Page<>(page, limt);
+            IPage<Person> userIPage;
+            LambdaQueryWrapper<Person> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+            userLambdaQueryWrapper.eq(Person::getCompany_id, company_id).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).orderByDesc(true, Person::getId);
+            userIPage = PersonMapper.selectPage(userPage, userLambdaQueryWrapper);
+            PagePerson pagePerson = new PagePerson(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
+            return pagePerson;
+        }
 
-    public Map<String, Person> getAllPerson(PersonMapper PersonMapper, String project_key) {
+
+
+        public Map<String, Person> getAllPerson(PersonMapper PersonMapper, String project_key) {
 
         List<Person> Persons = PersonMapper.selectList(null);
         HashMap<String, Person> PersonHashMap = new HashMap<>();
@@ -68,7 +85,24 @@ public class Person_Sql {
         List<Person> Persons = PersonMapper.selectList(userLambdaQueryWrapper);
         return Persons;
     }
+    //根据设备组或者围栏组
+    public PagePerson getPersonByF_G_id(String project_key, PersonMapper personMapper,String f_g_id, String page, String limt) {
+        try {
+            LambdaQueryWrapper<Person> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+            Page<Person> userPage = new Page<>(Long.parseLong(page), Long.parseLong(limt));
+            IPage<Person> userIPage;
 
+                userLambdaQueryWrapper.eq(Person::getProject_key, project_key).eq(Person::getFence_group_id,f_g_id);
+
+
+            userIPage = personMapper.selectPage(userPage, userLambdaQueryWrapper);
+            return new PagePerson(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
+        }catch (Exception e){
+            myPrintln("异常="+e.getMessage());
+            return null;
+        }
+
+    }
     public List<Person> getAllPersonLike(PersonMapper PersonMapper, String idcard, String name,String project_key) {
         LambdaQueryWrapper<Person> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         userLambdaQueryWrapper.eq(Person::getProject_key,project_key).like(Person::getIdcard, idcard)

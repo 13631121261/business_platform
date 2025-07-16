@@ -16,6 +16,7 @@ public class Devicep {
     @TableId(type = IdType.AUTO) // 确保 ID 为自增
     int id;
     String name;
+    int company_id;
     long createtime;
     long lasttime;
     String bind_mac;
@@ -29,6 +30,8 @@ public class Devicep {
     @TableField(exist = false)
     String group_name;
     @TableField(exist = false)
+    String company_name;
+    @TableField(exist = false)
     String[] tagfs_id;
     @TableField(exist = false)
     List<Tagf> tagfs;
@@ -38,6 +41,8 @@ public class Devicep {
     int fence_group_id;
     @TableField(exist = false)
     String f_g_name;
+    @TableField(exist = false)
+    String f_name;
 
     String map_key;
 
@@ -55,6 +60,37 @@ public class Devicep {
 
     String near_s_name;
 
+    public void setCompany_id(int company_id) {
+        this.company_id = company_id;
+    }
+
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
+    }
+
+    public String getCompany_name() {
+        return company_name;
+    }
+
+    public void setF_name(String f_name) {
+        this.f_name = f_name;
+    }
+
+    public String getF_name() {
+        return f_name;
+    }
+
+    public int getCompany_id() {
+        return company_id;
+    }
+    long first_time;
+    public void setFirst_time(long first_time) {
+        this.first_time = first_time;
+    }
+
+    public long getFirst_time() {
+        return first_time;
+    }
     public void setNear_s_address(String near_s_address) {
         this.near_s_address = near_s_address;
     }
