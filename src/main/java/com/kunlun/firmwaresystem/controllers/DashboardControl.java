@@ -83,9 +83,9 @@ public JSONObject getAssetState(HttpServletRequest request) {
         Customer customer = getCustomer(request);
 
         long time = System.currentTimeMillis() / 1000;
-        long one_time = time - 86340;
+        long one_time = time - 3600;
         Alarm_Sql alarm_sql = new Alarm_Sql();
-            List<Alarm> alarms = alarm_sql.selectByOneDay(alarmMapper, customer.getProject_key(), one_time);
+            List<Alarm> alarms = alarm_sql.selectByOneHour(alarmMapper, customer.getProject_key(), one_time);
             int all = alarms.size();
             int key_sum = 0;
             int run_sum = 0;
@@ -141,9 +141,11 @@ public JSONObject getAssetState(HttpServletRequest request) {
     public JSONObject getSosDatail(HttpServletRequest request) {
         Customer customer = getCustomer(request);
         long time = System.currentTimeMillis() / 1000;
-        long one_time = time - 86340;
+        long one_time = time - 3600;
         Alarm_Sql alarm_sql = new Alarm_Sql();
-        List<Alarm> alarms = alarm_sql.selectByOneDay(alarmMapper, customer.getProject_key(), one_time);
+        //myPrintln("1time="+time);
+        List<Alarm> alarms = alarm_sql.selectByOneHour(alarmMapper, customer.getProject_key(), one_time);
+       // myPrintln("2time="+System.currentTimeMillis() / 1000);
         for (Alarm alarm : alarms) {
             Station station=(Station) redisUtil.get(redis_key_locator+alarm.getStation_address());
             if (station!=null){
@@ -167,6 +169,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
             }
 
         }
+       // myPrintln("3time="+System.currentTimeMillis() / 1000);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", 1);
             jsonObject.put("msg", "ok");
@@ -276,48 +279,51 @@ public JSONObject getAssetState(HttpServletRequest request) {
         for (Company company : companyList) {
             List<Object> list=new ArrayList<>();
             T1 t1=new T1();
-            int person_online_count=0;
-            int device_online_count=0;
+            int person_count=0;
+            int device_count=0;
             try {
                 for (StationType stationType : stationTypeList) {
-                    int person_count=0;
-                    int device_count=0;
+                    int person_count1=0;
+                    int device_count1=0;
                     String  name="";
                     name = stationType.getName();
-                    for (Person person : personMap.values()) {
-                      //  myPrintln("人员的公司 ID" + person.getCompany_id());
-                        if (company.getId() == person.getCompany_id()&&person.getOnline()==1) {
-                           // myPrintln("公司相同 ID");
-                            if (person.getStation_mac() != null && !person.getStation_mac().isEmpty()) {
-                               // myPrintln("人员的基站 MAC=" + person.getStation_mac());
+                    try {
+                        for (Person person : personMap.values()) {
+                            //  myPrintln("人员的公司 ID" + person.getCompany_id());
+                            if (company.getId() == person.getCompany_id()) {
+                                // if(person.getOnline()==1){
                                 if (person.getStation_mac() == null || person.getStation_mac().isEmpty()) {
-                                   // myPrintln("人员的基站 空值，继续循环");
                                     continue;
                                 }
-                                Station station = stationMap.get(person.getStation_mac());
-                                myPrintln("人员的基站 名称=" + station.getName());
-                                if (station.getType_id() == stationType.getId()) {
-                                    myPrintln(" 符合条件=" + person.getName());
-                                    person_count++;
-                                    person_online_count++;
+                                if (person.getStation_mac() != null && !person.getStation_mac().isEmpty()) {
+
+                                    Station station = stationMap.get(person.getStation_mac());
+                                    if (station != null && station.getType_id() == stationType.getId()) {
+                                        person_count1++;
+                                        person_count++;
+                                        //  person_online_count++;
+                                    }
                                 }
                             }
                         }
-                    }
-                    for (Devicep device : devicePMap.values()) {
-                        if (company.getId() == device.getCompany_id()&&device.getOnline()==1) {
-                            if (device.getNear_s_address() != null && !device.getNear_s_address().isEmpty()) {
-                                Station station = stationMap.get(device.getNear_s_address());
-                                if (station != null && station.getType_id() == stationType.getId()) {
-                                    device_count++;
-                                    device_online_count++;
+                        for (Devicep device : devicePMap.values()) {
+                            if (company.getId() == device.getCompany_id()) {
+                                if (device.getNear_s_address() != null && !device.getNear_s_address().isEmpty()) {
+                                    Station station = stationMap.get(device.getNear_s_address());
+                                    if (station != null && station.getType_id() == stationType.getId()) {
+                                        device_count++;
+                                        device_count1++;
+                                    }
                                 }
                             }
                         }
+                    }catch (Exception e){
+                        myPrintln("这里异常="+e.getMessage());
+                        e.printStackTrace();
                     }
                     T1 t = new T1();
-                    t.setPerson_count(person_count);
-                    t.setDevice_count(device_count);
+                    t.setPerson_count(person_count1);
+                    t.setDevice_count(device_count1);
                     t.setName(name);
                     list.add(t);
 
@@ -327,8 +333,9 @@ public JSONObject getAssetState(HttpServletRequest request) {
                 myPrintln("异常="+e.getMessage());
             }
             t1.setName(company.getName());
-            t1.setDevice_count(device_online_count);
-            t1.setPerson_count(person_online_count);
+            t1.setDevice_count(device_count);
+
+            t1.setPerson_count(person_count);
 
             list_data.add(t1);
         }
@@ -339,7 +346,7 @@ public JSONObject getAssetState(HttpServletRequest request) {
         return  jsonObject;
     }
 class T1{
-    private int person_count=0,device_count=0;
+    private int person_count=0,device_count=0,person_off_count=0,device_off_count=0;
     private String name="";
     private List<Object> detail=null;
 
@@ -374,7 +381,24 @@ class T1{
     public List<Object> getDetail() {
         return detail;
     }
+
+    public void setDevice_off_count(int device_off_count) {
+        this.device_off_count = device_off_count;
+    }
+
+    public void setPerson_off_count(int person_off_count) {
+        this.person_off_count = person_off_count;
+    }
+
+    public int getDevice_off_count() {
+        return device_off_count;
+    }
+
+    public int getPerson_off_count() {
+        return person_off_count;
+    }
 }
+
 
     private Customer getCustomer(HttpServletRequest request) {
         String  token=request.getHeader("batoken");

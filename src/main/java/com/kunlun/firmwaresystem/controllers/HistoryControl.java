@@ -1,12 +1,18 @@
 package com.kunlun.firmwaresystem.controllers;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kunlun.firmwaresystem.device.PageHistory;
 import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.interceptor.ParamsNotNull;
 import com.kunlun.firmwaresystem.mappers.AlarmMapper;
+import com.kunlun.firmwaresystem.mappers.CompanyMapper;
 import com.kunlun.firmwaresystem.sql.*;
+import com.kunlun.firmwaresystem.util.ITextTableGenerator;
+import com.kunlun.firmwaresystem.util.JsonConfig;
 import com.kunlun.firmwaresystem.util.RedisUtils;
+import org.aspectj.apache.bcel.classfile.Code;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +30,7 @@ import java.util.List;
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.NewSystemApplication.redisUtil;
 import static com.kunlun.firmwaresystem.entity.StationStayAnalyzer.analyzeStationStays;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_id_map;
-import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 import static io.lettuce.core.GeoArgs.Unit.m;
 
@@ -32,6 +40,8 @@ public class HistoryControl {
     private RedisUtils redisUtil;
     @Resource
     private AlarmMapper alarmMapper;
+    @Autowired
+    private CompanyMapper companyMapper;
    /* @RequestMapping(value = "userApi/History/index", method = RequestMethod.GET, produces = "application/json")
     public JSONObject getHistory(HttpServletRequest request) {
         myPrintln("开始时间="+System.currentTimeMillis());
@@ -232,6 +242,9 @@ public class HistoryControl {
       //  myPrintln("完成读取时间="+System.currentTimeMillis());
         return map;
     }
+
+
+
     @RequestMapping(value = "userApi/History/Search", method = RequestMethod.GET, produces = "application/json")
     public JSONObject Search(HttpServletRequest request) {
         String type = request.getParameter("history_type");
@@ -256,50 +269,225 @@ public class HistoryControl {
             return jsonObject;
         }
     }
-////localhost/userApi/History/index?history_type=device&start_time=1749700800&stop_time=1749873600&quickSearch=3693
-    @RequestMapping(value = "userApi/History/Search_custom", method = RequestMethod.GET, produces = "application/json")
-    public JSONObject Search_custom(HttpServletRequest request,@ParamsNotNull @RequestParam(value = "sn") String sn) {
+    @RequestMapping(value = "userApi/History/Search_custom_down", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject Search_custom_down(HttpServletResponse response,HttpServletRequest request,@RequestParam(value = "stop_time") String stop_time,@ParamsNotNull @RequestParam(value = "start_time") String start_time,@RequestParam(value = "company_id") String company_id) {
         Customer customer=getCustomer(request);
         String lang=customer.getLang();
-try {
+        try {
+            String sn=request.getParameter("sn");
+            History_Sql history_sql = new History_Sql();
+            List<History>  history = history_sql.getHistory(historyMapper, sn, Long.parseLong(start_time) , Long.parseLong(stop_time) , customer.getProject_key(), company_id);
+            List<StationStayAnalyzer.StationStay> stays = analyzeStationStays(history);
+            List<StationStayAnalyzer.StationStay> list=new ArrayList<>();
+            for (int i= stays.size()-1;i>=0;i--)
+            {
+                StationStayAnalyzer.StationStay stay=stays.get(i);
+                Station station = (Station) redisUtil.get(redis_key_locator + stay.getStationMac());
+                if(station!=null){
+                    stay.setStation_name(station.getName());
+                }
+                else{
+                    Station station1=new Station_sql().getStationByMac(stationMapper,stay.getStationMac());
+                    if (station1 != null) {
+                        stay.setStation_name(station1.getName());
+                    }
 
-    String start_time = request.getParameter("start_time");
-    String stop_time = request.getParameter("stop_time");
-    myPrintln("start_time="+start_time);
-    myPrintln("stop_time="+stop_time);
-    myPrintln("sn="+sn);
-    myPrintln("开始时间"+System.currentTimeMillis());
+                }
+                Devicep devicep=devicePMap.get(stay.getSn());
+                if (devicep != null) {
+                    stay.setName(devicep.getName());
+                    Company company=(Company) redisUtil.get(redis_key_company+devicep.getCompany_id());
+                    if (company != null) {
+                        stay.setCompany_name(company.getName());
+                    }
+                }else{
+                    Person person=personMap.get(stay.getSn());
+                    if (person != null) {
+                        stay.setName(person.getName());
+                        Company company=(Company) redisUtil.get(redis_key_company+person.getCompany_id());
+                        if (company != null) {
+                            stay.setCompany_name(company.getName());
+                        }
+                    }
+                }
+                list.add(stay);
+            }
+            myPrintln("创建文件");
+           File file= ITextTableGenerator.createPdf(list,Long.parseLong(start_time) , Long.parseLong(stop_time));
+            myPrintln("创建文件完成"+file.getAbsolutePath());
+            if (file != null && file.exists()) { //判断文件父目录是否存在q
+                myPrintln("开始下载");
+                response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+                response.setCharacterEncoding("UTF-8");
+                // response.setContentType("application/force-download");
+                response.setHeader("Content-Disposition", "attachment;fileName=" + java.net.URLEncoder.encode(file.getName(), StandardCharsets.UTF_8));
+                byte[] buffer = new byte[1024];
+                FileInputStream fis = null; //文件输入流
+                BufferedInputStream bis = null;
+                OutputStream os = null; //输出流
+                try {
+                    os = response.getOutputStream();
+                    fis = new FileInputStream(file);
+                    bis = new BufferedInputStream(fis);
+                    int i = bis.read(buffer);
+                    while (i != -1) {
+                        os.write(buffer, 0, i);
+                        i = bis.read(buffer);
+                    }
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                 //   e.printStackTrace();
+                    myPrintln(e.getMessage());
+                }
+                //   myPrintln("----------file download---" + file.getPath());
+                try {
+                    if (bis != null) {
+                        bis.close();
+                    }
+                    if (fis != null) {
+                        fis.close();
+                    }
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            return  getJsonObj(CODE_OK,list,lang);
+        }catch (Exception e){
+            myPrintln("异常="+e.getMessage());
+        }
+        return null;
+    }
+
+
+
+////localhost/userApi/History/index?history_type=device&start_time=1749700800&stop_time=1749873600&quickSearch=3693
+    @RequestMapping(value = "userApi/History/Search_custom", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject Search_custom(HttpServletRequest request,@RequestParam(value = "stop_time") String stop_time,@ParamsNotNull @RequestParam(value = "start_time") String start_time,@RequestParam(value = "company_id") String company_id) {
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
+    try {
+    String sn=request.getParameter("sn");
+    String page=request.getParameter("page");
+    String limit=request.getParameter("limit");
+    if (page==null||page.equals("")) {
+        page="1";
+    }
+    if (limit==null||limit.equals("")) {
+        limit="10";
+    }
     History_Sql history_sql = new History_Sql();
-    List<History> historyList = history_sql.getHistory(historyMapper, sn, Long.parseLong(start_time) , Long.parseLong(stop_time) , customer.getProject_key());
-    List<StationStayAnalyzer.StationStay> stays = analyzeStationStays(historyList);
-    myPrintln("1111数据长度=" + historyList.size());
+    PageHistory pageHistory = history_sql.getHistory(historyMapper, sn, Long.parseLong(start_time) , Long.parseLong(stop_time) , customer.getProject_key(), company_id,page,limit);
+    List<StationStayAnalyzer.StationStay> stays = analyzeStationStays(pageHistory.getHistoryList());
+
+    myPrintln("数据长度=" + pageHistory.getTotal());
     myPrintln("查到时间"+System.currentTimeMillis());
-    // Print results
+
     List<StationStayAnalyzer.StationStay> list=new ArrayList<>();
     for (int i= stays.size()-1;i>=0;i--)
-    //StationStayAnalyzer.StationStay stay : stays)
     {
         StationStayAnalyzer.StationStay stay=stays.get(i);
         Station station = (Station) redisUtil.get(redis_key_locator + stay.getStationMac());
         if(station!=null){
             stay.setStation_name(station.getName());
         }
-        Devicep devicep=devicePMap.get(sn);
+        else{
+            Station station1=new Station_sql().getStationByMac(stationMapper,stay.getStationMac());
+            if (station1 != null) {
+                stay.setStation_name(station1.getName());
+            }
+
+        }
+        Devicep devicep=devicePMap.get(stay.getSn());
         if (devicep != null) {
             stay.setName(devicep.getName());
+            Company company=(Company) redisUtil.get(redis_key_company+devicep.getCompany_id());
+            if (company != null) {
+                stay.setCompany_name(company.getName());
+            }
         }else{
-            Person person=personMap.get(sn);
+            Person person=personMap.get(stay.getSn());
             if (person != null) {
                 stay.setName(person.getName());
+                Company company=(Company) redisUtil.get(redis_key_company+person.getCompany_id());
+                if (company != null) {
+                    stay.setCompany_name(company.getName());
+                }
             }
         }
+
+
         list.add(stay);
     }
     myPrintln("结束时间"+System.currentTimeMillis());
-    return  getJsonObj(CODE_OK,list,lang);
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("code", 1);
+    jsonObject.put("msg", "ok");
+    jsonObject.put("count", pageHistory.getTotal());
+    jsonObject.put("data",  list);
+    return jsonObject;
     }catch (Exception e){
         myPrintln("异常="+e.getMessage());
     }
+        return null;
+    }
+
+    @RequestMapping(value = "userApi/History/Search_custombyMap", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject Search_custombyMap(HttpServletRequest request,@RequestParam(value = "stop_time") String stop_time,@ParamsNotNull @RequestParam(value = "start_time") String start_time) {
+        Customer customer=getCustomer(request);
+        String lang=customer.getLang();
+        try {
+            String sn=request.getParameter("sn");
+
+            History_Sql history_sql = new History_Sql();
+            List<History> history = history_sql.getHistory(historyMapper, sn, Long.parseLong(start_time) , Long.parseLong(stop_time) , customer.getProject_key());
+            List<StationStayAnalyzer.StationStay> stays = analyzeStationStays(history);
+
+            myPrintln("数据长度=" + history.size());
+            myPrintln("查到时间"+System.currentTimeMillis());
+
+            List<StationStayAnalyzer.StationStay> list=new ArrayList<>();
+            for (int i= stays.size()-1;i>=0;i--)
+            {
+                StationStayAnalyzer.StationStay stay=stays.get(i);
+                Station station = (Station) redisUtil.get(redis_key_locator + stay.getStationMac());
+                if(station!=null){
+                    stay.setStation_name(station.getName());
+                }
+                else{
+                    Station station1=new Station_sql().getStationByMac(stationMapper,stay.getStationMac());
+                    if (station1 != null) {
+                        stay.setStation_name(station1.getName());
+                    }
+
+                }
+                Devicep devicep=devicePMap.get(stay.getSn());
+                if (devicep != null) {
+                    stay.setName(devicep.getName());
+                    Company company=(Company) redisUtil.get(redis_key_company+devicep.getCompany_id());
+                    if (company != null) {
+                        stay.setCompany_name(company.getName());
+                    }
+                }else{
+                    Person person=personMap.get(stay.getSn());
+                    if (person != null) {
+                        stay.setName(person.getName());
+                        Company company=(Company) redisUtil.get(redis_key_company+person.getCompany_id());
+                        if (company != null) {
+                            stay.setCompany_name(company.getName());
+                        }
+                    }
+                }
+
+
+                list.add(stay);
+            }
+            myPrintln("结束时间"+System.currentTimeMillis());
+
+            return JsonConfig.getJsonObj(CODE_OK,list,customer.getLang());
+        }catch (Exception e){
+            myPrintln("异常="+e.getMessage());
+        }
         return null;
     }
     class MHistory{

@@ -86,11 +86,40 @@ public class Tag_Sql {
         tagMapper.delete(queryWrapper);
     }
 
-    public PageTag selectPageTag(TagMapper tagMapper, int page, int limt, String like, String userkey, String project_key) {
+    public PageTag selectPageTag(TagMapper tagMapper, int page, int limt, String like, String userkey, String project_key,String sort) {
         LambdaQueryWrapper<Tag> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         Page<Tag> userPage = new Page<>(page, limt);
         IPage<Tag> userIPage;
-        userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like);
+        if (sort!=null ) {
+            String[] sorts = sort.split(",");
+            if(sorts[0].equals("online")){
+                if (sorts[1].equals("asc")) {
+                    userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like).orderByAsc(Tag::getOnline);
+                }else{
+                    userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like).orderByDesc(Tag::getOnline);
+                }
+            }else if (sorts[0].equals("mac")){
+                if (sorts[1].equals("asc")) {
+                    userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like).orderByAsc(Tag::getMac);
+                }else{
+                    userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like).orderByDesc(Tag::getMac);
+
+                }
+            }
+            else if (sorts[0].equals("isbind")){
+                if (sorts[1].equals("asc")) {
+                    userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like).orderByAsc(Tag::getIsbind);
+                }else{
+                    userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like).orderByDesc(Tag::getIsbind);
+
+                }
+            }
+
+        }
+else{
+            userLambdaQueryWrapper.eq(Tag::getProject_key,project_key).eq(Tag::getUser_key, userkey).like(Tag::getMac, like);
+        }
+
         userIPage = tagMapper.selectPage(userPage, userLambdaQueryWrapper);
 
         // userIPage.getRecords().forEach(System.out::myPrintln);

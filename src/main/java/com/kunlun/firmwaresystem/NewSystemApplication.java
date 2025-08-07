@@ -26,10 +26,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
+
 import oshi.SystemInfo;
 import oshi.hardware.ComputerSystem;
 
@@ -64,7 +62,7 @@ public class NewSystemApplication {
    /* public static final String paths="D:\\kunlBluetooth\\上海环境监测蓝牙项目安装文件\\Server\\log\\";
     public static final String url="http://172.17.73.62:808/download";*/
 
-    public static HashMap<String,History> historyMap=new HashMap<>();
+    public static Map<String, History> historyMap = new ConcurrentHashMap<>();
     public static HashMap<String,Registration> registration_map = new HashMap<>();
     //信号在1米时的值暂定为-51；
     public static double rssi_At_1m = 47;

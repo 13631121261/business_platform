@@ -94,7 +94,7 @@ public class StationTask {
             if (start - end>300&&station.getOnline()==1) {
 
                 station.setOnline(0);
-                redisUtil.set(redis_key_locator+key,station);
+                redisUtil.setnoTimeOut(redis_key_locator+key,station);
                 stationMapper.updateById(station);
                 Alarm alarm=new Alarm();
                 alarm.setAlarm_object(Alarm_object.locator);
@@ -151,10 +151,6 @@ public class StationTask {
         for(History history:historyMap.values()) {
             historyMapper.updateById(history);
         }
-
-
-
-
     }
 
 

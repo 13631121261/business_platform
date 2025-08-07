@@ -114,7 +114,7 @@ public class LocatorControl {
                 locatorMapper.updateById(locator1);
                 locator.setOnline(locator1.getOnline());
                 locator.setLast_time(locator1.getLast_time());
-                redisUtil.set(redis_key_locator+locator.getAddress(),locator1);
+                redisUtil.setnoTimeOut(redis_key_locator+locator.getAddress(),locator1);
             }
 
         }
@@ -144,7 +144,7 @@ public class LocatorControl {
                 myPrintln("执行删除基站9"+locators.size());
                 for(Locator locator:locators){
                     myPrintln("执行删除基站"+locator.getAddress());
-                    redisUtil.set(redis_key_locator+locator.getAddress(),null);
+                    redisUtil.setnoTimeOut(redis_key_locator+locator.getAddress(),null);
                 }
                 return JsonConfig.getJsonObj(CODE_OK,null,lang);
             }else{

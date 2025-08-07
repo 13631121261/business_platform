@@ -38,7 +38,6 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
         public void execute() throws Exception {
             time++;
             checkStation();
-
          //   checkBeacon();
             checkPerson();
             checkDevice();
@@ -124,6 +123,7 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
         private void checkPerson(){
             Map<String, DevStatus> devStatusMap=new HashMap<>();
             Person_Sql personSql=new Person_Sql();
+
             for(String idcard:personMap.keySet()){
                 Person  person =personMap.get(idcard);
                 if(person!=null){
@@ -174,12 +174,12 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
         //每天人员报警保存
         private void checkSOS(){
             long time=System.currentTimeMillis()/1000;
-            long one_time=time-86340;
+            long one_time=time-3600;
             Alarm_Sql alarm_sql=new Alarm_Sql();
             Project_Sql project_sql=new Project_Sql();
             List<Project>  projectList= project_sql.getAllProject(projectMapper);
             for(Project project:projectList){
-                List<Alarm> alarms=  alarm_sql.selectByOneDay(alarmMapper,project.getProject_key(),one_time);
+                List<Alarm> alarms=  alarm_sql.selectByOneHour(alarmMapper,project.getProject_key(),one_time);
                 int all=alarms.size();
                 int key_sum=0;
                 int run_sum=0;
@@ -250,14 +250,14 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
         }
         //每天人员报警保存
         private void deleteCache(){
-            long time=System.currentTimeMillis()/1000;
-            long one_time=time-1296000;
+           /* long time=System.currentTimeMillis()/1000;
+            long one_time=time-2592000;
             History_Sql history_sql=new History_Sql();
-            history_sql.deleteBy15Day(historyMapper,one_time);
+            history_sql.deleteBy15Day(historyMapper,one_time*1000);
             Logs_Sql logs_sql=new Logs_Sql();
             logs_sql.deleteBy15Day(logsMapper,one_time);
             Alarm_Sql alarm_sql=new Alarm_Sql();
-            alarm_sql.deleteBy15Day(alarmMapper,one_time);
+            alarm_sql.deleteBy15Day(alarmMapper,one_time);*/
 
         }
 

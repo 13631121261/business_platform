@@ -52,6 +52,8 @@ public class StationControl {
         String quickSearch=request.getParameter("quickSearch");
         String page=request.getParameter("page");
         String limit=request.getParameter("limit");
+        String sort=request.getParameter("order");
+
         if(quickSearch==null||quickSearch.equals("")){
             quickSearch="";
         }
@@ -65,7 +67,7 @@ public class StationControl {
         String response = "默认参数";
         Customer customer=(Customer) redisUtil.get(token);
         Station_sql Station_sql = new Station_sql();
-        PageStation pageStation = Station_sql.selectPageStation(StationMapper, Integer.parseInt(page), Integer.parseInt(limit), quickSearch, customer.getUserkey(),customer.getProject_key());
+        PageStation pageStation = Station_sql.selectPageStation(StationMapper, Integer.parseInt(page), Integer.parseInt(limit), quickSearch, customer.getUserkey(),customer.getProject_key(),sort);
         myPrintln("网关信息="+pageStation.toString());
         for (Station station:pageStation.getStationList()){
             Station station1=(Station) redisUtil.get(redis_key_locator+station.getAddress());
@@ -109,7 +111,7 @@ public class StationControl {
         Station.setType_name(stationType.getName());
         if (Station_sql.addStation(StationMapper, Station)) {
             response = JsonConfig.getJsonObj(CODE_OK, null,lang);
-            redisUtil.set(redis_key_locator + Station.getAddress(), Station);
+            redisUtil.setnoTimeOut(redis_key_locator + Station.getAddress(), Station);
             station_maps.put(Station.getAddress(),Station.getAddress());
             myPrintln("运行这里");
         } else {

@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kunlun.firmwaresystem.device.PageStation;
 import com.kunlun.firmwaresystem.entity.Locator;
 import com.kunlun.firmwaresystem.entity.Station;
+import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.entity.web_Structure.StationTree;
 import com.kunlun.firmwaresystem.mappers.LocatorMapper;
 import com.kunlun.firmwaresystem.mappers.StationMapper;
@@ -84,7 +85,7 @@ public class Station_sql {
         updateWrapper.set("y", y);
         Station Station = (Station) redisUtil.get(redis_key_locator + address);
 
-        redisUtil.set(redis_key_locator + address, Station);
+        redisUtil.setnoTimeOut(redis_key_locator + address, Station);
         return StationMapper.update(null, updateWrapper);
     }
 
@@ -93,7 +94,7 @@ public class Station_sql {
         updateWrapper.eq("address", address);
         updateWrapper.set("project_key", projectKey);
         Station Station = (Station) redisUtil.get(redis_key_locator + address);
-        redisUtil.set(redis_key_locator + address, Station);
+        redisUtil.setnoTimeOut(redis_key_locator + address, Station);
         return StationMapper.update(null, updateWrapper);
     }
 
@@ -151,7 +152,7 @@ public class Station_sql {
         HashMap<String, String> StationMap = new HashMap<>();
         for (Station Station : StationList) {
             updateStation(StationMapper,Station);
-            redisUtil.set(redis_key_locator + Station.getAddress(), Station);
+            redisUtil.setnoTimeOut(redis_key_locator + Station.getAddress(), Station);
             StationMap.get(Station.getAddress());
         }
         return StationMap;
@@ -251,14 +252,24 @@ public class Station_sql {
 
         return only;
     }*/
-    public PageStation selectPageStation(StationMapper StationMapper, int page, int limt, String quickSearch, String userKey,String project_key) {
-        myPrintln("执行55一次获取全部数据"+page+"  "+limt);
-        LambdaQueryWrapper<Station> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+    public PageStation selectPageStation(StationMapper StationMapper, int page, int limt, String quickSearch, String userKey,String project_key,String sort) {
+      //  myPrintln("执行55一次获取全部数据"+page+"  "+limt);
+        QueryWrapper<Station> queryWrapper = Wrappers.query();
         Page<Station> userPage = new Page<>(page, limt);
         IPage<Station> userIPage;
       //  myPrintln("user_key="+userKey+" project_key="+project_key);
-        userLambdaQueryWrapper.eq(Station::getUser_key, userKey).eq(Station::getProject_key,project_key).like(Station::getAddress, quickSearch).or().eq(Station::getUser_key, userKey).eq(Station::getProject_key,project_key);
+        if (sort!=null ) {
+            String[] sorts = sort.split(",");
+            if (sorts[1].equals("asc")){
+                queryWrapper.eq("user_key", userKey).eq("project_key",project_key).like("address", quickSearch).or().eq("user_key", userKey).eq("project_key",project_key).orderByAsc(sorts[0]);
 
+            }else{
+                queryWrapper.eq("user_key", userKey).eq("project_key",project_key).like("address", quickSearch).or().eq("user_key", userKey).eq("project_key",project_key).orderByDesc(sorts[0]);
+
+            }
+        }else {
+            queryWrapper.eq("user_key", userKey).eq("project_key", project_key).like("address", quickSearch).or().eq("user_key", userKey).eq("project_key", project_key).like("name", quickSearch);
+        }
        /* if (project_name != null && project_name.length() > 0) {
             StationConfig_sql project_sql = new StationConfig_sql();
             List<Station_config> StationConfigList = project_sql.getLikeProject(projectMapper, project_name, userKey);
@@ -273,7 +284,7 @@ public class Station_sql {
         }*/
         userIPage=null;
         try {
-            userIPage = StationMapper.selectPage(userPage, userLambdaQueryWrapper);
+            userIPage = StationMapper.selectPage(userPage, queryWrapper);
         }catch (Exception e){
             myPrintln("输出啊结果="+e.getMessage());
         }

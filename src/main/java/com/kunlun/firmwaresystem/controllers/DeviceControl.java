@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_company;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -187,6 +188,7 @@ public class DeviceControl {
         String quickSearch=request.getParameter("quickSearch");
         String page=request.getParameter("page");
         String limit=request.getParameter("limit");
+        String sort=request.getParameter("order");
         if(quickSearch==null||quickSearch.equals("")){
             quickSearch="";
         }
@@ -198,7 +200,7 @@ public class DeviceControl {
         }
         Customer customer = getCustomer(request);
         DeviceP_Sql  deviceP_sql=new DeviceP_Sql();
-        PageDeviceP pageDeviceP=deviceP_sql.selectPageDeviceP(devicePMapper,Integer.parseInt(page),Integer.parseInt(limit),quickSearch,customer.getUserkey(),customer.getProject_key());
+        PageDeviceP pageDeviceP=deviceP_sql.selectPageDeviceP(devicePMapper,Integer.parseInt(page),Integer.parseInt(limit),quickSearch,customer.getUserkey(),customer.getProject_key(),sort);
         for(Devicep devicep:pageDeviceP.getDeviceList()){
 
 
@@ -219,12 +221,9 @@ public class DeviceControl {
                     devicep.setGroup_name(group.getGroup_name());
                 }
             }
-            int company_id=devicep.getCompany_id();
-            if (company_id>0) {
-                Company company=companyMapper.selectById(company_id);
-                if(company!=null){
-                    devicep.setGroup_name(company.getName());
-                }
+            Company company=(Company) redisUtil.get(redis_key_company+ devicep.getCompany_id());
+            if (company!=null) {
+                devicep.setCompany_name(company.getName());
             }
 
             int f_id=devicep.getFence_id();
@@ -315,6 +314,10 @@ public class DeviceControl {
         for(String key:devicePMap.keySet()){
             Devicep devicep=devicePMap.get(key);
             if (devicep.getMap_key()!=null&&devicep.getMap_key().equals(map_key)) {
+                Company company=(Company) redisUtil.get(redis_key_company+ devicep.getCompany_id());
+                if (company!=null) {
+                    devicep.setCompany_name(company.getName());
+                }
                 devicepList.add(devicep);
             }
         }

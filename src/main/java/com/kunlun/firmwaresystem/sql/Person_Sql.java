@@ -161,22 +161,169 @@ public class Person_Sql {
         PersonMapper.delete(queryWrapper);
     }
 
-    public PagePerson selectPagePerson(PersonMapper PersonMapper, int page, int limt,String quickSearch, String userkey,String Project_key,String bind_status) {
+    public PagePerson selectPagePerson(PersonMapper PersonMapper, int page, int limt,String quickSearch, String userkey,String Project_key,String bind_status,String sort) {
         Page<Person> userPage = new Page<>(page, limt);
         IPage<Person> userIPage;
         LambdaQueryWrapper<Person> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         int bind=Integer.parseInt(bind_status);
-        if(bind_status.equals("-1")){
-            userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).or()
-                    .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).or()
-                    .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch);
 
+        if (sort!=null ) {
+            String[] sorts = sort.split(",");
+            if(sorts[0].equals("online")){
+                if (sorts[1].equals("asc")) {
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getOnline).or()
+                                              .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getOnline).or()
+                                              .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getOnline);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getOnline).or()
+                                              .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getOnline).or()
+                                              .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getOnline);
+
+                    }
+               }else{
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getOnline).or()
+                                             .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getOnline).or()
+                                            .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getOnline);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getOnline).or()
+                                          .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getOnline).or()
+                                          .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getOnline);
+
+                    }
+                }
+            }else if(sorts[0].equals("idcard")){
+                if (sorts[1].equals("asc")) {
+                  //  System.out.println("这里");
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getIdcard).or()
+                                            .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getIdcard).or()
+                                            .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getIdcard);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getIdcard).or()
+                                         .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getIdcard).or()
+                                         .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getIdcard);
+
+                    }
+                }else{
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getIdcard).or()
+                                             .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getIdcard).or()
+                                            .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getIdcard);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getIdcard).or()
+                                         .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getIdcard).or()
+                                         .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getIdcard);
+
+                    }
+                }
+            }
+            else if(sorts[0].equals("station_mac")){
+                if (sorts[1].equals("asc")) {
+                    //  System.out.println("这里");
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getStation_mac).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getStation_mac).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getStation_mac);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getStation_mac).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getStation_mac).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getStation_mac);
+
+                    }
+                }else{
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getStation_mac).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getStation_mac).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getStation_mac);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getStation_mac).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getStation_mac).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getStation_mac);
+
+                    }
+                }
+            }
+            else if(sorts[0].equals("isbind")){
+                if (sorts[1].equals("asc")) {
+                    //  System.out.println("这里");
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getIsbind).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getIsbind).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getIsbind);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getIsbind).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getIsbind).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getIsbind);
+
+                    }
+                }else{
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getIsbind).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getIsbind).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getIsbind);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getIsbind).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getIsbind).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getIsbind);
+
+                    }
+                }
+            }
+            else if(sorts[0].equals("company_name")){
+                if (sorts[1].equals("asc")) {
+                    //  System.out.println("这里");
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getCompany_id).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getCompany_id).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getCompany_id);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByAsc(Person::getCompany_id).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByAsc(Person::getCompany_id).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByAsc(Person::getCompany_id);
+
+                    }
+                }else{
+                    if(bind_status.equals("-1")){
+                        userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getCompany_id).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getCompany_id).or()
+                                .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getCompany_id);
+
+                    }else{
+                        userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).orderByDesc(Person::getCompany_id).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).orderByDesc(Person::getCompany_id).or()
+                                .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch).orderByDesc(Person::getCompany_id);
+
+                    }
+                }
+            }
         }else{
-            userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).or()
-                    .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).or()
-                    .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch);
+            if(bind_status.equals("-1")){
+                userLambdaQueryWrapper.eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).or()
+                        .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).or()
+                        .eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch);
 
+            }else{
+                userLambdaQueryWrapper.eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getIdcard,quickSearch).or()
+                        .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getName,quickSearch).or()
+                        .eq(Person::getIsbind, bind).eq(Person::getUser_key, userkey).eq(Person::getProject_key, Project_key).like(Person::getDepartment_name,quickSearch);
+
+            }
         }
+
+
+
+
     /*  userLambdaQueryWrapper;
         userLambdaQueryWrapper.;
         userLambdaQueryWrapper.;*/

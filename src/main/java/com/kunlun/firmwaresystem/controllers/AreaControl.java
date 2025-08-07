@@ -152,7 +152,7 @@ public class AreaControl {
 
                                                 Station_sql.updateStation(StationMapper,Station);
                                               //  StationMap=Station_sql.getAllStation(StationMapper);
-                                                redisUtil.set(redis_key_locator+address_[0],Station);
+                                                redisUtil.setnoTimeOut(redis_key_locator+address_[0],Station);
                                                 break;
                                                 //AOA 网关
                                             case "2":
@@ -160,7 +160,7 @@ public class AreaControl {
                                                 locator.setArea_id(area.getId());
                                                 locator.setArea_name(area.getName());
                                                 locators_sql.update(locatorMapper,locator);
-                                                redisUtil.set(redis_key_locator+address_[0],locator);
+                                                redisUtil.setnoTimeOut(redis_key_locator+address_[0],locator);
                                                 break;
                                         }
                                     }
@@ -192,14 +192,14 @@ public class AreaControl {
 
                                                 Station_sql.updateStation(StationMapper,Station);
                                               //  StationMap=Station_sql.getAllStation(StationMapper);
-                                                redisUtil.set(redis_key_locator+address_[0],Station);
+                                                redisUtil.setnoTimeOut(redis_key_locator+address_[0],Station);
                                                 break;
                                             case "2":
                                                 Locator locator=(Locator) redisUtil.get(redis_key_locator+address_[0]);
                                                 locator.setArea_name("");
                                                 locator.setArea_id(0);
                                                 locators_sql.update(locatorMapper,locator);
-                                                redisUtil.set(redis_key_locator+address_[0],locator);
+                                                redisUtil.setnoTimeOut(redis_key_locator+address_[0],locator);
                                                 break;
                                     }
                                 }
@@ -221,7 +221,7 @@ public class AreaControl {
                                                 Station Station=(Station) redisUtil.get(redis_key_locator+address_[0]);
                                                 Station_sql.updateStation(StationMapper,Station);
                                               //  StationMap=Station_sql.getAllStation(StationMapper);
-                                                redisUtil.set(redis_key_locator+address_[0],Station);
+                                                redisUtil.setnoTimeOut(redis_key_locator+address_[0],Station);
                                                 break;
                                             //AOA 网关
                                             case "2":
@@ -229,7 +229,7 @@ public class AreaControl {
                                                 locator.setArea_id(area.getId());
                                                 locator.setArea_name(area.getName());
                                                 locators_sql.update(locatorMapper,locator);
-                                                redisUtil.set(redis_key_locator+address_[0],locator);
+                                                redisUtil.setnoTimeOut(redis_key_locator+address_[0],locator);
                                                 break;
                                         }
                                     }

@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_company;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 import static org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND;
 
@@ -49,6 +50,7 @@ public class PersonControl {
         String pages=request.getParameter("page");
         String limits=request.getParameter("limit");
         String bind_status=request.getParameter("bind_status");
+        String sort=request.getParameter("order");
         if(bind_status==null||bind_status.equals("")){
             bind_status="-1";
         }
@@ -67,7 +69,7 @@ public class PersonControl {
         Person_Sql person_sql=new Person_Sql();
         int p_id=-1;
 
-        PagePerson personList=person_sql.selectPagePerson(personMapper,Integer.valueOf(page),Integer.valueOf(limit),quickSearch,customer.getUserkey(),customer.getProject_key(),bind_status);
+        PagePerson personList=person_sql.selectPagePerson(personMapper,Integer.valueOf(page),Integer.valueOf(limit),quickSearch,customer.getUserkey(),customer.getProject_key(),bind_status,sort);
 
         for(Person person:personList.getPersonList()){
             try {
@@ -84,12 +86,17 @@ public class PersonControl {
                 person.setFirst_time(person1.getFirst_time());
                 person1.setId(person.getId());
                 Fence fence = fenceMap.get(person1.getFence_id());
+
                 if (fence != null) {
                     person.setFence_name(fence.getName());
                 }
                 Fence_group fenceGroup = fenceGroupMap.get(person1.getFence_group_id());
                 if (fenceGroup != null) {
                     person.setFence_group_name(fenceGroup.getName());
+                }
+                Company company=(Company) redisUtil.get(redis_key_company+ person.getCompany_id());
+                if (company!=null) {
+                    person.setCompany_name(company.getName());
                 }
                 person_sql.update(personMapper, person1);
             }catch (Exception e){
@@ -110,6 +117,10 @@ public class PersonControl {
         for(String idcard:personMap.keySet()){
             Person person=personMap.get(idcard);
             if(person!=null&&person.getMap_key()!=null&&person.getMap_key().equals(map_key)){
+              Company company=(Company) redisUtil.get(redis_key_company+ person.getCompany_id());
+              if (company!=null) {
+                  person.setCompany_name(company.getName());
+              }
                 personList.add(person);
             }
         }

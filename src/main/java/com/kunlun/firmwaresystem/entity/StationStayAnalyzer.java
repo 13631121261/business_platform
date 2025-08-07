@@ -35,7 +35,16 @@ public class StationStayAnalyzer {
         public double x;
         public double y;
         String name;
-        int duration_sec;
+        int duration_sec=-1;
+        String company_name;
+
+        public void setCompany_name(String company_name) {
+            this.company_name = company_name;
+        }
+
+        public String getCompany_name() {
+            return company_name;
+        }
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 
@@ -51,6 +60,18 @@ public class StationStayAnalyzer {
             this.y=y;
             duration_sec=(int) ((endTime-startTime)/1000);
 
+        }
+
+        public String getSn() {
+            return sn;
+        }
+
+        public long getEndTime() {
+            return endTime;
+        }
+
+        public long getStartTime() {
+            return startTime;
         }
 
         public void setDuration_sec(int duration_sec) {
@@ -94,8 +115,22 @@ public class StationStayAnalyzer {
         }
 
 
-
-
+        @Override
+        public String toString() {
+            return "StationStay{" +
+                    "sn='" + sn + '\'' +
+                    ", stationMac='" + stationMac + '\'' +
+                    ", station_name='" + station_name + '\'' +
+                    ", startTime=" + startTime +
+                    ", endTime=" + endTime +
+                    ", x=" + x +
+                    ", y=" + y +
+                    ", name='" + name + '\'' +
+                    ", duration_sec=" + duration_sec +
+                    ", company_name='" + company_name + '\'' +
+                    ", df=" + df +
+                    '}';
+        }
 
         public String getStationMac() {
             return stationMac;

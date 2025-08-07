@@ -34,7 +34,7 @@ public class RedisSessionInterceptor implements HandlerInterceptor {
     private LogsMapper logsMapper;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        myPrintln("handler="+handler);
+      //  myPrintln("handler="+handler);
         Customer customer=null;
         String token = request.getHeader("batoken");
         if(token==null||token.equals("")){

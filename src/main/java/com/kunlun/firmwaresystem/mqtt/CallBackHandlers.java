@@ -2,7 +2,6 @@ package com.kunlun.firmwaresystem.mqtt;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.support.odps.udf.CodecCheck;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.kunlun.firmwaresystem.MyWebSocket;
@@ -12,7 +11,6 @@ import com.kunlun.firmwaresystem.entity.*;
 import com.kunlun.firmwaresystem.entity.Map;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.entity.device.Group;
-import com.kunlun.firmwaresystem.mappers.Real_PointMapper;
 import com.kunlun.firmwaresystem.sql.*;
 import com.kunlun.firmwaresystem.util.StringUtil;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -103,7 +101,7 @@ public class CallBackHandlers implements Runnable {
                                 map.setData("");
                                 redisUtil.setnoTimeOut(redis_id_map +station.getMap_key(),map);
                             }else{
-                                myPrintln("地图是空的"+station.getMap_key());
+                               // myPrintln("地图是空的"+station.getMap_key());
                                 return;
                             }
                         }
@@ -379,7 +377,7 @@ public class CallBackHandlers implements Runnable {
 
                     }
                     else if(pushDevice.getPush_type().equals("bt")){
-                    myPrintln("来自定位引擎数据"+pushDevice.getAddress());
+                 //   myPrintln("来自定位引擎数据"+pushDevice.getAddress());
                         tag = tagsMap.get(pushDevice.getAddress());
                         if (tag == null) {
                             return;
@@ -596,7 +594,7 @@ public class CallBackHandlers implements Runnable {
                                  station.setX(Double.parseDouble(decimalFormat.format(info.getDouble("x"))));
                                  station.setY(Double.parseDouble(decimalFormat.format(info.getDouble("y"))));
                                  station.setZ(info.getDouble("z"));
-                                 myPrintln("mingzi" + station.getName());
+                               //  myPrintln("mingzi" + station.getName());
                                  // myPrintln(check);
 
                                  Map map = (Map) redisUtil.get(redis_id_map + info.getString("mapId"));
@@ -673,12 +671,12 @@ public class CallBackHandlers implements Runnable {
         }
         person.setRun(tag.getRun());
         if (person.getStation_mac() == null || !person.getStation_mac().equals(tag.getStation_address())) {
-            myPrintln("11输出一个时间" + tag.getLastTime());
-            myPrintln(person.getName());
+           // myPrintln("11输出一个时间" + tag.getLastTime());
+         //   myPrintln(person.getName());
             person.setFirst_time(tag.getLastTime());
         }
         if (person.getFirst_time() == 0) {
-            myPrintln("22输出一个时间" + tag.getLastTime());
+          //  myPrintln("22输出一个时间" + tag.getLastTime());
             myPrintln(person.getName());
             person.setFirst_time(tag.getLastTime());
         }
@@ -701,68 +699,9 @@ public class CallBackHandlers implements Runnable {
             person.setStation_name(station.getName());
         }
         deviceps.add(person);
-        if (person.getMap_key() != null && !person.getMap_key().isEmpty()) {
-            History history= historyMap.get(person.getIdcard());
+        HistoryTracker_person tracker = new HistoryTracker_person(historyMapper, history_sql);
+        tracker.processPersonUpdate(person);
 
-            if(history==null){
-                history = new History();
-                history.setMap_key(person.getMap_key());
-                history.setSn(person.getIdcard());
-                history.setStart_time(System.currentTimeMillis());
-                history.setEnd_time(System.currentTimeMillis());
-                history.setType("person");
-                history.setX(person.getX());
-                history.setY(person.getY());
-                history.setProject_key(person.getProject_key());
-                history.setName(person.getName());
-                history.setStation_mac(person.getStation_mac());
-                history_sql.addHistory(historyMapper, history);
-                myPrintln("新建="+history.getId());
-                historyMap.put(person.getIdcard(), history);
-            }
-            else{
-                if(person.getStation_mac()!=null && person.getStation_mac().equals(history.getStation_mac())){
-                    //网关关联没变，确保设备不是离线后在原来位置上线，用时间判断
-                    //现在时间大于最后一次时间一分钟，新记录
-                    if(System.currentTimeMillis()-history.getEnd_time()>60000){
-                        historyMapper.updateById(history);
-                        history.setId(0);
-                        history.setX(person.getX());
-                        history.setY(person.getY());
-                        history.setStart_time(System.currentTimeMillis());
-                        history.setEnd_time(System.currentTimeMillis());
-                        history.setProject_key(person.getProject_key());
-                        history.setName(person.getName());
-                        history.setStation_mac(person.getStation_mac());
-                        history_sql.addHistory(historyMapper, history);
-                        historyMap.put(person.getIdcard(), history);
-                    }else{
-                        history.setEnd_time(System.currentTimeMillis());
-                        history.setX(person.getX());
-                        history.setY(person.getY());
-                    }
-
-                }
-                else{
-                   int status= historyMapper.updateById(history);
-                   myPrintln("更新后="+status);
-                    history.setId(0);
-                    history.setX(person.getX());
-                    history.setY(person.getY());
-                    history.setStart_time(System.currentTimeMillis());
-                    history.setEnd_time(System.currentTimeMillis());
-                    history.setProject_key(person.getProject_key());
-                    history.setName(person.getName());
-                    history.setStation_mac(person.getStation_mac());
-                    history_sql.addHistory(historyMapper, history);
-                    historyMap.put(person.getIdcard(), history);
-                }
-            }
-
-
-
-
-        }
         if (map != null) {
             handleFence(tag, map.getProportion());
         }
@@ -777,7 +716,7 @@ public class CallBackHandlers implements Runnable {
                 ArrayList<Patrol_list> patrol_lists = new ArrayList<>();
                 for (int i = 0; i < person.getPatrol_list_ids().length; i++) {
                     //获得每一条路线。
-                    myPrintln("获得每一条路线。" + person.getPatrol_list_ids()[i]);
+                    //myPrintln("获得每一条路线。" + person.getPatrol_list_ids()[i]);
                     if (!person.getPatrol_list_ids()[i].isEmpty()) {
                         //获得每一条路线。
                         Patrol_list patrol_list = patrol_sql.getPatrolById(patrolListMapper, Integer.parseInt(person.getPatrol_list_ids()[i]));
@@ -807,7 +746,7 @@ public class CallBackHandlers implements Runnable {
                                                 if (area_id != 0) {
                                                     Area area = areaMapper.selectById(area_id);
                                                     if (area != null) {
-                                                        myPrintln("区域点位=" + area.getName());
+                                                      //  myPrintln("区域点位=" + area.getName());
                                                         patrol.setPoints(area.getPoint());
                                                     } else {
                                                         myPrintln("总有异常发生，不应该存在巡更点位获取不到对应区域点位的情况");
@@ -857,7 +796,7 @@ public class CallBackHandlers implements Runnable {
                                     real_point.setCreate_time(System.currentTimeMillis() / 1000);
                                     real_point.setPartol_id(patrol.getId());
                                     realPointMapper.insert(real_point);
-                                    myPrintln(patrol.getName() + "插入数据完成");
+                                    //myPrintln(patrol.getName() + "插入数据完成");
                                 } catch (Exception e) {
                                     myPrintln(e.toString());
                                 }
@@ -877,8 +816,8 @@ public class CallBackHandlers implements Runnable {
                 WebSocket_Registration webSocketRegistration = WebSocket_Registration.getWebSocket();
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("data", person);
-                myPrintln("person" + person);
-                myPrintln("h获取 准备发送" + jsonObject);
+            //    myPrintln("person" + person);
+              //  myPrintln("h获取 准备发送" + jsonObject);
                 webSocketRegistration.sendData(person.getProject_key(), jsonObject.toJSONString());
             } catch (Exception e) {
                 myPrintln("异常=" + e.toString());
@@ -911,7 +850,7 @@ public class CallBackHandlers implements Runnable {
                     if (keep != null && !keep.isEmpty()) {
                         if (keep.equals("1")) {
                             //
-                            myPrintln("静止结果未到超时时间");
+                           //  myPrintln("静止结果未到超时时间");
                             return;
                         }
                     }
@@ -1255,69 +1194,9 @@ public class CallBackHandlers implements Runnable {
             devicep.setRun(tag.getRun());
             devicep.setBt(tag.getBt());
             deviceps.add(devicep);
-            if (devicep.getMap_key() != null && !devicep.getMap_key().isEmpty()) {
+            HistoryTracker_device tracker = new HistoryTracker_device(historyMapper, history_sql);
+            tracker.processDeviceUpdate(devicep);
 
-                History history= historyMap.get(devicep.getSn());
-
-                if(history==null){
-                     history = new History();
-                     history.setX(devicep.getX());
-                     history.setY(devicep.getY());
-                    history.setMap_key(devicep.getMap_key());
-                    history.setSn(devicep.getSn());
-                    history.setStart_time(System.currentTimeMillis());
-                    history.setEnd_time(System.currentTimeMillis());
-                    history.setType("device");
-                    history.setName(devicep.getName());
-                    history.setStation_mac(devicep.getNear_s_address());
-                    history.setProject_key(devicep.getProject_key());
-                    history_sql.addHistory(historyMapper, history);
-                    myPrintln("设备插入"+history.getId());
-                    historyMap.put(devicep.getSn(), history);
-                }
-                else{
-                    if(devicep.getNear_s_address()!=null && devicep.getNear_s_address().equals(history.getStation_mac())){
-                        //网关关联没变，确保设备不是离线后在原来位置上线，用时间判断
-                        //现在时间大于最后一次时间一分钟，新记录
-                        if(System.currentTimeMillis()-history.getEnd_time()>60000){
-                            historyMapper.updateById(history);
-                            history.setId(0);
-                            history.setX(devicep.getX());
-                            history.setY(devicep.getY());
-                            history.setStart_time(System.currentTimeMillis());
-                            history.setEnd_time(System.currentTimeMillis());
-                            history.setProject_key(devicep.getProject_key());
-                            history.setName(devicep.getName());
-                            history.setStation_mac(devicep.getNear_s_address());
-                            history_sql.addHistory(historyMapper, history);
-                            historyMap.put(devicep.getSn(), history);
-                        }else{
-                            history.setEnd_time(System.currentTimeMillis());
-                            history.setX(devicep.getX());
-                            history.setY(devicep.getY());
-                        }
-
-                    }
-                    else{
-                        int status= historyMapper.updateById(history);
-                        myPrintln("更新后="+status);
-                        history.setId(0);
-                        history.setStart_time(System.currentTimeMillis());
-                        history.setEnd_time(System.currentTimeMillis());
-                        history.setProject_key(devicep.getProject_key());
-                        history.setName(devicep.getName());
-                        history.setX(devicep.getX());
-                        history.setY(devicep.getY());
-                        history.setStation_mac(devicep.getNear_s_address());
-                        history_sql.addHistory(historyMapper, history);
-                        historyMap.put(devicep.getSn(), history);
-                    }
-                }
-
-
-
-
-            }
 
 
             if (map != null) {
@@ -1332,6 +1211,8 @@ public class CallBackHandlers implements Runnable {
             myPrintln("意外地异常="+e.getMessage());
         }
     }
+
+
 
     private void BeaconHandle(Tag tag) {
 

@@ -1,6 +1,7 @@
 package com.kunlun.firmwaresystem.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -17,6 +18,36 @@ public class History {
     String name;
     String station_mac;
     double x,y;
+    @TableField(exist = false)
+    String Station_name;
+    @TableField(exist = false)
+    String company_name;
+
+    int company_id;
+
+    public void setCompany_id(int company_id) {
+        this.company_id = company_id;
+    }
+
+    public int getCompany_id() {
+        return company_id;
+    }
+
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
+    }
+
+    public String getCompany_name() {
+        return company_name;
+    }
+
+    public String getStation_name() {
+        return Station_name;
+    }
+
+    public void setStation_name(String station_name) {
+        Station_name = station_name;
+    }
 
     public double getY() {
         return y;

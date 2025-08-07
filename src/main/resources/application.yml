@@ -44,7 +44,7 @@ spring:
       #允许出现单引号
       allow_single_quotes: true
   rabbitmq:
-    host: 127.0.0.1
+    host: localhost
     port: 5672
     username: guest
     password: guest
@@ -58,7 +58,6 @@ mybatis-plus:
 server:
   port: 8001
   shutdown: graceful
-
 netty:
   tcp:
     client:

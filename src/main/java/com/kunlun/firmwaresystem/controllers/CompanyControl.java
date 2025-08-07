@@ -9,6 +9,7 @@ import com.kunlun.firmwaresystem.device.PagePerson;
 import com.kunlun.firmwaresystem.entity.Company;
 import com.kunlun.firmwaresystem.entity.Customer;
 import com.kunlun.firmwaresystem.entity.Person;
+import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 
 import com.kunlun.firmwaresystem.mappers.CompanyMapper;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Set;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_company;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 
 @RestController
@@ -94,12 +97,21 @@ public class CompanyControl {
             page="1";
         }
         if(limit==null||limit.equals("")){
-            limit="20";
+            limit="10";
         }
         Customer customer = getCustomer(request);
         DeviceP_Sql deviceP_sql=new DeviceP_Sql();
         PageDeviceP pageDeviceP=deviceP_sql.selectPageDevicePByCompany(devicePMapper,Integer.parseInt(page),Integer.parseInt(limit),customer.getProject_key(),Integer.parseInt(id));
-
+        for (Devicep devicep:pageDeviceP.getDeviceList()){
+            Company company=(Company) redisUtil.get(redis_key_company+ devicep.getCompany_id());
+            if (company!=null) {
+                devicep.setCompany_name(company.getName());
+            }
+            Station station=(Station) redisUtil.get(redis_key_locator + devicep.getNear_s_address());
+            if (station!=null) {
+                devicep.setStation_type(station.getType_name());
+            }
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", CODE_OK);
         jsonObject.put("msg", CODE_OK_txt);
@@ -123,11 +135,21 @@ public class CompanyControl {
             page="1";
         }
         if(limit==null||limit.equals("")){
-            limit="20";
+            limit="10";
         }
         Customer customer = getCustomer(request);
         Person_Sql personSql=new Person_Sql();
         PagePerson pagePerson=personSql.getPersonPageByCompany(personMapper,Integer.parseInt(page),Integer.parseInt(limit),customer.getUserkey(),customer.getProject_key(),Integer.parseInt(id));
+        for (Person person : pagePerson.getPersonList()) {
+            Company company=(Company) redisUtil.get(redis_key_company+ person.getCompany_id());
+            if (company!=null) {
+                person.setCompany_name(company.getName());
+            }
+            Station station=(Station) redisUtil.get(redis_key_locator + person.getStation_mac());
+            if (station!=null) {
+                person.setStation_type(station.getType_name());
+            }
+        }
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", CODE_OK);

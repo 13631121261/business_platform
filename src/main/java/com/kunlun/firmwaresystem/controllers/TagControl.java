@@ -49,6 +49,7 @@ public class TagControl {
         String quickSearch=request.getParameter("quickSearch");
         String pages=request.getParameter("page");
         String limits=request.getParameter("limit");
+        String sort=request.getParameter("order");
         int page=1;
         int limit=10;
         if (!StringUtils.isBlank(pages)) {
@@ -61,7 +62,7 @@ public class TagControl {
             quickSearch="";
         }
 
-        PageTag pageTag = tag_sql.selectPageTag(tagMapper,page,limit,quickSearch,customer.getUserkey(),customer.getProject_key());
+        PageTag pageTag = tag_sql.selectPageTag(tagMapper,page,limit,quickSearch,customer.getUserkey(),customer.getProject_key(),sort);
         if(pageTag.getTagList().size()>0){
             for(Tag tag : pageTag.getTagList()){
                 Tag tag1=tagsMap.get(tag.getMac());
@@ -103,7 +104,27 @@ public class TagControl {
         return jsonObject;
     }
 
-    
+    @RequestMapping(value = "userApi/Tag/getStatus", method = RequestMethod.GET, produces = "application/json")
+    public JSONObject getStatus(HttpServletRequest request) {
+
+        int isbind=0;
+        int unbind=0;
+        for (Tag tag : tagsMap.values()) {
+          if (tag.getIsbind()==0){
+              unbind++;
+          }
+          else {
+              isbind++;
+          }
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", CODE_OK);
+        jsonObject.put("msg", "ok");
+        jsonObject.put("unbind", unbind);
+        jsonObject.put("isbind", isbind);
+        return jsonObject;
+
+    }
     @RequestMapping(value = "userApi/Tag/del", method = RequestMethod.POST, produces = "application/json")
     public JSONObject deletetag(HttpServletRequest request, @RequestBody JSONArray jsonArray) {
         Customer customer = getCustomer(request);
@@ -206,7 +227,8 @@ public class TagControl {
                  tag.setType(0);
                  tag.setProject_key(customer.getProject_key());
                  tag.setUser_key(customer.getUserkey());
-                 tag.setMac(map.get("mac"));
+                 tag.setMac(map.get("mac").toLowerCase());
+                 tag.setCreatetime(System.currentTimeMillis()/1000);
                  boolean status = tag_sql.addTag(tagMapper, tag);
                  if (status) {
                      map.put("result", "Import was successful");

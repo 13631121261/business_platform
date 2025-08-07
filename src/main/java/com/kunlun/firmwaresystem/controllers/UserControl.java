@@ -149,7 +149,7 @@ public class UserControl {
         String api="{\"siteName\": \"业务管理平台\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
 
         if(lang.equals("en")){
-            api="{\"siteName\": \"Business Management Platform\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
+            api="{\"siteName\": \"Tracking Orcopampa\",\"version\": \"v1.0.0\",\"cdnUrl\": \"\",\"apiUrl\": \"https://www.baidu.com/\",\"upload\": {\"maxsize\": 10485760,\"savename\":\"\\/storage\\/{topic}\\/{year}{mon}{day}\\/{filename}{filesha1}{.suffix}\",\"mimetype\": \"jpg,png,bmp,jpeg,gif,webp,zip,rar,xls,xlsx,doc,docx,wav,mp4,mp3,txt\",\"mode\": \"local\"}}";
         }
         JSONObject apiUrl=JSONObject.parseObject(api);
         data.put("time",System.currentTimeMillis()/1000);
@@ -1291,7 +1291,7 @@ private void getMenu(Menu_Sql menu_sql,int p_id,  List<Integer> ids){
         if (customer != null) {
             Station_sql Station_sql = new Station_sql();
             Station Station = (Station) redisUtil.get(redis_key_locator + address);
-            redisUtil.set(redis_key_locator + address, Station);
+            redisUtil.setnoTimeOut(redis_key_locator + address, Station);
             Station_sql.updateStation(StationMapper, Station);
             response = JsonConfig.getJson(CODE_OK, null,lang);
         }

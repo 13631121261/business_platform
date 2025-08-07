@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kunlun.firmwaresystem.device.PageAlarm;
 import com.kunlun.firmwaresystem.entity.Alarm;
 import com.kunlun.firmwaresystem.entity.History;
+import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.mappers.AlarmMapper;
 import com.kunlun.firmwaresystem.mappers.HistoryMapper;
 
@@ -20,7 +21,7 @@ import static com.kunlun.firmwaresystem.entity.Alarm_Type.fence_out_sos;
 public class Alarm_Sql {
     public boolean addAlarm(AlarmMapper alarmMapper, Alarm alarm) {
         int status=alarmMapper.insert(alarm);
-        myPrintln(status+"添加记录"+alarm.toString());
+      //  myPrintln(status+"添加记录"+alarm.toString());
             return true;
     }
     public void deleteBy15Day(AlarmMapper alarmMapper, long time){
@@ -30,19 +31,46 @@ public class Alarm_Sql {
         alarmMapper.delete(queryWrapper);
 
     }
-    public PageAlarm selectPageAlarm(AlarmMapper alarmMapper, int page, int limt, String project_key,String object,String alarm_type,String name) {
+    public PageAlarm selectPageAlarm(AlarmMapper alarmMapper, int page, int limt, String project_key,String object,String alarm_type,String name,String  sort) {
 
         LambdaQueryWrapper<Alarm> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         Page<Alarm> userPage = new Page<>(page, limt);
         IPage<Alarm> userIPage;
-        if(alarm_type!=null&&!alarm_type.equals("sos_all")){
-            userLambdaQueryWrapper.like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId)
-                             .or().like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId);
-        }else{
 
-            userLambdaQueryWrapper.like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId)
-            .or().like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId);
+
+        if (sort!=null ) {
+            String[] sorts = sort.split(",");
+                if (sorts[1].equals("asc")) {
+                    if(alarm_type!=null&&!alarm_type.equals("sos_all")){
+                        userLambdaQueryWrapper.like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByAsc(true,Alarm::getSn)
+                                .or().like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByAsc(true,Alarm::getSn);
+                    }else{
+                        userLambdaQueryWrapper.like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByAsc(true,Alarm::getSn)
+                                .or().like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByAsc(true,Alarm::getSn);
+                    }
+               }else{
+                    if(alarm_type!=null&&!alarm_type.equals("sos_all")){
+                        userLambdaQueryWrapper.like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getSn)
+                                .or().like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getSn);
+                    }else{
+                        userLambdaQueryWrapper.like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByAsc(true,Alarm::getSn)
+                                .or().like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByAsc(true,Alarm::getSn);
+                    }
+                }
+
+
         }
+        else{
+
+            if(alarm_type!=null&&!alarm_type.equals("sos_all")){
+                userLambdaQueryWrapper.like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId)
+                        .or().like(Alarm::getAlarm_type, alarm_type).like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId);
+            }else{
+                userLambdaQueryWrapper.like(Alarm::getAlarm_object, object).like(Alarm::getSn, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId)
+                        .or().like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByDesc(true,Alarm::getId);
+            }
+        }
+
          userIPage = alarmMapper.selectPage(userPage, userLambdaQueryWrapper);
         PageAlarm pageAlarm = new PageAlarm(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageAlarm;
@@ -57,7 +85,7 @@ public class Alarm_Sql {
         PageAlarm pageAlarm = new PageAlarm(userIPage.getRecords(), userIPage.getPages(), userIPage.getTotal());
         return pageAlarm;
     }
-    public List<Alarm> selectByOneDay(AlarmMapper alarmMapper,String project_key,long time){
+    public List<Alarm> selectByOneHour(AlarmMapper alarmMapper,String project_key,long time){
         LambdaQueryWrapper<Alarm> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         userLambdaQueryWrapper.eq(Alarm::getProject_key, project_key).ge(Alarm::getCreate_time,time).orderByDesc(true,Alarm::getId);
         List<Alarm> alarms=alarmMapper.selectList(userLambdaQueryWrapper);

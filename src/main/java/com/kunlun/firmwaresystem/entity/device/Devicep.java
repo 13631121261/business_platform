@@ -35,6 +35,8 @@ public class Devicep {
     String[] tagfs_id;
     @TableField(exist = false)
     List<Tagf> tagfs;
+    @TableField(exist = false)
+    String station_type;
 
     int online=0;
     int fence_id;
@@ -49,12 +51,20 @@ public class Devicep {
     String map_name;
     @TableField(exist = false)
     String type;
-    @TableField(exist = false)
+
     double x,y;
     @TableField(exist = false)
     int sos;
     @TableField(exist = false)
     int run;
+
+    public void setStation_type(String station_type) {
+        this.station_type = station_type;
+    }
+
+    public String getStation_type() {
+        return station_type;
+    }
 
     String near_s_address;
 

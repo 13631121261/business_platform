@@ -131,6 +131,7 @@ public class AlarmControl {
         String alarm_type=request.getParameter("alarm_type");
         String page=request.getParameter("page");
         String limit=request.getParameter("limit");
+        String sort=request.getParameter("order");
         if(quickSearch==null||quickSearch.equals("")){
             quickSearch="";
         }
@@ -149,8 +150,30 @@ public class AlarmControl {
 
         Customer user1 = getCustomer(request);
         Alarm_Sql alarm_sql = new Alarm_Sql();
-        PageAlarm pageAlarm = alarm_sql.selectPageAlarm(alarmMapper,Integer.parseInt(page),Integer.parseInt(limit), user1.getProject_key(),alarm_object,alarm_type,quickSearch);
-
+        PageAlarm pageAlarm = alarm_sql.selectPageAlarm(alarmMapper,Integer.parseInt(page),Integer.parseInt(limit), user1.getProject_key(),alarm_object,alarm_type,quickSearch,sort);
+        for(Alarm alarm : pageAlarm.getAlarmList()){
+                Person person= personMap.get(alarm.getSn());
+                if(person==null){
+                    Devicep devicep=devicePMap.get(alarm.getSn());
+                    if(devicep!=null){
+                        if (devicep.getCompany_id()>0&&devicep.getCompany_name()==null){
+                            Company company= companyMapper.selectById(devicep.getCompany_id());
+                            devicep.setCompany_name(company.getName());
+                            alarm.setCompany_name(devicep.getCompany_name());
+                        }else{
+                            alarm.setCompany_name(devicep.getCompany_name());
+                        }
+                    }
+                }else{
+                    if (person.getCompany_id()>0&&person.getCompany_name()==null){
+                        Company company= companyMapper.selectById(person.getCompany_id());
+                        person.setCompany_name(company.getName());
+                        alarm.setCompany_name(person.getCompany_name());
+                    }else{
+                        alarm.setCompany_name(person.getCompany_name());
+                    }
+                }
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", 1);
         jsonObject.put("msg", "ok");

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kunlun.firmwaresystem.device.PageDeviceP;
+import com.kunlun.firmwaresystem.entity.Tag;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.mappers.DevicePMapper;
 
@@ -171,13 +172,49 @@ public class DeviceP_Sql {
         devicePMapper.delete(queryWrapper);
     }
 
-    public PageDeviceP selectPageDeviceP(DevicePMapper devicePMapper, int page, int limt, String search,String user_key,String project_key) {
+    public PageDeviceP selectPageDeviceP(DevicePMapper devicePMapper, int page, int limt, String search,String user_key,String project_key,String sort) {
 
        try {
            LambdaQueryWrapper<Devicep> userLambdaQueryWrapper = Wrappers.lambdaQuery();
            Page<Devicep> userPage = new Page<>(page, limt);
            IPage<Devicep> userIPage;
            //myPrintln("key="+user_key+"  "+project_key+"  s="+search);
+           if (sort!=null ) {
+               String[] sorts = sort.split(",");
+               if(sorts[0].equals("online")){
+                   if (sorts[1].equals("asc")) {
+                       userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).orderByAsc(Devicep::getOnline).or()
+                               .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search).orderByAsc(Devicep::getOnline);
+                   }else{
+                       userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).orderByDesc(Devicep::getOnline).or()
+                               .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search).orderByDesc(Devicep::getOnline);
+                   }
+               }else if (sorts[0].equals("sn")){
+                   if (sorts[1].equals("asc")) {
+                       userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).orderByAsc(Devicep::getSn).or()
+                               .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search).orderByAsc(Devicep::getSn);
+
+                   }else{
+                       userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).orderByDesc(Devicep::getSn).or()
+                               .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search).orderByDesc(Devicep::getSn);
+
+
+                   }
+               }else if (sorts[0].equals("near_s_address")){
+                   if (sorts[1].equals("asc")) {
+                       userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).orderByAsc(Devicep::getNear_s_address).or()
+                               .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search).orderByAsc(Devicep::getNear_s_address);
+
+                   }else{
+                       userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).orderByDesc(Devicep::getNear_s_address).or()
+                               .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search).orderByDesc(Devicep::getNear_s_address);
+
+
+                   }
+               }
+
+           }
+
 
            userLambdaQueryWrapper.eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getSn, search).or()
                    .eq(Devicep::getUserkey, user_key).eq(Devicep::getProject_key, project_key).like(Devicep::getName, search);

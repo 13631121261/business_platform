@@ -43,6 +43,18 @@ public class Person {
     @TableField(exist = false)
     int sos=-1;
 
+
+    @TableField(exist = false)
+    String station_type;
+
+    public void setStation_type(String station_type) {
+        this.station_type = station_type;
+    }
+
+    public String getStation_type() {
+        return station_type;
+    }
+
     public void setCompany_id(int company_id) {
         this.company_id = company_id;
     }
