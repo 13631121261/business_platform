@@ -25,8 +25,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
+import static com.kunlun.firmwaresystem.NewSystemApplication.redisUtil;
 import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
 import static com.kunlun.firmwaresystem.util.JsonConfig.*;
 import static com.kunlun.firmwaresystem.util.JsonConfig.CODE_PARAMETER_NULL;
@@ -68,7 +70,7 @@ public class StationControl {
         Customer customer=(Customer) redisUtil.get(token);
         Station_sql Station_sql = new Station_sql();
         PageStation pageStation = Station_sql.selectPageStation(StationMapper, Integer.parseInt(page), Integer.parseInt(limit), quickSearch, customer.getUserkey(),customer.getProject_key(),sort);
-        myPrintln("网关信息="+pageStation.toString());
+      //  myPrintln("网关信息="+pageStation.toString());
         for (Station station:pageStation.getStationList()){
             Station station1=(Station) redisUtil.get(redis_key_locator+station.getAddress());
             if (station1!=null){
@@ -173,6 +175,9 @@ public class StationControl {
         if(id.size()>0){
             int status = Station_sql.deletes(StationMapper, id);
             if(status!=-1){
+                redisUtil.deleteAll("redis_key_locator");
+                station_maps.clear();
+                station_maps=Station_sql.getAllStation(redisUtil,stationMapper);
                 return JsonConfig.getJsonObj(CODE_OK,null,lang);
             }else{
                 return JsonConfig.getJsonObj(CODE_SQL_ERROR,null,lang);

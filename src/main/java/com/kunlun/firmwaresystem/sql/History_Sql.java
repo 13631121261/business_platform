@@ -23,7 +23,6 @@ import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 public class History_Sql {
     public boolean addHistory(HistoryMapper historyMapper, History history) {
            historyMapper.insert(history);
-
             return true;
     }
 

@@ -42,7 +42,16 @@ public class Person {
     int run=-1;
     @TableField(exist = false)
     int sos=-1;
+    @TableField("station_mac") // 确保这里的值与数据库列名完全一致
+    private String station_mac;
 
+    @TableField("station_name")
+    private String station_name;
+
+    String map_key;
+    String customer_key;
+    //用于判断定位信标的类型
+    int type;
 
     @TableField(exist = false)
     String station_type;
@@ -103,13 +112,7 @@ public class Person {
         return run;
     }
 
-    String  Station_mac;
 
-    String Station_name;
-
-    String customer_key;
-    //用于判断定位信标的类型
-    int type;
     @TableField(exist = false)
     int b_area_id;
     @TableField(exist = false)
@@ -117,7 +120,6 @@ public class Person {
     @TableField(exist = false)
     String map_name;
 
-    String map_key;
 
     String patrol_list_id;
     @TableField(exist = false)
@@ -240,20 +242,20 @@ public class Person {
         return map_key;
     }
 
-    public String getStation_name() {
-        return Station_name;
+    public void setStation_mac(String station_mac) {
+        this.station_mac = station_mac;
     }
 
-    public void setStation_name(String Station_name) {
-        this.Station_name = Station_name;
-    }
-
-    public void setStation_mac(String Station_mac) {
-        this.Station_mac = Station_mac;
+    public void setStation_name(String station_name) {
+        this.station_name = station_name;
     }
 
     public String getStation_mac() {
-        return Station_mac;
+        return station_mac;
+    }
+
+    public String getStation_name() {
+        return station_name;
     }
 
     public void setMap_name(String map_name) {
@@ -498,8 +500,8 @@ public class Person {
                 ", online=" + online +
                 ", run=" + run +
                 ", sos=" + sos +
-                ", Station_mac='" + Station_mac + '\'' +
-                ", Station_name='" + Station_name + '\'' +
+                ", station_mac='" + station_mac + '\'' +
+                ", station_name='" + station_name + '\'' +
                 ", customer_key='" + customer_key + '\'' +
                 ", type=" + type +
                 ", b_area_id=" + b_area_id +

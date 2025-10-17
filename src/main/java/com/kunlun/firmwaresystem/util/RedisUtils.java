@@ -59,6 +59,18 @@ public class RedisUtils {
         return status;
 
     }
+    public boolean deleteAll(String key1){
+        boolean status=false;
+        Set<String> keys= redisTemplate.keys(key1+"*");
+        for(String key:keys){
+            status=redisTemplate.delete(key);
+            if(!status){
+                return false;
+            }
+        }
+        return status;
+
+    }
     /**
      * 根据key 获取过期时间
      *

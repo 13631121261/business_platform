@@ -30,7 +30,7 @@ public class Station_sql {
             myPrintln("输出="+Station.toString());
             try {
                 int d = StationMapper.insert(Station);
-                myPrintln(String.valueOf(d));
+                myPrintln("添加网关="+d+"---"+Station.getId());
             }catch (Exception e){
                 myPrintln("异常="+e.getMessage());
             }
@@ -130,8 +130,10 @@ public class Station_sql {
     }
 
     public Map<String, String> getAllStation(RedisUtils redisUtil, StationMapper StationMapper) {
-        myPrintln("执行一次获取全部数据");
+      //  myPrintln("执行一次获取全部数据");
+        myPrintln(""+System.currentTimeMillis());
         List<Station> StationList = StationMapper.selectList(null);
+      //  myPrintln(""+System.currentTimeMillis());
         HashMap<String, String> StationMap = new HashMap<>();
         for (Station Station : StationList) {
             //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
@@ -140,6 +142,7 @@ public class Station_sql {
             redisUtil.set(redis_key_Station_onLine_time + Station.getAddress(), null);
             redisUtil.set(redis_key_Station_revice_count + Station.getAddress(), 0);
         }
+      //  myPrintln(""+System.currentTimeMillis());
         return StationMap;
     }
 

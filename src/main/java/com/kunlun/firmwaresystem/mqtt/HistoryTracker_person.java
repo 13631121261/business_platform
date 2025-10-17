@@ -8,6 +8,7 @@ import com.kunlun.firmwaresystem.sql.History_Sql;
 import java.util.Objects;
 
 import static com.kunlun.firmwaresystem.NewSystemApplication.historyMap;
+import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
 
 public class HistoryTracker_person {
     // 使用线程安全的ConcurrentHashMap
@@ -28,6 +29,7 @@ public class HistoryTracker_person {
      */
     public void processPersonUpdate(Person person) {
         if (!isValidPerson(person)) {
+            myPrintln("直接返回");
             return;
         }
         String idCard = person.getIdcard();
@@ -49,9 +51,11 @@ public class HistoryTracker_person {
     private void createNewHistoryRecord(Person person) {
         History newHistory = buildHistoryFromPerson(person);
         try {
+          //  myPrintln("Add new historical records");
             historyService.addHistory(historyMapper, newHistory);
             historyMap.put(person.getIdcard(), newHistory);
-            logDebug("新建历史记录: " + newHistory.getId());
+           // myPrintln("Add new historical records   "+newHistory.getId());
+
         } catch (Exception e) {
             logError("创建历史记录失败", e);
         }
@@ -66,6 +70,7 @@ public class HistoryTracker_person {
     }
     // 处理同一基站内的更新
     private void handleSameStationUpdate(Person person, History existingHistory) {
+
         long currentTime = System.currentTimeMillis();
         long timeSinceLastUpdate = currentTime - existingHistory.getEnd_time();
 

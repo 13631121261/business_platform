@@ -289,16 +289,19 @@ public JSONObject getAssetState(HttpServletRequest request) {
                     name = stationType.getName();
                     try {
                         for (Person person : personMap.values()) {
-                            //  myPrintln("人员的公司 ID" + person.getCompany_id());
+                            // myPrintln("人员的公司 " + person.getId());
                             if (company.getId() == person.getCompany_id()) {
+                               // myPrintln("授予ID" + person.getCompany_id());
                                 // if(person.getOnline()==1){
                                 if (person.getStation_mac() == null || person.getStation_mac().isEmpty()) {
+                                    //  myPrintln("人员没有定位网关" + person. getIdcard());
                                     continue;
                                 }
                                 if (person.getStation_mac() != null && !person.getStation_mac().isEmpty()) {
-
+                                    //myPrintln("人员定位网关" + person. getStation_mac());
                                     Station station = stationMap.get(person.getStation_mac());
                                     if (station != null && station.getType_id() == stationType.getId()) {
+                                    //    myPrintln("符合人员="+person.getIdcard()+"   typeName="+name);
                                         person_count1++;
                                         person_count++;
                                         //  person_online_count++;

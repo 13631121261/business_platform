@@ -478,6 +478,7 @@ public class PersonControl {
             int status = person_sql.deletes(personMapper, id);
 
             if(status!=-1){
+
                 personMap=person_sql.getAllPerson(personMapper);
                 return JsonConfig.getJsonObj(CODE_OK,null,lang);
             }else{

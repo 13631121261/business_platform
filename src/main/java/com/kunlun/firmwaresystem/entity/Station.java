@@ -16,6 +16,7 @@ public class Station implements Serializable {
     long last_time;
     long create_time;
     int online=0;
+
     int id;
     String name;
     int type_id;

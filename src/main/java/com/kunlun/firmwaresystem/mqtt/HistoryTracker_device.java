@@ -53,7 +53,7 @@ public class HistoryTracker_device {
         try {
             historyService.addHistory(historyMapper, newHistory);
             historyMap.put(devicep.getSn(), newHistory);
-           // logDebug("新建历史记录: " + newHistory.getId());
+            logDebug("新建历史记录: " + newHistory.getId());
         } catch (Exception e) {
             logError("创建历史记录失败", e);
         }

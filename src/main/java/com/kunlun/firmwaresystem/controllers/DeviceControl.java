@@ -121,6 +121,9 @@ public class DeviceControl {
         }
         int status=devicePMapper.deleteBatchIds(id);
         if (status>=0) {
+            devicePMap.clear();
+            DeviceP_Sql deviceP_sql=new DeviceP_Sql();
+            devicePMap=deviceP_sql.getAllDeviceP(devicePMapper);
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("code", CODE_OK);
             jsonObject1.put("msg", CODE_OK_txt);

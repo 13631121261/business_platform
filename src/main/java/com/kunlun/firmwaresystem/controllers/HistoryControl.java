@@ -135,7 +135,6 @@ public class HistoryControl {
                         histories.add(mHistory1);
                     }
                 }
-
         }
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", 1);

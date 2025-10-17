@@ -9,6 +9,7 @@ import com.kunlun.firmwaresystem.device.PageDeviceP;
 import com.kunlun.firmwaresystem.device.PagePerson;
 import com.kunlun.firmwaresystem.entity.Alarm;
 import com.kunlun.firmwaresystem.entity.Person;
+import com.kunlun.firmwaresystem.entity.Station;
 import com.kunlun.firmwaresystem.entity.device.Devicep;
 import com.kunlun.firmwaresystem.mappers.DevicePMapper;
 import com.kunlun.firmwaresystem.mappers.PermissionMapper;
@@ -19,7 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.kunlun.firmwaresystem.NewSystemApplication.myPrintln;
+import static com.kunlun.firmwaresystem.NewSystemApplication.*;
+import static com.kunlun.firmwaresystem.NewSystemApplication.personMapper;
+import static com.kunlun.firmwaresystem.gatewayJson.Constant.redis_key_locator;
 
 public class Person_Sql {
     public boolean addPerson(PersonMapper PersonMapper, Person Person) {
@@ -48,6 +51,14 @@ public class Person_Sql {
         for (Person Person : Persons) {
             //myPrintln("初始化"+Station.getSub_topic()+"==="+Station.getPub_topic());
             PersonHashMap.put(Person.getIdcard(), Person);
+            if (Person.getStation_mac()!=null) {
+                Station station=(Station)  redisUtil.get(redis_key_locator + Person.getStation_mac());
+                if (station!=null) {
+                    Person.setMap_name(station.getMap_name());
+                    Person.setMap_key(station.getMap_key());
+                }
+                //personMapper.updateById(Person);
+            }
         }
         return PersonHashMap;
     }
@@ -104,6 +115,7 @@ public class Person_Sql {
 
     }
     public List<Person> getAllPersonLike(PersonMapper PersonMapper, String idcard, String name,String project_key) {
+
         LambdaQueryWrapper<Person> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         userLambdaQueryWrapper.eq(Person::getProject_key,project_key).like(Person::getIdcard, idcard)
         .or().eq(Person::getProject_key,project_key).like(Person::getName, name);

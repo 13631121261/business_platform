@@ -17,7 +17,6 @@ import java.util.Date;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-import static com.kunlun.firmwaresystem.DeviceTask.writeLog;
 import static com.kunlun.firmwaresystem.NewSystemApplication.*;
 import static com.kunlun.firmwaresystem.mqtt.DirectExchangeRabbitMQConfig.sendtoMap;
 

@@ -4,7 +4,13 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     username: root
     password: qaz741
-    url: jdbc:mysql://localhost:9906/business?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:9906/business?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      max-lifetime: 540000     # 9分钟，必须小于数据库/中间件的超时时间
+      idle-timeout: 480000     # 8分钟
+      keepalive-time: 300000   # 5分钟保活一次
   mvc:
    hidden method:
     filter:
@@ -52,6 +58,7 @@ mybatis-plus:
   global-config:
     db-config:
       table-underline: false
+      id-type: auto
   configuration:
     map-underscore-to-camel-case: false
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl

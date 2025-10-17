@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kunlun.firmwaresystem.mappers.TagMapper">
+
+    <!-- 批量更新 tag 表 -->
+    <update id="updateBatch" parameterType="java.util.List">
+        UPDATE tag
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- 智能更新：仅当字段有值时生成更新逻辑 -->
+            <trim prefix="n = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.n != null">
+                        WHEN id = #{item.id} THEN #{item.n}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="isbind = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.isbind != null">
+                        WHEN id = #{item.id} THEN #{item.isbind}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="bind_type = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.bind_type != null">
+                        WHEN id = #{item.id} THEN #{item.bind_type}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="bind_key = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.bind_key != null and item.bind_key != ''">
+                        WHEN id = #{item.id} THEN #{item.bind_key}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="map_key = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.map_key != null and item.map_key != ''">
+                        WHEN id = #{item.id} THEN #{item.map_key}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="type = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.type != null">
+                        WHEN id = #{item.id} THEN #{item.type}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="mac = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.mac != null and item.mac != ''">
+                        WHEN id = #{item.id} THEN #{item.mac}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="bt = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.bt != null">
+                        WHEN id = #{item.id} THEN #{item.bt}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="user_key = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.user_key != null and item.user_key != ''">
+                        WHEN id = #{item.id} THEN #{item.user_key}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="online = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.online != null">
+                        WHEN id = #{item.id} THEN #{item.online}
+                    </if>
+                </foreach>
+            </trim>
+
+            <!-- 时间戳字段更新：使用数据库当前时间 -->
+            <trim prefix="lastTime = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN id = #{item.id} THEN #{item.lastTime}
+                </foreach>
+            </trim>
+
+        </trim>
+        WHERE id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+</mapper>

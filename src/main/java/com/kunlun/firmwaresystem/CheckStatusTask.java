@@ -12,6 +12,7 @@ import com.kunlun.firmwaresystem.sql.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -28,10 +29,18 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
         private LogsMapper logsMapper;
         @Resource
         private CheckAlarmMapper checkAlarmMapper;
+
+        @Resource
+        private PersonService personService;
+
+        @Resource
+        private StationService stationService;
+
+        @Resource
+        private DevicepService devicepService;
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
         SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.s");//设置日期格式1
-        @Autowired
-        private DeviceTask deviceTask;
+
         long time=0;
         //30秒执行一次
         @Scheduled(cron = "*/30 * * * * ?")
@@ -73,10 +82,12 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
         private void checkStation(){
             Map<String, DevStatus> devStatusMap=new HashMap<>();
             Station_sql stationSql=new Station_sql();
+            List<Station> stations=new ArrayList<>();
             for(String address:station_maps.keySet()){
                 Station station=(Station) redisUtil.get(redis_key_locator+address);
                 if(station!=null){
-                    stationSql.updateStation(stationMapper,station);
+                    stations.add(station);
+                //    stationSql.updateStation(stationMapper,station);
                     String project_key=station.getProject_key();
                     DevStatus locatorStatus= devStatusMap.get(project_key);
                     if(locatorStatus==null){
@@ -90,6 +101,9 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
                     devStatusMap.put(project_key,locatorStatus);
                 }
             }
+            time=System.currentTimeMillis();
+            stationService.saveOrUpdateBatch(stations);
+            myPrintln("基站结束时间-"+(System.currentTimeMillis()-time));
             for(String project_key:devStatusMap.keySet()){
              //   myPrintln("循环="+devStatusMap.get(project_key));
                 redisUtil.set(redis_key_locator_project+project_key,devStatusMap.get(project_key));
@@ -120,14 +134,13 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
             }
         }*/
         //检测人员
-        private void checkPerson(){
+        @Transactional(rollbackFor = Exception.class)
+        public void checkPerson(){
             Map<String, DevStatus> devStatusMap=new HashMap<>();
-            Person_Sql personSql=new Person_Sql();
 
             for(String idcard:personMap.keySet()){
                 Person  person =personMap.get(idcard);
                 if(person!=null){
-                    personSql.update(personMapper,person);
                     String project_key=person.getProject_key();
                     DevStatus devStatus=devStatusMap.get(project_key);
                     if(devStatus==null){
@@ -141,6 +154,8 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
                     devStatusMap.put(project_key,devStatus);
                 }
             }
+
+
             for(String project_key:devStatusMap.keySet()){
                 redisUtil.set(redis_key_person_project+project_key,devStatusMap.get(project_key));
             }
@@ -148,11 +163,13 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
         //检测资产
         private void checkDevice(){
             Map<String, DevStatus> devStatusMap=new HashMap<>();
+            List< Devicep> deviceps=new ArrayList<>();
             DeviceP_Sql deviceP_sql=new DeviceP_Sql();
             for(String sn:devicePMap.keySet()){
                 Devicep devicep =devicePMap.get(sn);
                 if(devicep!=null){
-                    deviceP_sql.update(devicePMapper,devicep);
+                   // deviceP_sql.update(devicePMapper,devicep);
+                    deviceps.add(devicep);
                     String project_key=devicep.getProject_key();
                     DevStatus devStatus=devStatusMap.get(project_key);
                     if(devStatus==null){
@@ -166,6 +183,7 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
                     devStatusMap.put(project_key,devStatus);
                 }
             }
+            devicepService.saveOrUpdateBatch(deviceps);
             for(String project_key:devStatusMap.keySet()){
                 redisUtil.set(redis_key_device_project+project_key,devStatusMap.get(project_key));
             }
@@ -218,47 +236,38 @@ import static com.kunlun.firmwaresystem.gatewayJson.Constant.*;
                 check_alarm.setProject_key(project.getProject_key());
                 check_alarm.setAlarm_type(Alarm_Type.all);
                 checkAlarm_sql.addCheckAlarm(checkAlarmMapper,check_alarm);
-
                 check_alarm.setSum(run_sum);
                 check_alarm.setProject_key(project.getProject_key());
                 check_alarm.setAlarm_type(Alarm_Type.sos_run);
                 checkAlarm_sql.addCheckAlarm(checkAlarmMapper,check_alarm);
-
                 check_alarm.setSum(fence_out_sum);
                 check_alarm.setProject_key(project.getProject_key());
                 check_alarm.setAlarm_type(Alarm_Type.fence_out_sos);
                 checkAlarm_sql.addCheckAlarm(checkAlarmMapper,check_alarm);
-
-
                 check_alarm.setSum(fence_on_sum);
                 check_alarm.setProject_key(project.getProject_key());
                 check_alarm.setAlarm_type(Alarm_Type.fence_on_sos);
                 checkAlarm_sql.addCheckAlarm(checkAlarmMapper,check_alarm);
-
                 check_alarm.setSum(offline_sum);
                 check_alarm.setProject_key(project.getProject_key());
                 check_alarm.setAlarm_type(Alarm_Type.sos_offline);
                 checkAlarm_sql.addCheckAlarm(checkAlarmMapper,check_alarm);
-
                 check_alarm.setSum(online_sum);
                 check_alarm.setProject_key(project.getProject_key());
                 check_alarm.setAlarm_type(Alarm_Type.sos_online);
                 checkAlarm_sql.addCheckAlarm(checkAlarmMapper,check_alarm);
-
-
             }
         }
         //每天人员报警保存
         private void deleteCache(){
-           /* long time=System.currentTimeMillis()/1000;
+            long time=System.currentTimeMillis()/1000;
             long one_time=time-2592000;
             History_Sql history_sql=new History_Sql();
             history_sql.deleteBy15Day(historyMapper,one_time*1000);
             Logs_Sql logs_sql=new Logs_Sql();
             logs_sql.deleteBy15Day(logsMapper,one_time);
             Alarm_Sql alarm_sql=new Alarm_Sql();
-            alarm_sql.deleteBy15Day(alarmMapper,one_time);*/
-
+            alarm_sql.deleteBy15Day(alarmMapper,one_time);
         }
 
 

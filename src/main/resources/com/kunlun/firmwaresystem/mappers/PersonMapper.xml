@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kunlun.firmwaresystem.mappers.PersonMapper">
+
+    <!-- 批量更新 person 表 -->
+    <update id="updateBatch" parameterType="java.util.List">
+        UPDATE person
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- 智能更新：仅当字段非空时生成更新逻辑 -->
+            <trim prefix="company_id = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.company_id != null">
+                        WHEN id = #{item.id} THEN #{item.company_id}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="name = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.name != null and item.name != ''">
+                        WHEN id = #{item.id} THEN #{item.name}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="phone = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.phone != null and item.phone != ''">
+                        WHEN id = #{item.id} THEN #{item.phone}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="sex = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.sex != null">
+                        WHEN id = #{item.id} THEN #{item.sex}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="bind_mac = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.bind_mac != null and item.bind_mac != ''">
+                        WHEN id = #{item.id} THEN #{item.bind_mac}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="isbind = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.isbind != null">
+                        WHEN id = #{item.id} THEN #{item.isbind}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="isopen = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.isopen != null">
+                        WHEN id = #{item.id} THEN #{item.isopen}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="x = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.x != null">
+                        WHEN id = #{item.id} THEN #{item.x}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="y = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.y != null">
+                        WHEN id = #{item.id} THEN #{item.y}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="online = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.online != null">
+                        WHEN id = #{item.id} THEN #{item.online}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="type = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.type != null">
+                        WHEN id = #{item.id} THEN #{item.type}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="department_id = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.department_id != null">
+                        WHEN id = #{item.id} THEN #{item.department_id}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="fence_id = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.fence_id != null">
+                        WHEN id = #{item.id} THEN #{item.fence_id}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="fence_group_id = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.fence_group_id != null">
+                        WHEN id = #{item.id} THEN #{item.fence_group_id}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="department_name = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    <if test="item.department_name != null and item.department_name != ''">
+                        WHEN id = #{item.id} THEN #{item.department_name}
+                    </if>
+                </foreach>
+            </trim>
+
+            <!-- 时间戳字段更新：使用数据库当前时间 -->
+            <trim prefix="lasttime = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN id = #{item.id} THEN  #{item.lasttime}
+                </foreach>
+            </trim>
+
+            <trim prefix="update_time = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN id = #{item.id} THEN  #{item.update_time}
+                </foreach>
+            </trim>
+            <trim prefix="station_mac = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN id = #{item.id} THEN  #{item.station_mac}
+                </foreach>
+            </trim>
+            <trim prefix="station_name = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN id = #{item.id} THEN  #{item.station_name}
+                </foreach>
+            </trim>
+        </trim>
+        WHERE id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+</mapper>

@@ -32,12 +32,9 @@ public class Alarm_Sql {
 
     }
     public PageAlarm selectPageAlarm(AlarmMapper alarmMapper, int page, int limt, String project_key,String object,String alarm_type,String name,String  sort) {
-
         LambdaQueryWrapper<Alarm> userLambdaQueryWrapper = Wrappers.lambdaQuery();
         Page<Alarm> userPage = new Page<>(page, limt);
         IPage<Alarm> userIPage;
-
-
         if (sort!=null ) {
             String[] sorts = sort.split(",");
                 if (sorts[1].equals("asc")) {
@@ -57,8 +54,6 @@ public class Alarm_Sql {
                                 .or().like(Alarm::getAlarm_object, object).like(Alarm::getName, name).eq(Alarm::getProject_key,project_key).orderByAsc(true,Alarm::getSn);
                     }
                 }
-
-
         }
         else{
 

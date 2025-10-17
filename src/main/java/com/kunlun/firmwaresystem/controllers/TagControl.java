@@ -146,6 +146,8 @@ public class TagControl {
         }
         if(id.size()>0){
             int status = tag_sql.deletes(tagMapper, id);
+            tagsMap.clear();
+            tagsMap = tag_sql.getAllTag(tagMapper);
             return JsonConfig.getJsonObj(CODE_OK,null,lang);
         }else{
             return JsonConfig.getJsonObj(CODE_PARAMETER_NULL,null,lang);
