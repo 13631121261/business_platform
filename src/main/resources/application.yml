@@ -2,9 +2,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    username: root
-    password: qaz741
-    url: jdbc:mysql://localhost:9906/business?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: MAC-7866E6
+    password: 741852
+    url: jdbc:mysql://192.168.1.10:9906/business?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
     hikari:
       maximum-pool-size: 30
       minimum-idle: 10
